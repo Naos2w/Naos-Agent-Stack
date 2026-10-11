@@ -1,0 +1,17 @@
+name: Validate PowerShell source (manual only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-syntax:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: PowerShell 5.1 syntax and dry-run
+        shell: powershell
+        run: .\tests\validate.ps1
