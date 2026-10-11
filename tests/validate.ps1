@@ -40,8 +40,8 @@ $ErrorActionPreference='Continue'
 $invalid=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $entry plan -Role client -NoCore -Sharing -NoSharing 2>&1)
 $negativeExitCode=$LASTEXITCODE
 $ErrorActionPreference=$priorErrorActionPreference
-if($negativeExitCode -eq 0) {
-    throw 'Contradictory sharing flags were incorrectly accepted.'
+if($negativeExitCode -eq 0 -or -not (($invalid -join [Environment]::NewLine) -match 'Choose either -Sharing or -NoSharing')) {
+    throw 'Contradictory sharing flags did not fail for the expected reason.'
 }
 Write-Output '[PASS] Contradictory sharing option rejected'
 $requiredIgnore=@('*.zip','**/.ssh/','**/state.json','**/tunnel-profiles/')
@@ -58,3 +58,6 @@ $large=@($sourcePaths | Where-Object {$_.Length -gt 1048576})
 if($large.Count){throw 'Source tree contains unexpectedly large files. Releases should hold binaries.'}
 Write-Output '[PASS] Source tree excludes secrets and large binaries'
 Write-Output 'SOURCE_VALIDATION_PASSED'
+# The negative test intentionally returns 1; without an explicit exit here,
+# GitHub Actions PowerShell's wrapper propagates that stale $LASTEXITCODE.
+exit 0
