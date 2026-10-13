@@ -12,17 +12,21 @@
 
 從 Windows PowerShell 5.1 進入解壓縮目錄：
 
-    # 先檢查與預覽（只讀）
-    .\naos-agent-stack.ps1 doctor
-    .\naos-agent-stack.ps1 plan -Role single -InstallGit
+    # 互動式安裝：挑選單機／雙機，以及選配功能
+    .\naos-agent-stack.ps1 install
 
-    # 真正開始單機安裝（會提示輸入 INSTALL）
-    .\naos-agent-stack.ps1 install -Role single -InstallGit
+    # 同一個選單的唯讀預覽，不會安裝
+    .\naos-agent-stack.ps1 plan -Interactive
+
+    # 自動化、非互動安裝（參數明確指定後才使用）
+    .\naos-agent-stack.ps1 install -Role single -Yes
 
     # 安裝後確認，重新開啟 PowerShell 可更新使用者 PATH
     .\naos-agent-stack.ps1 doctor
 
-若僅使用 OpenChatX / Letta、不需要 Git，請移除 -InstallGit。若現有電腦已安裝 Node/npm 與 Git，安裝器會檢查並保留現有版本。
+**安裝選單的 Git 預設為「否」**，雙電腦共享也只有主動選擇主機或用戶端模式才會設定。必要的 OpenChatX/Letta 核心與 Node/npm 由安裝器自動檢查與補齊，已存在的版本不會被覆蓋。使用者選擇後，會先顯示不修改系統的安裝預覽，再要求輸入 `INSTALL` 才真正執行。可選擇唯讀掃描 Git 專案目錄；若需要非互動執行，使用明確參數搭配 `-Yes`。`-NoWizard` 可略過選單但保留最後確認。
+
+**安裝包也包含 `Install-Wizard.ps1`：負責選項收集，不自行安裝程式或修改服務。**
 
 **安裝檔包含的前置工具：**
 - payload/prerequisites/node-v22.23.3-win-x64.zip — Node.js 22.23.3 + npm 10.9.9。

@@ -363,6 +363,29 @@ if($Mode -eq 'Plan'){
   exit 0
 }
 Require ($Mode -eq 'Apply') 'Unknown operation'
+if($ConfigureSharing){
+  # Fail before installing the core or touching tasks/firewall when dual-PC prerequisites
+  # are missing. Tailscale login and SSH credentials remain external manual steps.
+  Require ($Role -in @('host','client')) 'Sharing requires host/client role.'
+  ValidateNetworking
+  $tailscaleService=Get-Service Tailscale -ErrorAction SilentlyContinue
+  Require ([bool]($tailscaleService -and $tailscaleService.Status -eq 'Running')) 'Shared-memory setup requires a running Tailscale service; sign in and retry.'
+  if($Role -eq 'host'){
+    Require (IsAdmin) 'Shared-memory host setup requires Administrator PowerShell.'
+    if($PublicKeyPath){Require (Present $PublicKeyPath) 'Verified SSH public key .pub file missing.'}
+    else{
+      $authorized=Join-Path $env:ProgramData 'ssh\administrators_authorized_keys'
+      Require (Present $authorized) 'Shared host needs an authorized SSH public key before setup.'
+    }
+  }
+  if($Role -eq 'client'){
+    $key=if($KeyPath){[Environment]::ExpandEnvironmentVariables($KeyPath)}else{Join-Path $HOME '.ssh\id_ed25519'}
+    Require (Present $key) 'Shared client requires a local SSH private key before setup.'
+    Require (Present ($key+'.pub')) 'Shared client requires the matching public key before setup.'
+    $sshAgent=Get-Service ssh-agent -ErrorAction SilentlyContinue
+    Require ([bool]($sshAgent -and $sshAgent.Status -eq 'Running')) 'Shared client requires Windows ssh-agent running before setup.'
+  }
+}
 PrepareOptionalGitWhenCoreIsSkipped
 PrepareCore
 if($ConfigureSharing){

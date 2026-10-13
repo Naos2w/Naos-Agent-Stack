@@ -8,13 +8,19 @@ Windows PowerShell installer and read-only Doctor for OpenChatX Headless / Letta
 
 Download the **complete v0.2.1 pre-release ZIP** (once published), verify the SHA256 checksum, and extract it. Do not use the Git source archive for fresh installation: dependencies are deliberately excluded from Git history.
 
-Open Windows PowerShell 5.1 in the extracted directory:
+Open Windows PowerShell 5.1 in the extracted directory. **The default install command opens an interactive option selector:**
 
-    .\naos-agent-stack.ps1 plan -Role single -InstallGit
-    .\naos-agent-stack.ps1 install -Role single -InstallGit
+    .\naos-agent-stack.ps1 install
+
+    # Optional: preview the same selector without installing anything
+    .\naos-agent-stack.ps1 plan -Interactive
+
+    # Automation without menus (explicitly approved)
+    .\naos-agent-stack.ps1 install -Role single -Yes
+
     .\naos-agent-stack.ps1 doctor -Deep
 
-When prompted, type **INSTALL**. -InstallGit is optional; without it, Git remains a Doctor warning on a new machine. The installer automatically uses its verified **Node.js 22.23.3 LTS + npm 10.9.9 portable ZIP** if no compatible Node/npm is available. With -InstallGit, it installs verified **MinGit 2.56.0.2 command-line tools** when Git is missing. Both install under the current user's %LOCALAPPDATA%\NaosAgentStack\tools; no MSI or administrator rights are required just for these portable prerequisites.
+In the selector, choose the machine role, optional Git, and optional read-only Git scan. **Git defaults to No; dual-PC sharing defaults to off.** A shared-memory host automatically includes Windows SSH Server only when needed. Review the read-only installation preview, then type **INSTALL** to approve changes. Existing installations are detected and preserved; no reboot is initiated. For scripted installation, -Yes skips the selector and approval; -NoWizard skips only the selector and still requires INSTALL. -InstallGit is optional; without it, Git remains a Doctor warning on a new machine. The installer automatically uses its verified **Node.js 22.23.3 LTS + npm 10.9.9 portable ZIP** if no compatible Node/npm is available. With -InstallGit, it installs verified **MinGit 2.56.0.2 command-line tools** when Git is missing. Both install under the current user's %LOCALAPPDATA%\NaosAgentStack\tools; no MSI or administrator rights are required just for these portable prerequisites.
 
 **Important:** The prerequisite tools are bundled locally, but the core's subsequent npm ci / npm install -g commands still require network access to the npm registry. This is **not a fully offline OpenChatX installation**. On a freshly configured computer, ChatGPT Tunnel credentials, Letta OAuth and provider authorization must be configured separately.
 
@@ -24,6 +30,7 @@ When prompted, type **INSTALL**. -InstallGit is optional; without it, Git remain
 |---|---|
 | naos-agent-stack.ps1 | install / plan / doctor / help |
 | Prerequisites.ps1 | Verify and install portable x64 Node/npm and optional MinGit |
+| Install-Wizard.ps1 | Interactive selection of optional components (no side effects) |
 | Doctor.ps1 | Read-only health and Agent/Git binding checks (-Deep / -Json / -Strict) |
 | Engine.ps1 | Single-machine or optional two-machine setup |
 | ForwardWatchdog.ps1 | Private SSH port-forward reconnect monitor |

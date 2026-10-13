@@ -24,6 +24,7 @@ $sourceFiles=@(
     'Engine.ps1',
     'Doctor.ps1',
     'Prerequisites.ps1',
+    'Install-Wizard.ps1',
     'ForwardWatchdog.ps1',
     'Build-Package.ps1',
     'README.md',

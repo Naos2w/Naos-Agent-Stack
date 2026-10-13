@@ -9,6 +9,7 @@ $names = @(
     'Engine.ps1',
     'Doctor.ps1',
     'Prerequisites.ps1',
+    'Install-Wizard.ps1',
     'ForwardWatchdog.ps1',
     'Build-Package.ps1',
     'payload\bootstrap\naos-agent-stack.ps1'
@@ -31,6 +32,12 @@ if(-not($help -match 'doctor') -or -not($help -match 'install') -or -not($help -
     throw 'Entry point help does not advertise required commands.'
 }
 Write-Output '[PASS] Unified command help'
+$wizardTest=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'validate-wizard.ps1'))
+$wizardExit=$LASTEXITCODE
+if($wizardExit -ne 0 -or -not ($wizardTest -match 'WIZARD_VALIDATION_PASSED')){
+    throw 'Interactive wizard scripted tests or read-only plan failed.'
+}
+Write-Output '[PASS] Interactive wizard: mandatory core, optional Git, sharing, scan, and read-only plan'
 $lockFile=Join-Path $root 'dependencies.lock.json'
 if(-not(Test-Path -LiteralPath $lockFile)){throw 'Missing dependency lock file.'}
 $lock=Get-Content -LiteralPath $lockFile -Raw -Encoding UTF8 | ConvertFrom-Json
