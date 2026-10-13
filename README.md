@@ -14,7 +14,7 @@ Open Windows PowerShell 5.1 in the extracted directory:
     .\naos-agent-stack.ps1 install -Role single -InstallGit
     .\naos-agent-stack.ps1 doctor -Deep
 
-When prompted, type **INSTALL**. -InstallGit is optional; without it, Git remains a Doctor warning on a new machine. The installer automatically uses its verified **Node.js 22.20.0 + npm 10.9.3 portable ZIP** if no compatible Node/npm is available. With -InstallGit, it installs verified **MinGit 2.56.0.2 command-line tools** when Git is missing. Both install under the current user's %LOCALAPPDATA%\NaosAgentStack\tools; no MSI or administrator rights are required just for these portable prerequisites.
+When prompted, type **INSTALL**. -InstallGit is optional; without it, Git remains a Doctor warning on a new machine. The installer automatically uses its verified **Node.js 22.23.3 LTS + npm 10.9.9 portable ZIP** if no compatible Node/npm is available. With -InstallGit, it installs verified **MinGit 2.56.0.2 command-line tools** when Git is missing. Both install under the current user's %LOCALAPPDATA%\NaosAgentStack\tools; no MSI or administrator rights are required just for these portable prerequisites.
 
 **Important:** The prerequisite tools are bundled locally, but the core's subsequent npm ci / npm install -g commands still require network access to the npm registry. This is **not a fully offline OpenChatX installation**. On a freshly configured computer, ChatGPT Tunnel credentials, Letta OAuth and provider authorization must be configured separately.
 
@@ -29,7 +29,7 @@ When prompted, type **INSTALL**. -InstallGit is optional; without it, Git remain
 | ForwardWatchdog.ps1 | Private SSH port-forward reconnect monitor |
 | payload/bootstrap/naos-agent-stack.ps1 | Original Headless core installer |
 | payload/naos-headless-stack-bundle.zip | Headless application runtime |
-| payload/prerequisites/node-v22.20.0-win-x64.zip | **Offline** Node.js and npm |
+| payload/prerequisites/node-v22.23.3-win-x64.zip | **Offline** Node.js and npm |
 | payload/prerequisites/MinGit-2.56.0.2-64-bit.zip | Optional **offline** CLI Git |
 | manifest.json | Per-file SHA256 hashes and package metadata |
 

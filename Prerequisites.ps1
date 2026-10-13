@@ -7,10 +7,10 @@ function Get-NaosPrerequisiteDefinition([string]$Name) {
     switch ($Name) {
         'node' {
             return [pscustomobject]@{
-                Name='Node.js'; Version='22.20.0'; Archive='node-v22.20.0-win-x64.zip';
-                Sha256='BB819D6EB8F5BFDA294BBC83A7E4EC6539DA67C4233D54B0D655B9248B15E29D';
-                Root='node-v22.20.0-win-x64'; Directory='node-v22.20.0';
-                Executable='node.exe'; BinRelative=''; ExpectedVersion='v22.20.0'
+                Name='Node.js'; Version='22.23.3'; Archive='node-v22.23.3-win-x64.zip';
+                Sha256='2B0FF57B049CDA1BBCEA2240EEC20467018713C1EFE1F7360C2681859B90ED71';
+                Root='node-v22.23.3-win-x64'; Directory='node-v22.23.3';
+                Executable='node.exe'; BinRelative=''; ExpectedVersion='v22.23.3'
             }
         }
         'git' {

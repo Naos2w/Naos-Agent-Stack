@@ -1,10 +1,10 @@
-# Naos Agent Stack v0.2.1 — PowerShell 安裝與 Doctor
+﻿# Naos Agent Stack v0.2.1 — PowerShell 安裝與 Doctor
 
 ## 全新 Windows 電腦首次安裝問題
 
 在 v0.2.0 的新電腦安裝紀錄中，Doctor 出現 Node.js、OpenChatX、PM2 及 Letta 缺失，並非 ZIP 核心不存在，而是**完整 Node/npm 前置環境未打包**。核心 bootstrap 在 npm.cmd 不存在時便停止。Git 不存在造成 Doctor 警告，不是當次中止主因。
 
-**修復方向：** v0.2.1 完整 Release 新增官方 Windows x64 Node.js 22.20.0（含 npm）與可選 MinGit 2.56.0.2 ZIP。新機安裝時可在不需管理員權限的使用者工具目錄解壓使用；既有可用的 Node/npm、Git 不會被改動。
+**修復方向：** v0.2.1 完整 Release 新增官方 Windows x64 Node.js 22.23.3（含 npm）與可選 MinGit 2.56.0.2 ZIP。新機安裝時可在不需管理員權限的使用者工具目錄解壓使用；既有可用的 Node/npm、Git 不會被改動。
 
 ## 新 Windows x64 電腦安裝
 
@@ -25,7 +25,7 @@
 若僅使用 OpenChatX / Letta、不需要 Git，請移除 -InstallGit。若現有電腦已安裝 Node/npm 與 Git，安裝器會檢查並保留現有版本。
 
 **安裝檔包含的前置工具：**
-- payload/prerequisites/node-v22.20.0-win-x64.zip — Node.js 22.20.0 + npm 10.9.3。
+- payload/prerequisites/node-v22.23.3-win-x64.zip — Node.js 22.23.3 + npm 10.9.9。
 - payload/prerequisites/MinGit-2.56.0.2-64-bit.zip — 可選 Git CLI，非完整 Git for Windows。
 - payload/naos-headless-stack-bundle.zip — OpenChatX Headless 核心程式。
 - dependencies.lock.json — 官方來源網址與預期 SHA256，安裝會驗證哈希，拒絕使用不符的檔案。
