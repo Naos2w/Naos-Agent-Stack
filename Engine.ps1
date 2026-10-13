@@ -5,6 +5,7 @@ param(
     [ValidateSet('Plan','Apply','Health')][string]$Mode = 'Plan',
     [ValidateSet('single','host','client','existing')][string]$Role = 'single',
     [switch]$InstallCore,
+    [switch]$InstallGit,
     [switch]$ConfigureSharing,
     [switch]$InstallOpenSSH,
     [switch]$ScanProjects,
@@ -30,6 +31,10 @@ $machineRoot = Join-Path $env:LOCALAPPDATA 'NaosAgentSetup'
 $clientConfig = Join-Path $machineRoot 'client.json'
 $installerScript = Join-Path $root 'payload\bootstrap\naos-agent-stack.ps1'
 $bundle = Join-Path $root 'payload\naos-headless-stack-bundle.zip'
+$prerequisiteScript=Join-Path $root 'Prerequisites.ps1'
+if(-not (Test-Path -LiteralPath $prerequisiteScript -PathType Leaf)){throw 'Prerequisites.ps1 missing from installation package.'}
+. $prerequisiteScript
+$offlinePackages=Join-Path $root 'payload\prerequisites'
 $letRoot = if($LettaRoot){[IO.Path]::GetFullPath([Environment]::ExpandEnvironmentVariables($LettaRoot))}
            else {Join-Path $env:LOCALAPPDATA 'NaosAgentSetup\Letta-POC'}
 
@@ -119,20 +124,59 @@ function PrepareCore {
   if($runtimeExists -and $headlessExists){Good 'Existing OpenChatX Headless detected: will not reinstall or overwrite.';return}
   Require (-not $runtimeExists -and -not $headlessExists) 'Partial OpenChatX installation detected. Refusing to overwrite; repair manually.'
   Require (Present $installerScript) 'Headless bootstrap script missing in payload/bootstrap.'
+  $hasNode=Test-NaosSystemNode
+  $hasGit=Test-NaosSystemGit
   if($Mode -ne 'Apply'){
-    if(-not(Present $bundle)) {Caution 'Core ZIP is intentionally excluded from Git. Obtain the approved Headless payload from a release or local build before install.'}
-    Note 'PLAN: Install Headless + Letta + PM2 + codebase-memory to empty paths (npm may require Internet).'
+    if(-not(Present $bundle)){Caution 'Headless core ZIP missing. Obtain v0.2.1 complete Release to install from scratch.'}
+    if($hasNode){Good 'Node.js 22.19+ and npm already available.'}
+    else{
+      $node=(Get-NaosPrerequisiteDefinition node)
+      Note ('PLAN: Install verified offline '+$node.Archive+' into current-user tools; no admin required.')
+      if(-not(Present (Join-Path $offlinePackages $node.Archive))){Caution ('Offline Node/npm ZIP missing: '+$node.Archive)}
+    }
+    if($InstallGit){
+      if($hasGit){Good 'Git already installed. Optional MinGit will not replace it.'}
+      else{
+        $mingit=(Get-NaosPrerequisiteDefinition git)
+        Note ('PLAN: Install optional offline MinGit '+$mingit.Version+' into current-user tools.')
+        if(-not(Present (Join-Path $offlinePackages $mingit.Archive))){Caution ('Offline MinGit ZIP missing: '+$mingit.Archive)}
+      }
+    }
+    Note 'PLAN: Install Headless + Letta + PM2 + codebase-memory to empty paths; npm package installation still requires Internet (not a fully offline setup).'
     return
   }
-  Require (Present $bundle) 'Headless ZIP missing. Source-only Git checkout supports plan/doctor; install needs payload/naos-headless-stack-bundle.zip.'
-  Note 'Installing offline Headless core. No reboot will be requested by this setup.'
+  Require (Present $bundle) 'Headless core ZIP missing. Download the complete v0.2.1 Release before fresh install.'
+  $lockFile=Join-Path $root 'dependencies.lock.json'
+  Require (Present $lockFile) 'Dependency lock file missing.'
+  $lock=Get-Content -LiteralPath $lockFile -Raw -Encoding UTF8|ConvertFrom-Json
+  Require ($lock.packageVersion -eq '0.2.1' -and $lock.core.sha256 -match '^[a-fA-F0-9]{64}$') 'Dependency lock version/core checksum invalid.'
+  Assert-NaosTrustedArchive $bundle $lock.core.sha256
+  # Preflight every required offline archive before installing anything.
+  if(-not $hasNode){$node=Get-NaosPrerequisiteDefinition node;Assert-NaosTrustedArchive (Join-Path $offlinePackages $node.Archive) $node.Sha256}
+  if($InstallGit -and -not $hasGit){$mingit=Get-NaosPrerequisiteDefinition git;Assert-NaosTrustedArchive (Join-Path $offlinePackages $mingit.Archive) $mingit.Sha256}
+  Assert-NaosInstallPrerequisites -PackageRoot $offlinePackages -IncludeGit:$InstallGit
+  Note 'Installing Headless core (npm registry Internet access may be required). No reboot will be initiated.'
   & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installerScript -Mode install -BundlePath $bundle -LettaRoot $letRoot
   Require ($LASTEXITCODE -eq 0) 'Headless bootstrap failed. See the output; not retrying automatically.'
   Good 'Headless bootstrap completed.'
 }
+function PrepareOptionalGitWhenCoreIsSkipped {
+  if(-not $InstallGit){return}
+  $coreAlreadyPresent=(Present (Join-Path $runtimeRoot 'package.json')) -and (Present (Join-Path $headlessRoot 'start-headless.ps1'))
+  if($InstallCore -and -not $coreAlreadyPresent){return}  # Fresh install handles Git in PrepareCore.
+  if(Test-NaosSystemGit){Good 'Git CLI already available; keeping the existing installation.';return}
+  $spec=Get-NaosPrerequisiteDefinition git
+  if($Mode -ne 'Apply'){
+    Note ('PLAN: Install optional '+$spec.Archive+' into current-user tools without changing OpenChatX.')
+    if(-not(Present (Join-Path $offlinePackages $spec.Archive))){Caution ('Offline Git ZIP missing: '+$spec.Archive)}
+    return
+  }
+  Assert-NaosTrustedArchive (Join-Path $offlinePackages $spec.Archive) $spec.Sha256
+  Install-NaosPortablePrerequisite -Name git -PackageRoot $offlinePackages
+}
 function SetupClient {
   ValidateNetworking
-  $key=if($KeyPath){[Environment]::ExpandEnvironmentVariables($KeyPath)}else{Join-Path $HOME '.ssh\id_ed25519_msi_letta'}
+  $key=if($KeyPath){[Environment]::ExpandEnvironmentVariables($KeyPath)}else{Join-Path $HOME '.ssh\id_ed25519'}
   Require (Present $key) ('SSH key not found: '+$key)
   Require (Present "$key.pub") 'SSH public-key companion missing.'
   $expectedUrl='ws://127.0.0.1:'+$LocalPort
@@ -308,6 +352,7 @@ if($Mode -eq 'Health'){
 ShowHealth
 if($ScanProjects){DiscoverProjects}
 if($Mode -eq 'Plan'){
+  PrepareOptionalGitWhenCoreIsSkipped
   PrepareCore
   if($ConfigureSharing){
     if($Role -eq 'client'){SetupClient}
@@ -318,6 +363,7 @@ if($Mode -eq 'Plan'){
   exit 0
 }
 Require ($Mode -eq 'Apply') 'Unknown operation'
+PrepareOptionalGitWhenCoreIsSkipped
 PrepareCore
 if($ConfigureSharing){
   if($Role -eq 'client'){SetupClient}

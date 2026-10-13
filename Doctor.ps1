@@ -92,6 +92,17 @@ else {
     if($nodeVer -and $nodeVer -ge [version]'22.19.0'){AddCheck 'Node.js' 'pass' $versionString.Trim()}
     else{AddCheck 'Node.js' 'fail' ('Version '+$versionString+' too old.') 'Upgrade Node.js to at least v22.19.0.'}
 }
+ $npm=Get-Command npm.cmd -ErrorAction SilentlyContinue
+if(-not $npm){
+    AddCheck 'npm CLI' 'fail' 'npm.cmd not in PATH (required for fresh install).' 'Use the v0.2.1 complete Release to prepare bundled portable Node/npm, or install official Node.js 22.19+.'
+}else {
+    try{
+        $npmVersion=([string](& $npm.Source --version 2>$null)).Trim()
+        if($LASTEXITCODE -eq 0 -and $npmVersion -match '^\d+\.\d+\.\d+'){
+            AddCheck 'npm CLI' 'pass' ('npm '+$npmVersion)
+        }else{AddCheck 'npm CLI' 'fail' 'npm command did not report a valid version.'}
+    }catch{AddCheck 'npm CLI' 'fail' 'npm command could not run.'}
+}
 if(Get-Command git.exe -ErrorAction SilentlyContinue){
     $gitVersion=[string](& git.exe --version 2>$null)
     AddCheck 'Git' 'pass' $gitVersion.Trim()
@@ -275,7 +286,7 @@ $warnCount=@($results|Where-Object {$_.status -eq 'warn'}).Count
 $failCount=@($results|Where-Object {$_.status -eq 'fail'}).Count
 $exitCode=if($failCount -gt 0 -or ($Strict -and $warnCount -gt 0)){1}else{0}
 $summary=[ordered]@{
-    version='0.2.0'
+    version='0.2.1'
     host=$env:COMPUTERNAME
     role=$effectiveRole
     readOnly=$true

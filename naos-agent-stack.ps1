@@ -9,6 +9,7 @@ param(
     [switch]$NoSharing,
     [switch]$NoCore,
     [switch]$InstallOpenSSH,
+    [switch]$InstallGit,
     [switch]$ScanProjects,
     [switch]$Deep,
     [switch]$Json,
@@ -33,12 +34,12 @@ $doctor=Join-Path $PSScriptRoot 'Doctor.ps1'
 
 if($Command -eq 'help') {
     @'
-Naos Agent Stack v0.2.0 - Windows PowerShell installer
+Naos Agent Stack v0.2.1 - Windows PowerShell installer
 
 Usage:
   .\naos-agent-stack.ps1 doctor [-Deep] [-Json] [-Strict]
   .\naos-agent-stack.ps1 plan -Role single
-  .\naos-agent-stack.ps1 install -Role single [-Yes]
+  .\naos-agent-stack.ps1 install -Role single [-InstallGit] [-Yes]
   .\naos-agent-stack.ps1 plan -Role host -HostIp HOST_TAILNET_IP -PeerIp PC2_TAILNET_IP -SshUser WINDOWS_USER
   .\naos-agent-stack.ps1 install -Role host -HostIp HOST_IP -PeerIp PC2_IP -SshUser WINDOWS_USER -PublicKeyPath PATH_TO_PUBKEY [-InstallOpenSSH] [-Yes]
   .\naos-agent-stack.ps1 plan -Role client -HostIp HOST_TAILNET_IP -SshUser WINDOWS_USER [-NoCore]
@@ -54,6 +55,7 @@ Options:
   -Strict     Treat doctor warnings as a failure exit.
   -NoCore     Configure sharing using an already installed Headless core.
   -NoSharing  Use only core install; no SSH/Tailscale configuration.
+  -InstallGit  Install optional verified portable MinGit on a new machine (x64).
   -ScanProjects -ProjectRoot PATH [-ExtraRoot PATH]  Read-only Git checkout discovery.
   -Yes        Explicitly approve installer configuration changes.
 
@@ -103,6 +105,7 @@ $opts=@{
     Mode=if($Command -eq 'plan'){'Plan'}else{'Apply'}
     Role=$engineRole
     InstallCore=$core
+    InstallGit=$InstallGit
     ConfigureSharing=$share
     InstallOpenSSH=$InstallOpenSSH
     ScanProjects=$ScanProjects
@@ -123,7 +126,7 @@ if($Command -eq 'plan'){
     exit 0
 }
 Write-Output 'Naos Agent Stack INSTALL: the selected modules can modify Windows configuration.'
-Write-Output ('Role='+$engineRole+' InstallCore='+$core+' ConfigureSharing='+$share)
+Write-Output ('Role='+$engineRole+' InstallCore='+$core+' InstallGit='+$InstallGit+' ConfigureSharing='+$share)
 if(-not $Yes){
     $answer=Read-Host "Type INSTALL to apply the selected options"
     if($answer -cne 'INSTALL'){Write-Output 'Cancelled: no settings modified.';exit 1}
