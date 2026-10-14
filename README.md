@@ -1,61 +1,84 @@
 # Naos Agent Stack
 
-Windows PowerShell 安裝／診斷工具，支援 OpenChatX Headless、Letta Agent 和選配的雙電腦共享記憶。
+Windows PowerShell installer and read-only Doctor for OpenChatX Headless / Letta. Supports local-only and optional private SSH/Tailscale shared-memory setups.
 
-**原則：腳本進 Git，較大的核心部署包放 GitHub Releases，不把金鑰或 Letta state 提交到 Git。**
+**v0.2.1 is a pre-release candidate for clean Windows x64 machines.** The earlier v0.2.0 package contains the Headless core but **does not bundle Node.js/npm or Git**, which caused a first-install failure on a fresh Windows PC.
 
-## 用法
+## Editions and optional terminal enhancements
 
-在 Windows PowerShell 5.1：
+- **Standard**: OpenChatX/Letta core + Node/npm + Doctor and installer menu. **No Git binary**.
+- **Developer**: Standard + a separately selectable MinGit CLI payload.
+- **Terminal Add-on**: Optional Microsoft PowerShell 7.6.6, Oh My Posh 31.8.0 and JetBrainsMono Nerd Font Mono. To use it, extract the add-on ZIP into the main Standard/Developer directory so the pinned tools are under payload/terminal. Nothing is changed until selected in the install menu.
 
-```powershell
-git clone https://github.com/Naos2w/Naos-Agent-Stack.git
-cd Naos-Agent-Stack
+The terminal option adds a dedicated **Naos PowerShell 7** profile to Windows Terminal and, only if requested, makes it the default profile. The default font for that profile is **JetBrainsMono NFM**. Existing Windows Terminal settings are backed up before changes; other profiles and the user's PowerShell PROFILE are untouched. Windows Terminal itself is not bundled. For the distinction between the default profile and the system's default terminal application, see README.Terminal.zh-TW.md.
 
-# 直接檢查目前電腦，唯讀
-.\naos-agent-stack.ps1 doctor
+## First installation (Windows x64)
 
-# 深度核對已註冊 Git 專案與 Letta Agent/Session
-.\naos-agent-stack.ps1 doctor -Deep
+Download the **complete v0.2.1 Standard or Developer pre-release ZIP** (once published), verify the SHA256 checksum, and extract it. Do not use the Git source archive for fresh installation: dependencies are deliberately excluded from Git history.
 
-# 輸出供自動化讀取的 JSON
-.\naos-agent-stack.ps1 doctor -Deep -Json
+Open Windows PowerShell 5.1 in the extracted directory. **The default install command opens an interactive option selector (Git and terminal tools default to No):**
 
-# 單機安裝計畫預覽，不修改系統
-.\naos-agent-stack.ps1 plan -Role single
+    .\naos-agent-stack.ps1 install
 
-# 查看所有可用選項
-.\naos-agent-stack.ps1 help
-```
+    # Optional: preview the same selector without installing anything
+    .\naos-agent-stack.ps1 plan -Interactive
 
-若執行政策阻擋，可在**目前的 PowerShell 工作階段**執行 `Set-ExecutionPolicy -Scope Process Bypass`，不需關閉防毒。
+    # Automation without menus (explicitly approved)
+    .\naos-agent-stack.ps1 install -Role single -Yes
 
-| 角色 | 目的 | 雙機元件 |
-|---|---|---|
-| `single` | 本機 OpenChatX / Letta | 不安裝 |
-| `host` | 持有共用 Letta 後端 | 選配 Windows SSH Server 與限制式 Tailnet 防火牆 |
-| `client` | 經 SSH 使用主機 Letta 記憶 | 選配 loopback 私有轉送、登入後重連 |
-| `existing` | 健康檢查及既有環境維護 | 只按需求操作 |
+    .\naos-agent-stack.ps1 doctor -Deep
 
-**`install` 會先要求明確輸入 `INSTALL`，除非主動加上 `-Yes`。** `plan` 和 `doctor` 不會修改設定，也不會重開機。
+In the selector, choose the machine role, optional Git, and optional read-only Git scan. **Git defaults to No; dual-PC sharing defaults to off.** A shared-memory host automatically includes Windows SSH Server only when needed. Review the read-only installation preview, then type **INSTALL** to approve changes. Existing installations are detected and preserved; no reboot is initiated. For scripted installation, -Yes skips the selector and approval; -NoWizard skips only the selector and still requires INSTALL. -InstallGit is optional; without it, Git remains a Doctor warning on a new machine. The installer automatically uses its verified **Node.js 22.23.3 LTS + npm 10.9.9 portable ZIP** if no compatible Node/npm is available. With -InstallGit, it installs verified **MinGit 2.56.0.2 command-line tools** when Git is missing. Both install under the current user's %LOCALAPPDATA%\NaosAgentStack\tools; no MSI or administrator rights are required just for these portable prerequisites.
 
-## 發行檔與安裝
+**Important:** The prerequisite tools are bundled locally, but the core's subsequent npm ci / npm install -g commands still require network access to the npm registry. This is **not a fully offline OpenChatX installation**. On a freshly configured computer, ChatGPT Tunnel credentials, Letta OAuth and provider authorization must be configured separately.
 
-本 Git 儲存庫僅含來源碼及 `payload/bootstrap` 的小型腳本。完整核心部署 ZIP（約 80 MB）**不在 Git 歷史中**。
+## What is included in the complete v0.2.1 ZIP?
 
-- 只執行 `doctor`、`plan`：從 Git clone 即可使用。
-- 在全新電腦正式執行 `install`：需先取得經核對的 `payload/naos-headless-stack-bundle.zip`；日後由 GitHub Releases 分發。**目前若沒有這個 ZIP，安裝會安全停止，不會假稱安裝完成。**
-- 若你已安裝核心，只需配置雙機功能，可使用 `-NoCore`，不會重裝既有服務。
-- `Build-Package.ps1` 只在你自己持有上述核對過的核心 ZIP 時產生完整可攜式 ZIP。
+| File | Purpose |
+|---|---|
+| naos-agent-stack.ps1 | install / plan / doctor / help |
+| Prerequisites.ps1 | Verify and install portable x64 Node/npm and optional MinGit |
+| Install-Wizard.ps1 | Interactive selection of optional components (no side effects) |
+| Doctor.ps1 | Read-only health and Agent/Git binding checks (-Deep / -Json / -Strict) |
+| Engine.ps1 | Single-machine or optional two-machine setup |
+| ForwardWatchdog.ps1 | Private SSH port-forward reconnect monitor |
+| payload/bootstrap/naos-agent-stack.ps1 | Original Headless core installer |
+| payload/naos-headless-stack-bundle.zip | Headless application runtime |
+| payload/prerequisites/node-v22.23.3-win-x64.zip | **Offline** Node.js and npm |
+| payload/prerequisites/MinGit-2.56.0.2-64-bit.zip | Optional **offline** CLI Git |
+| manifest.json | Per-file SHA256 hashes and package metadata |
 
-雙機共享的是**Letta Agent 記憶**，不是兩台電腦的程式碼、工作目錄或 Git 分支。主機／用戶端分別建立自己的 Conversation；SSH 與 Tailscale 必須經過正常授權，密碼和憑證不會自動複製。
+Portable Node/npm and MinGit are sourced from official upstream releases. The source, version and pinned SHA256 checks are recorded in dependencies.lock.json. The installer refuses mismatched or absent dependencies instead of silently downloading and executing unverified programs. The complete ZIP is substantially larger than v0.2.0; its binaries belong in **GitHub Releases**, not commits.
 
-詳細安裝參數、前置條件及限制請看 [繁體中文手冊](README.zh-TW.md)。
+MinGit provides command-line Git, not the complete Git for Windows UI or full interactive credential setup. Install full [Git for Windows](https://git-scm.com/install/windows) separately if you need Git Bash, Git Credential Manager integration or developer extras.
 
-## 安全與驗證
+## Existing host and client installations
 
-`doctor` 支援 `-Json`、`-Strict`、`-Deep`，會檢查服務、WebSocket、SSH loopback、排程和共享 Agent/Git 身分。失敗以非零退出碼回報。
+Do **not** reinstall the working Headless core. You can simply update the source tools and run:
 
-本版在既有 MSI（主機）及 NAOS-PC（用戶端）執行過唯讀深度驗證；**尚未在全新 Windows VM 完成從零安裝及重新開機驗收**。安裝器不包含 OpenClaw、Naos-Teams 或其他不在範圍內的舊專案。
+    .\naos-agent-stack.ps1 doctor
+    .\naos-agent-stack.ps1 doctor -Role client -Deep -Json
 
-> 私鑰、`.env`、OAuth、Git Credential、`state.json`、Session、部署 ZIP、測試記錄與機器特定設定不會被提交。若要發佈 Release，應先檢查來源與產物。
+For two-machine sharing, first use plan -Role client -NoCore with actual Tailscale host IP / SSH account; do not change the existing endpoint unless the host identity has been verified.
+
+Two-machine sharing is **only optional**. It shares Letta Agent memory, not working trees, personal files, Git commits or credentials. Existing Agent and Conversation state must never be copied between machines.
+
+## Source developer workflow
+
+The Git repository intentionally contains only scripts, docs, tests and dependency SHA256 metadata. Building a distributable ZIP requires locally provided, SHA256-verified binaries:
+
+    .\tests\validate.ps1
+    .\Build-Package.ps1 -CoreBundlePath C:\Packages\naos-headless-stack-bundle.zip -PrerequisiteRoot C:\Packages\prerequisites -OutputPath C:\Packages\Naos-Agent-Stack-v0.2.1-pre-release.zip
+
+The builder validates both pinned portable-tool hashes and generates SHA256 for each item plus the final ZIP. None of the large ZIPs are committed to Git.
+
+## Doctor commands
+
+    .\naos-agent-stack.ps1 doctor
+    .\naos-agent-stack.ps1 doctor -Deep
+    .\naos-agent-stack.ps1 doctor -Deep -Json
+    .\naos-agent-stack.ps1 doctor -Strict
+
+Doctor validates executable versions, npm, the OpenChatX runtime, Letta WebSocket, MCP HTTP, optional SSH/Tailscale, reconnect tasks and shared Agent/Git mappings. It is strictly read-only. Exit code 0 indicates no errors; nonzero indicates errors or warnings under -Strict.
+
+**Validation status:** Existing host/client installations and isolated portable Node/npm + MinGit extraction tests have passed. The full fresh-install lifecycle on a clean Windows VM is **not yet validated**. No reboot test is performed. This installer does not install OpenClaw or Naos-Teams.

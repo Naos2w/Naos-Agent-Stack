@@ -8,6 +8,14 @@ $names = @(
     'naos-agent-stack.ps1',
     'Engine.ps1',
     'Doctor.ps1',
+    'Prerequisites.ps1',
+    'Install-Wizard.ps1',
+    'Terminal-Extras.ps1',
+    'Terminal-Json-Validate.ps1',
+    'Launch-NaosPowerShell.ps1',
+    'Build-TerminalAddon.ps1',
+    'tests\validate-wizard.ps1',
+    'tests\validate-terminal.ps1',
     'ForwardWatchdog.ps1',
     'Build-Package.ps1',
     'payload\bootstrap\naos-agent-stack.ps1'
@@ -30,11 +38,58 @@ if(-not($help -match 'doctor') -or -not($help -match 'install') -or -not($help -
     throw 'Entry point help does not advertise required commands.'
 }
 Write-Output '[PASS] Unified command help'
+$wizardTest=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'validate-wizard.ps1'))
+$wizardExit=$LASTEXITCODE
+if($wizardExit -ne 0 -or -not ($wizardTest -match 'WIZARD_VALIDATION_PASSED')){
+    throw 'Interactive wizard scripted tests or read-only plan failed.'
+}
+Write-Output '[PASS] Interactive wizard: mandatory core, optional Git, terminal, sharing, scan, and read-only plan'
+$terminalTest=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'validate-terminal.ps1'))
+$terminalExit=$LASTEXITCODE
+if($terminalExit -ne 0 -or -not ($terminalTest -match 'TERMINAL_VALIDATION_PASSED')){
+    throw 'Optional terminal add-on synthetic tests failed.'
+}
+Write-Output '[PASS] Optional PowerShell 7, Oh My Posh, Nerd Font, Windows Terminal settings'
+$lockFile=Join-Path $root 'dependencies.lock.json'
+if(-not(Test-Path -LiteralPath $lockFile)){throw 'Missing dependency lock file.'}
+$lock=Get-Content -LiteralPath $lockFile -Raw -Encoding UTF8 | ConvertFrom-Json
+if($lock.packageVersion -ne '0.2.1' -or
+   $lock.core.sha256 -notmatch '^[a-f0-9]{64}$' -or
+   $lock.core.package -ne 'naos-headless-stack-bundle.zip' -or
+   $lock.node.sha256 -notmatch '^[a-f0-9]{64}$' -or
+   $lock.git.sha256 -notmatch '^[a-f0-9]{64}$' -or
+   $lock.node.source -notmatch '^https://nodejs\.org/' -or
+   $lock.git.source -notmatch '^https://github\.com/git-for-windows/git/') {
+    throw 'Offline dependency lock schema or trusted source invalid.'
+}
+Write-Output '[PASS] Verified dependency lock metadata'
+. (Join-Path $root 'Prerequisites.ps1')
+$nodeMetadata=Get-NaosPrerequisiteDefinition node
+$gitMetadata=Get-NaosPrerequisiteDefinition git
+if($nodeMetadata.Sha256.ToLowerInvariant() -ne $lock.node.sha256.ToLowerInvariant() -or
+   $gitMetadata.Sha256.ToLowerInvariant() -ne $lock.git.sha256.ToLowerInvariant() -or
+   $nodeMetadata.Archive -ne $lock.node.package -or $gitMetadata.Archive -ne $lock.git.package){
+    throw 'Portable prerequisites definitions and SHA256 lock disagree.'
+}
+Write-Output '[PASS] Offline dependencies SHA256 definitions match pinned lock'
+$missingArchive=Join-Path $env:TEMP ('naos-dependency-does-not-exist-'+[guid]::NewGuid().ToString('N')+'.zip')
+$refused=$false
+try{Assert-NaosTrustedArchive $missingArchive $nodeMetadata.Sha256}
+catch{if($_.Exception.Message -match 'OFFLINE_DEPENDENCY_MISSING'){$refused=$true}else{throw}}
+if(-not $refused){throw 'Missing Node/npm archive was not rejected.'}
+Write-Output '[PASS] Missing bundled Node/npm archive rejected before installation'
 $plan=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $entry plan -Role single -NoCore)
 if($LASTEXITCODE -ne 0 -or -not($plan -match 'PLAN_ONLY_NO_CHANGES')) {
     throw 'Single mode dry-run failed.'
 }
 Write-Output '[PASS] Single mode dry-run (no changes)'
+$firstInstallPlan=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $entry plan -Role single -InstallGit)
+if($LASTEXITCODE -ne 0 -or -not($firstInstallPlan -match 'PLAN_ONLY_NO_CHANGES') -or
+   (-not($firstInstallPlan -match 'Existing OpenChatX Headless detected') -and
+    -not($firstInstallPlan -match 'npm package installation still requires Internet'))) {
+    throw 'Fresh x64 install plan did not disclose npm registry requirement.'
+}
+Write-Output '[PASS] Fresh install plan declares offline tools and online npm dependency'
 $priorErrorActionPreference=$ErrorActionPreference
 $ErrorActionPreference='Continue'
 $invalid=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $entry plan -Role client -NoCore -Sharing -NoSharing 2>&1)
