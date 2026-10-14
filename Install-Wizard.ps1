@@ -59,6 +59,11 @@ function Invoke-NaosSetupWizard {
         [bool]$OpenSshExplicit=$false,
         [bool]$InstallOpenSSH=$false,
         [bool]$NoCore=$false,
+        [bool]$TerminalExplicit=$false,
+        [bool]$PowerShell7=$false,
+        [bool]$OhMyPosh=$false,
+        [bool]$NerdFont=$false,
+        [bool]$TerminalDefault=$false,
         [string]$HostIp='',
         [string]$PeerIp='',
         [string]$SshUser='',
@@ -73,7 +78,7 @@ function Invoke-NaosSetupWizard {
     Write-Host '===== Naos Agent Stack v0.2.1 安裝選單 ====='
     Write-Host '[必要] OpenChatX Headless / Letta 核心；Node.js 和 npm 不存在時自動安裝。'
     if($CoreInstalled){Write-Host '[已存在] 核心已安裝，會保留而不覆蓋。'}
-    Write-Host '[選配] Git 命令列、雙電腦 Letta 記憶共享、Git 目錄唯讀掃描。'
+    Write-Host '[選配] Git 命令列、雙電腦記憶共享、Git 目錄唯讀掃描、PowerShell 7 / Oh My Posh / Nerd Font。'
     Write-Host '注意：npm 套件依賴仍需要網際網路。'
     Write-Host ''
 
@@ -157,6 +162,16 @@ function Invoke-NaosSetupWizard {
     }else{
         Write-Host '[略過] 雙電腦共享及其 SSH/Tailscale 設定。'
     }
+    if(-not $TerminalExplicit){
+        $choice=Read-NaosSetupChoice -Ask $Ask -Prompt '選配：終端機強化 (PowerShell 7 / Oh My Posh / Nerd Font)？ [y/N]' -Valid @('y','n') -Default 'n'
+        if($choice -eq 'y'){
+            Write-Host '[資訊] 終端機工具位於獨立的 Terminal Add-on ZIP；未選取時不會安裝。'
+            $PowerShell7=(Read-NaosSetupChoice -Ask $Ask -Prompt '安裝 Microsoft PowerShell 7？ [Y/n]' -Valid @('y','n') -Default 'y') -eq 'y'
+            $OhMyPosh=(Read-NaosSetupChoice -Ask $Ask -Prompt '安裝 Oh My Posh？ [Y/n]' -Valid @('y','n') -Default 'y') -eq 'y'
+            $NerdFont=(Read-NaosSetupChoice -Ask $Ask -Prompt '安裝 JetBrainsMono Nerd Font Mono？ [Y/n]' -Valid @('y','n') -Default 'y') -eq 'y'
+            $TerminalDefault=(Read-NaosSetupChoice -Ask $Ask -Prompt '新增 PowerShell 7 設定檔並設為 Windows Terminal 預設？ [Y/n]' -Valid @('y','n') -Default 'y') -eq 'y'
+        }
+    }
     $skipCore=$NoCore -or ($Role -eq 'existing')
     Write-Host ''
     Write-Host '----- 本次選擇（尚未修改電腦）-----'
@@ -165,6 +180,10 @@ function Invoke-NaosSetupWizard {
     Write-Host ('選配 Git：'+$(if($InstallGit){'安裝'}else{'不安裝'}))
     Write-Host ('雙電腦共享：'+$(if($share){'啟用'}else{'不啟用'}))
     Write-Host ('Git 資料夾唯讀掃描：'+$(if($ScanProjects){'啟用'}else{'不啟用'}))
+    Write-Host ('Microsoft PowerShell 7：'+$(if($PowerShell7){'選取'}else{'未選'}))
+    Write-Host ('Oh My Posh：'+$(if($OhMyPosh){'選取'}else{'未選'}))
+    Write-Host ('JetBrainsMono Nerd Font Mono：'+$(if($NerdFont){'選取'}else{'未選'}))
+    Write-Host ('Windows Terminal 預設 PowerShell 7：'+$(if($TerminalDefault){'選取'}else{'未選'}))
     if($Role -eq 'host' -and $share){
         Write-Host ('OpenSSH Server：'+$(if($InstallOpenSSH){'必要時安裝'}else{'保留既有'}))
     }
@@ -175,6 +194,10 @@ function Invoke-NaosSetupWizard {
         ConfigureSharing=[bool]$share
         InstallOpenSSH=[bool]$InstallOpenSSH
         NoCore=[bool]$skipCore
+        PowerShell7=[bool]$PowerShell7
+        OhMyPosh=[bool]$OhMyPosh
+        NerdFont=[bool]$NerdFont
+        TerminalDefault=[bool]$TerminalDefault
         HostIp=$HostIp
         PeerIp=$PeerIp
         SshUser=$SshUser

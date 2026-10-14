@@ -10,6 +10,12 @@ $names = @(
     'Doctor.ps1',
     'Prerequisites.ps1',
     'Install-Wizard.ps1',
+    'Terminal-Extras.ps1',
+    'Terminal-Json-Validate.ps1',
+    'Launch-NaosPowerShell.ps1',
+    'Build-TerminalAddon.ps1',
+    'tests\validate-wizard.ps1',
+    'tests\validate-terminal.ps1',
     'ForwardWatchdog.ps1',
     'Build-Package.ps1',
     'payload\bootstrap\naos-agent-stack.ps1'
@@ -37,7 +43,13 @@ $wizardExit=$LASTEXITCODE
 if($wizardExit -ne 0 -or -not ($wizardTest -match 'WIZARD_VALIDATION_PASSED')){
     throw 'Interactive wizard scripted tests or read-only plan failed.'
 }
-Write-Output '[PASS] Interactive wizard: mandatory core, optional Git, sharing, scan, and read-only plan'
+Write-Output '[PASS] Interactive wizard: mandatory core, optional Git, terminal, sharing, scan, and read-only plan'
+$terminalTest=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'validate-terminal.ps1'))
+$terminalExit=$LASTEXITCODE
+if($terminalExit -ne 0 -or -not ($terminalTest -match 'TERMINAL_VALIDATION_PASSED')){
+    throw 'Optional terminal add-on synthetic tests failed.'
+}
+Write-Output '[PASS] Optional PowerShell 7, Oh My Posh, Nerd Font, Windows Terminal settings'
 $lockFile=Join-Path $root 'dependencies.lock.json'
 if(-not(Test-Path -LiteralPath $lockFile)){throw 'Missing dependency lock file.'}
 $lock=Get-Content -LiteralPath $lockFile -Raw -Encoding UTF8 | ConvertFrom-Json

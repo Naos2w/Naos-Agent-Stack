@@ -10,6 +10,11 @@ param(
     [switch]$NoCore,
     [switch]$InstallOpenSSH,
     [switch]$InstallGit,
+    [switch]$InstallTerminal,
+    [switch]$PowerShell7,
+    [switch]$OhMyPosh,
+    [switch]$NerdFont,
+    [switch]$SetTerminalDefault,
     [switch]$ScanProjects,
     [switch]$Deep,
     [switch]$Json,
@@ -42,7 +47,8 @@ Usage:
   .\naos-agent-stack.ps1 doctor [-Deep] [-Json] [-Strict]
   .\naos-agent-stack.ps1 install                       # interactive option selector
   .\naos-agent-stack.ps1 plan -Interactive             # preview options without applying
-  .\naos-agent-stack.ps1 install -Role single [-InstallGit] [-Yes]
+  .\naos-agent-stack.ps1 install -Role single [-InstallGit] [-InstallTerminal] [-Yes]
+  .\naos-agent-stack.ps1 plan -Role single -InstallTerminal  # requires optional Terminal add-on for installation
   .\naos-agent-stack.ps1 plan -Role host -HostIp HOST_TAILNET_IP -PeerIp PC2_TAILNET_IP -SshUser WINDOWS_USER
   .\naos-agent-stack.ps1 install -Role host -HostIp HOST_IP -PeerIp PC2_IP -SshUser WINDOWS_USER -PublicKeyPath PATH_TO_PUBKEY [-InstallOpenSSH] [-Yes]
   .\naos-agent-stack.ps1 plan -Role client -HostIp HOST_TAILNET_IP -SshUser WINDOWS_USER [-NoCore]
@@ -58,7 +64,10 @@ Options:
   -Strict     Treat doctor warnings as a failure exit.
   -NoCore     Configure sharing using an already installed Headless core.
   -NoSharing  Use only core install; no SSH/Tailscale configuration.
-  -InstallGit  Install optional verified portable MinGit on a new machine (x64).
+  -InstallGit  Install optional portable MinGit (requires Developer edition ZIP).
+  -InstallTerminal  Select PowerShell 7, Oh My Posh, JetBrainsMono NFM, and Terminal default.
+  -PowerShell7 -OhMyPosh -NerdFont -SetTerminalDefault  Select components independently.
+  Terminal components require the separate verified Terminal Add-on ZIP.
   -Interactive  Use interactive option selector in plan mode (read-only).
   -NoWizard  Skip selector for install; still requires confirmation unless -Yes.
   -ScanProjects -ProjectRoot PATH [-ExtraRoot PATH]  Read-only Git checkout discovery.
@@ -88,6 +97,12 @@ if($Command -eq 'doctor'){
     & $doctor @opts
     exit $LASTEXITCODE
 }
+if($InstallTerminal){$PowerShell7=$true;$OhMyPosh=$true;$NerdFont=$true;$SetTerminalDefault=$true}
+$terminalExplicit=($PSBoundParameters.ContainsKey('InstallTerminal') -or
+                   $PSBoundParameters.ContainsKey('PowerShell7') -or
+                   $PSBoundParameters.ContainsKey('OhMyPosh') -or
+                   $PSBoundParameters.ContainsKey('NerdFont') -or
+                   $PSBoundParameters.ContainsKey('SetTerminalDefault'))
 if($Interactive -and $NoWizard){throw 'Choose either -Interactive or -NoWizard.'}
 if($Interactive -and $Yes){throw 'Interactive option selection cannot be combined with -Yes.'}
 if($Interactive -and $Command -ne 'plan'){throw '-Interactive is supported only with plan.'}
@@ -113,12 +128,18 @@ if($useWizard){
        -ConfigureSharing ([bool]$Sharing -and -not [bool]$NoSharing) `
        -OpenSshExplicit ($PSBoundParameters.ContainsKey('InstallOpenSSH')) -InstallOpenSSH ([bool]$InstallOpenSSH) `
        -NoCore ([bool]$NoCore) `
+       -TerminalExplicit $terminalExplicit -PowerShell7 ([bool]$PowerShell7) -OhMyPosh ([bool]$OhMyPosh) `
+       -NerdFont ([bool]$NerdFont) -TerminalDefault ([bool]$SetTerminalDefault) `
        -HostIp $HostIp -PeerIp $PeerIp -SshUser $SshUser -KeyPath $KeyPath -PublicKeyPath $PublicKeyPath `
        -ProjectRoot $ProjectRoot -ExtraRoot $ExtraRoot
     $Role=$choices.Role
     $InstallGit=$choices.InstallGit
     $ScanProjects=$choices.ScanProjects
     $NoCore=$choices.NoCore
+    $PowerShell7=$choices.PowerShell7
+    $OhMyPosh=$choices.OhMyPosh
+    $NerdFont=$choices.NerdFont
+    $SetTerminalDefault=$choices.TerminalDefault
     $InstallOpenSSH=$choices.InstallOpenSSH
     $Sharing=$choices.ConfigureSharing
     $NoSharing=(-not $choices.ConfigureSharing)
@@ -153,6 +174,10 @@ $opts=@{
     Role=$engineRole
     InstallCore=$core
     InstallGit=$InstallGit
+    PowerShell7=$PowerShell7
+    OhMyPosh=$OhMyPosh
+    NerdFont=$NerdFont
+    SetTerminalDefault=$SetTerminalDefault
     ConfigureSharing=$share
     InstallOpenSSH=$InstallOpenSSH
     ScanProjects=$ScanProjects
@@ -183,7 +208,7 @@ if($useWizard){
     Write-Output '--- End of installation preview ---'
 }
 Write-Output 'Naos Agent Stack INSTALL: the selected modules can modify Windows configuration.'
-Write-Output ('Role='+$engineRole+' InstallCore='+$core+' InstallGit='+$InstallGit+' ConfigureSharing='+$share)
+Write-Output ('Role='+$engineRole+' InstallCore='+$core+' InstallGit='+$InstallGit+' ConfigureSharing='+$share+' PowerShell7='+$PowerShell7+' OhMyPosh='+$OhMyPosh+' NerdFont='+$NerdFont+' TerminalDefault='+$SetTerminalDefault)
 if(-not $Yes){
     $answer=Read-Host "Type INSTALL to apply the selected options"
     if($answer -cne 'INSTALL'){Write-Output 'Cancelled: no settings modified.';exit 1}

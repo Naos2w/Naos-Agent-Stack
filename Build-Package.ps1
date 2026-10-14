@@ -5,12 +5,13 @@ param(
     [string]$OutputPath='',
     [string]$CoreBundlePath='',
     [string]$PrerequisiteRoot='',
+    [ValidateSet('Standard','Developer')][string]$Edition='Standard',
     [switch]$Force
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $root=$PSScriptRoot
-if(-not $OutputPath){$OutputPath=Join-Path (Split-Path -Parent $root) 'Naos-Agent-Stack-v0.2.1-pre-release.zip'}
+if(-not $OutputPath){$OutputPath=Join-Path (Split-Path -Parent $root) ('Naos-Agent-Stack-v0.2.1-'+$Edition+'-pre-release.zip')}
 if(-not $CoreBundlePath){$CoreBundlePath=Join-Path $root 'payload\naos-headless-stack-bundle.zip'}
 if(-not $PrerequisiteRoot){$PrerequisiteRoot=Join-Path $root 'payload\prerequisites'}
 
@@ -25,10 +26,15 @@ $sourceFiles=@(
     'Doctor.ps1',
     'Prerequisites.ps1',
     'Install-Wizard.ps1',
+    'Terminal-Extras.ps1',
+    'Terminal-Json-Validate.ps1',
+    'Launch-NaosPowerShell.ps1',
     'ForwardWatchdog.ps1',
     'Build-Package.ps1',
     'README.md',
     'README.zh-TW.md',
+    'README.Terminal.zh-TW.md',
+    'terminal.lock.json',
     'dependencies.lock.json',
     'payload\bootstrap\naos-agent-stack.ps1'
 )
@@ -48,7 +54,8 @@ if($coreSha -ne ([string]$lock.core.sha256).ToLowerInvariant()){
 [void]$items.Add([pscustomobject]@{
     Relative='payload\naos-headless-stack-bundle.zip'; Source=$CoreBundlePath
 })
-foreach($pkg in @($lock.node,$lock.git)){
+$prerequisites=if($Edition -eq 'Developer'){@($lock.node,$lock.git)}else{@($lock.node)}
+foreach($pkg in $prerequisites){
     $name=[string]$pkg.package
     if($name -notmatch '^[A-Za-z0-9_.-]+[.]zip$'){throw 'UNSAFE_DEPENDENCY_FILENAME'}
     $path=Join-Path $PrerequisiteRoot $name
@@ -91,12 +98,13 @@ try{
         format=1
         package='Naos Agent Stack'
         version='0.2.1'
-        type='PowerShell-first setup, verified offline Node/npm and optional MinGit'
+        edition=$Edition
+        type='PowerShell-first setup, verified offline Node/npm; Git only in Developer edition; Terminal add-on separate'
         generatedUtc=[DateTime]::UtcNow.ToString('o')
         supportedWindowsArchitectures=@('AMD64')
         contents=@($manifestFiles.ToArray())
         excluded=@('private SSH keys','OAuth and API tokens','Git credentials','Letta Agents and Sessions','project registry and machine state')
-        note='npm ci and npm install -g need online package registry. Not fully offline.'
+        note='npm ci and npm install -g need online package registry. Terminal add-on is distributed separately. Not fully offline.'
     }
     [IO.File]::WriteAllText((Join-Path $stage 'manifest.json'),
         ($manifest|ConvertTo-Json -Depth 9),[Text.UTF8Encoding]::new($false))
@@ -114,4 +122,5 @@ Write-Output ('RELEASE_PACKAGE='+$destination)
 Write-Output ('RELEASE_BYTES='+(Get-Item -LiteralPath $destination).Length)
 Write-Output ('RELEASE_SHA256='+$finalHash)
 Write-Output ('RELEASE_HASH_FILE='+$shaFile)
-Write-Output 'Release ZIP contains verified Node/npm and optional MinGit (x64). npm registry is still required for core installation.'
+Write-Output ('Release Edition='+$Edition+' includes verified Node/npm; Developer adds optional MinGit. Terminal add-on is separate.')
+Write-Output 'Core npm registry access may still be required for first installation.'

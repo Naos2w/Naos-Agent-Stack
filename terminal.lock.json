@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "packageVersion": "0.2.1",
+  "architecture": "windows-x64",
+  "note": "Terminal add-on is fully optional. It contains verified upstream binaries and font files, installed only when explicitly selected.",
+  "pwsh": {
+    "name": "Microsoft PowerShell",
+    "version": "7.6.6",
+    "file": "PowerShell-7.6.6-win-x64.zip",
+    "sha256": "02fe458be20493fbdf43f61ea20610b811ee6c738ab1676c61b9cfcd1a33c860",
+    "url": "https://github.com/PowerShell/PowerShell/releases/download/v7.6.6/PowerShell-7.6.6-win-x64.zip",
+    "license": "MIT"
+  },
+  "posh": {
+    "name": "Oh My Posh",
+    "version": "31.8.0",
+    "file": "posh-windows-amd64.exe",
+    "sha256": "a6ed521aa9b1668e3169a9eb72da969fadf20e898bda80083e0f7e0688816027",
+    "url": "https://github.com/JanDeDobbeleer/oh-my-posh/releases/download/v31.8.0/posh-windows-amd64.exe",
+    "license": "MIT"
+  },
+  "themes": {
+    "name": "Oh My Posh themes",
+    "version": "31.8.0",
+    "file": "themes.zip",
+    "sha256": "4b490895d890bf25a58a29467f97cb95b7ad4b100d9c2f29aa6fa96865326ec7",
+    "url": "https://github.com/JanDeDobbeleer/oh-my-posh/releases/download/v31.8.0/themes.zip",
+    "license": "see upstream"
+  },
+  "nerdFont": {
+    "name": "JetBrainsMono Nerd Font",
+    "version": "3.5.1",
+    "file": "JetBrainsMono.tar.xz",
+    "sha256": "04d5e8f903693f9dd13e16f867e994834e681eb3c72c0d337a770dcda09010cf",
+    "url": "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/JetBrainsMono.tar.xz",
+    "license": "SIL OFL 1.1 / font patch symbols",
+    "defaultTerminalFace": "JetBrainsMono NFM"
+  }
+}

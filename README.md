@@ -4,11 +4,19 @@ Windows PowerShell installer and read-only Doctor for OpenChatX Headless / Letta
 
 **v0.2.1 is a pre-release candidate for clean Windows x64 machines.** The earlier v0.2.0 package contains the Headless core but **does not bundle Node.js/npm or Git**, which caused a first-install failure on a fresh Windows PC.
 
+## Editions and optional terminal enhancements
+
+- **Standard**: OpenChatX/Letta core + Node/npm + Doctor and installer menu. **No Git binary**.
+- **Developer**: Standard + a separately selectable MinGit CLI payload.
+- **Terminal Add-on**: Optional Microsoft PowerShell 7.6.6, Oh My Posh 31.8.0 and JetBrainsMono Nerd Font Mono. To use it, extract the add-on ZIP into the main Standard/Developer directory so the pinned tools are under payload/terminal. Nothing is changed until selected in the install menu.
+
+The terminal option adds a dedicated **Naos PowerShell 7** profile to Windows Terminal and, only if requested, makes it the default profile. The default font for that profile is **JetBrainsMono NFM**. Existing Windows Terminal settings are backed up before changes; other profiles and the user's PowerShell PROFILE are untouched. Windows Terminal itself is not bundled. For the distinction between the default profile and the system's default terminal application, see README.Terminal.zh-TW.md.
+
 ## First installation (Windows x64)
 
-Download the **complete v0.2.1 pre-release ZIP** (once published), verify the SHA256 checksum, and extract it. Do not use the Git source archive for fresh installation: dependencies are deliberately excluded from Git history.
+Download the **complete v0.2.1 Standard or Developer pre-release ZIP** (once published), verify the SHA256 checksum, and extract it. Do not use the Git source archive for fresh installation: dependencies are deliberately excluded from Git history.
 
-Open Windows PowerShell 5.1 in the extracted directory. **The default install command opens an interactive option selector:**
+Open Windows PowerShell 5.1 in the extracted directory. **The default install command opens an interactive option selector (Git and terminal tools default to No):**
 
     .\naos-agent-stack.ps1 install
 

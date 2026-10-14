@@ -6,6 +6,10 @@ param(
     [ValidateSet('single','host','client','existing')][string]$Role = 'single',
     [switch]$InstallCore,
     [switch]$InstallGit,
+    [switch]$PowerShell7,
+    [switch]$OhMyPosh,
+    [switch]$NerdFont,
+    [switch]$SetTerminalDefault,
     [switch]$ConfigureSharing,
     [switch]$InstallOpenSSH,
     [switch]$ScanProjects,
@@ -35,6 +39,11 @@ $prerequisiteScript=Join-Path $root 'Prerequisites.ps1'
 if(-not (Test-Path -LiteralPath $prerequisiteScript -PathType Leaf)){throw 'Prerequisites.ps1 missing from installation package.'}
 . $prerequisiteScript
 $offlinePackages=Join-Path $root 'payload\prerequisites'
+$terminalFile=Join-Path $root 'Terminal-Extras.ps1'
+if(-not(Test-Path -LiteralPath $terminalFile -PathType Leaf)){throw 'Terminal-Extras.ps1 missing from installer.'}
+. $terminalFile
+$terminalAssets=Join-Path $root 'payload\terminal'
+$terminalSelected=([bool]$PowerShell7 -or [bool]$OhMyPosh -or [bool]$NerdFont -or [bool]$SetTerminalDefault)
 $letRoot = if($LettaRoot){[IO.Path]::GetFullPath([Environment]::ExpandEnvironmentVariables($LettaRoot))}
            else {Join-Path $env:LOCALAPPDATA 'NaosAgentSetup\Letta-POC'}
 
@@ -354,6 +363,9 @@ if($ScanProjects){DiscoverProjects}
 if($Mode -eq 'Plan'){
   PrepareOptionalGitWhenCoreIsSkipped
   PrepareCore
+  if($terminalSelected){
+    Invoke-NaosTerminalSetup -Mode Plan -PowerShell7:$PowerShell7 -OhMyPosh:$OhMyPosh -NerdFont:$NerdFont -TerminalDefault:$SetTerminalDefault -AssetsRoot $terminalAssets
+  }
   if($ConfigureSharing){
     if($Role -eq 'client'){SetupClient}
     elseif($Role -eq 'host'){SetupHost}
@@ -363,6 +375,10 @@ if($Mode -eq 'Plan'){
   exit 0
 }
 Require ($Mode -eq 'Apply') 'Unknown operation'
+if($terminalSelected){
+  # Verify selected optional binary payloads before changing anything in the core or user settings.
+  Invoke-NaosTerminalSetup -Mode Preflight -PowerShell7:$PowerShell7 -OhMyPosh:$OhMyPosh -NerdFont:$NerdFont -TerminalDefault:$SetTerminalDefault -AssetsRoot $terminalAssets
+}
 if($ConfigureSharing){
   # Fail before installing the core or touching tasks/firewall when dual-PC prerequisites
   # are missing. Tailscale login and SSH credentials remain external manual steps.
@@ -392,5 +408,8 @@ if($ConfigureSharing){
   if($Role -eq 'client'){SetupClient}
   elseif($Role -eq 'host'){SetupHost}
   else {Caution 'Single-machine mode does not install any SSH/Tailscale forwarding.'}
+}
+if($terminalSelected){
+  Invoke-NaosTerminalSetup -Mode Apply -PowerShell7:$PowerShell7 -OhMyPosh:$OhMyPosh -NerdFont:$NerdFont -TerminalDefault:$SetTerminalDefault -AssetsRoot $terminalAssets
 }
 Good 'APPLY_COMPLETE_NO_REBOOT'

@@ -19,40 +19,46 @@ function New-NaosMockAnswerReader([string[]]$Answers) {
 }
 
 # A brand-new Windows computer: required core, Git and sharing unselected by default.
-$reader=New-NaosMockAnswerReader @('','','')
+$reader=New-NaosMockAnswerReader @('','','','')
 $single=Invoke-NaosSetupWizard -Role auto -CoreInstalled:$false -GitInstalled:$false -Ask $reader
 Assert-NaosTest ($single.Role -eq 'single' -and -not $single.NoCore -and -not $single.InstallGit -and -not $single.ConfigureSharing -and -not $single.ScanProjects) 'clean default must be core only, no optional components'
 Write-Output '[PASS] Wizard defaults: mandatory core + Node/npm, optional Git and sharing disabled'
 
 # Explicit yes enables optional Git; never forces two-machine setup.
-$reader=New-NaosMockAnswerReader @('1','y','n')
+$reader=New-NaosMockAnswerReader @('1','y','n','n')
 $withGit=Invoke-NaosSetupWizard -Role auto -GitInstalled:$false -Ask $reader
 Assert-NaosTest ($withGit.InstallGit -and -not $withGit.ConfigureSharing) 'optional Git choice must be respected'
 Write-Output '[PASS] Wizard optional MinGit can be selected independently'
 
 # A sharing host without sshd requires Windows OpenSSH Server.
-$reader=New-NaosMockAnswerReader @('2','n','n')
+$reader=New-NaosMockAnswerReader @('2','n','n','n')
 $hostOptions=Invoke-NaosSetupWizard -Role auto -GitInstalled:$false -SshdInstalled:$false -HasAuthorizedKey:$false -HostIp '100.64.20.1' -PeerIp '100.64.20.2' -SshUser 'ciuser' -PublicKeyPath 'C:\fixture\pubkey.pub' -Ask $reader
 Assert-NaosTest ($hostOptions.Role -eq 'host' -and $hostOptions.ConfigureSharing -and $hostOptions.InstallOpenSSH -and -not $hostOptions.InstallGit) 'hosting should require sshd, but Git must remain optional'
 Write-Output '[PASS] Wizard host selects required OpenSSH, not optional Git'
 
 # A shared-memory client reuses its supplied SSH identity settings.
-$reader=New-NaosMockAnswerReader @('3','n','n')
+$reader=New-NaosMockAnswerReader @('3','n','n','n')
 $client=Invoke-NaosSetupWizard -Role auto -HostIp '100.64.40.3' -SshUser 'ciuser' -KeyPath 'C:\fixture\id_ed25519' -Ask $reader
 Assert-NaosTest ($client.Role -eq 'client' -and $client.ConfigureSharing -and -not $client.InstallOpenSSH -and $client.KeyPath -eq 'C:\fixture\id_ed25519') 'client must not install Windows sshd'
 Write-Output '[PASS] Wizard client requires no SSH Server installation'
 
 # Existing core can be selected for maintenance without reinstalling anything.
-$reader=New-NaosMockAnswerReader @('4','n')
+$reader=New-NaosMockAnswerReader @('4','n','n')
 $existing=Invoke-NaosSetupWizard -Role auto -CoreInstalled:$true -GitInstalled:$true -Ask $reader
 Assert-NaosTest ($existing.Role -eq 'existing' -and $existing.NoCore -and -not $existing.InstallGit) 'existing mode must skip core, not change Git'
 Write-Output '[PASS] Wizard existing-core mode skips reinstallation'
 
 # Optional read-only project discovery is independent of Git installation.
-$reader=New-NaosMockAnswerReader @('1','n','y',$root,'')
+$reader=New-NaosMockAnswerReader @('1','n','y',$root,'','n')
 $scan=Invoke-NaosSetupWizard -Role auto -GitInstalled:$false -Ask $reader
 Assert-NaosTest ($scan.ScanProjects -and $scan.ProjectRoot -eq $root -and -not $scan.InstallGit) 'directory scan must remain optional'
 Write-Output '[PASS] Wizard optional project scan selection'
+
+# The terminal kit is entirely optional and selects its individual parts only after opting in.
+$reader=New-NaosMockAnswerReader @('1','n','n','y','','','','')
+$term=Invoke-NaosSetupWizard -Role auto -GitInstalled:$false -Ask $reader
+Assert-NaosTest ($term.PowerShell7 -and $term.OhMyPosh -and $term.NerdFont -and $term.TerminalDefault -and -not $term.InstallGit) 'terminal group should be independent of Git and select all four parts'
+Write-Output '[PASS] Wizard optional PowerShell, Oh My Posh, Nerd Font and Terminal defaults'
 
 # Bad Tailnet IP must be rejected before any installation.
 $refused=$false
@@ -94,7 +100,7 @@ Write-Output '[PASS] Wizard host enforces necessary SSH Server without making Gi
 # Override Read-Host only within a disposable child PowerShell.
 $entry=Join-Path $root 'naos-agent-stack.ps1'
 $scriptTemplate=@'
-function global:Read-Host { param([string]$Prompt) return '1' }
+function global:Read-Host { param([string]$Prompt) if ($Prompt -match '\[1\]') { return '1' } else { return 'n' } }
 & '__ENTRY__' plan -Interactive -InstallGit:$false -ScanProjects:$false
 if ($LASTEXITCODE -ne 0) { exit 91 }
 exit 0
