@@ -1,5 +1,7 @@
 # Naos Agent Stack
 
+> **Getting started:** [繁體中文安裝指南 / Traditional Chinese Installation Guide](INSTALL.zh-TW.md) · [Download v0.2.1 Pre-release](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1)
+
 Windows PowerShell installer and read-only Doctor for OpenChatX Headless / Letta. Supports local-only and optional private SSH/Tailscale shared-memory setups.
 
 **v0.2.1 is a pre-release candidate for clean Windows x64 machines.** The earlier v0.2.0 package contains the Headless core but **does not bundle Node.js/npm or Git**, which caused a first-install failure on a fresh Windows PC.
@@ -14,7 +16,7 @@ The terminal option adds a dedicated **Naos PowerShell 7** profile to Windows Te
 
 ## First installation (Windows x64)
 
-Download the **complete v0.2.1 Standard or Developer pre-release ZIP** (once published), verify the SHA256 checksum, and extract it. Do not use the Git source archive for fresh installation: dependencies are deliberately excluded from Git history.
+Download the **complete v0.2.1 Standard or Developer pre-release ZIP**, verify the SHA256 checksum, and extract it. Do not use the Git source archive for fresh installation: dependencies are deliberately excluded from Git history.
 
 Open Windows PowerShell 5.1 in the extracted directory. **The default install command opens an interactive option selector (Git and terminal tools default to No):**
 
@@ -45,7 +47,7 @@ In the selector, choose the machine role, optional Git, and optional read-only G
 | payload/bootstrap/naos-agent-stack.ps1 | Original Headless core installer |
 | payload/naos-headless-stack-bundle.zip | Headless application runtime |
 | payload/prerequisites/node-v22.23.3-win-x64.zip | **Offline** Node.js and npm |
-| payload/prerequisites/MinGit-2.56.0.2-64-bit.zip | Optional **offline** CLI Git |
+| payload/prerequisites/MinGit-2.56.0.2-64-bit.zip | Optional **offline** Git CLI — Developer edition only |
 | manifest.json | Per-file SHA256 hashes and package metadata |
 
 Portable Node/npm and MinGit are sourced from official upstream releases. The source, version and pinned SHA256 checks are recorded in dependencies.lock.json. The installer refuses mismatched or absent dependencies instead of silently downloading and executing unverified programs. The complete ZIP is substantially larger than v0.2.0; its binaries belong in **GitHub Releases**, not commits.

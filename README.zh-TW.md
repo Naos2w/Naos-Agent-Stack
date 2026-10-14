@@ -1,5 +1,7 @@
 ﻿# Naos Agent Stack v0.2.1 — PowerShell 安裝與 Doctor
 
+> **第一次安裝請先看：[繁體中文完整安裝指南](INSTALL.zh-TW.md)** · [下載 v0.2.1 Pre-release](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1) · [終端機附加包說明](README.Terminal.zh-TW.md)
+
 ## 全新 Windows 電腦首次安裝問題
 
 在 v0.2.0 的新電腦安裝紀錄中，Doctor 出現 Node.js、OpenChatX、PM2 及 Letta 缺失，並非 ZIP 核心不存在，而是**完整 Node/npm 前置環境未打包**。核心 bootstrap 在 npm.cmd 不存在時便停止。Git 不存在造成 Doctor 警告，不是當次中止主因。
@@ -30,11 +32,11 @@
 
 **安裝檔包含的前置工具：**
 - payload/prerequisites/node-v22.23.3-win-x64.zip — Node.js 22.23.3 + npm 10.9.9。
-- payload/prerequisites/MinGit-2.56.0.2-64-bit.zip — 可選 Git CLI，非完整 Git for Windows。
+- payload/prerequisites/MinGit-2.56.0.2-64-bit.zip — **僅 Developer 安裝包提供**的可選 Git CLI，非完整 Git for Windows。
 - payload/naos-headless-stack-bundle.zip — OpenChatX Headless 核心程式。
 - dependencies.lock.json — 官方來源網址與預期 SHA256，安裝會驗證哈希，拒絕使用不符的檔案。
 
-**重要限制：** 前置 Node/npm/Git 由 ZIP 提供，但 OpenChatX / Letta 第一次安裝仍會執行 npm ci 與 npm install，需可連線 npm registry，因此不是 100% 離線安裝；還需要另外設定 ChatGPT Tunnel、OAuth、模型供應商等授權。
+**重要限制：** Node/npm 由 Standard 和 Developer 安裝包提供；Git 僅 Developer 提供，但 OpenChatX / Letta 第一次安裝仍會執行 npm ci 與 npm install，需可連線 npm registry，因此不是 100% 離線安裝；還需要另外設定 ChatGPT Tunnel、OAuth、模型供應商等授權。
 
 本版僅明確支援 Windows x64。如果電腦是 ARM64，會安全停止並回報不支援，避免裝錯架構。
 
@@ -79,6 +81,6 @@ Build-Package.ps1 會比對 Node/npm、MinGit 官方 SHA256，並產生最終 ZI
 
 - v0.2.0 的既有主機與用戶端 9 個共享 Agent 健康檢查通過。
 - v0.2.1 新增的 Node/npm 與 MinGit 已在隔離的暫存安裝目錄中成功解壓、執行、清除；未動現有程式或使用者 PATH。
-- 新的 PowerShell Source tests、plan/doctor 需在 CI 再驗證。
+- PowerShell 5.1 Source tests、安裝選單和唯讀 plan 已通過 [GitHub Actions Validate Run #3](https://github.com/Naos2w/Naos-Agent-Stack/actions/runs/38513129859)，合併後的 main 亦已完成來源測試。
 
 **尚未完成全新 Windows VM 的完整首次安裝。** 也未進行重新開機測試；請保持本版為 Pre-release。此工具不安裝 OpenClaw、Naos-Teams 或其他排除的舊專案。
