@@ -2,7 +2,7 @@
 # Existing machine configuration is never overwritten without a backup.
 [CmdletBinding()]
 param(
-    [ValidateSet('Plan','Apply','Health')][string]$Mode = 'Plan',
+    [ValidateSet('Plan','Preflight','Apply','Health')][string]$Mode = 'Plan',
     [ValidateSet('single','host','client','existing')][string]$Role = 'single',
     [switch]$InstallCore,
     [switch]$InstallGit,
@@ -38,6 +38,9 @@ $bundle = Join-Path $root 'payload\naos-headless-stack-bundle.zip'
 $prerequisiteScript=Join-Path $root 'Prerequisites.ps1'
 if(-not (Test-Path -LiteralPath $prerequisiteScript -PathType Leaf)){throw 'Prerequisites.ps1 missing from installation package.'}
 . $prerequisiteScript
+$preflightScript=Join-Path $root 'Installer-Preflight.ps1'
+if(-not(Test-Path -LiteralPath $preflightScript -PathType Leaf)){throw 'Installer-Preflight.ps1 missing.'}
+. $preflightScript
 $offlinePackages=Join-Path $root 'payload\prerequisites'
 $terminalFile=Join-Path $root 'Terminal-Extras.ps1'
 if(-not(Test-Path -LiteralPath $terminalFile -PathType Leaf)){throw 'Terminal-Extras.ps1 missing from installer.'}
@@ -136,7 +139,7 @@ function PrepareCore {
   $hasNode=Test-NaosSystemNode
   $hasGit=Test-NaosSystemGit
   if($Mode -ne 'Apply'){
-    if(-not(Present $bundle)){Caution 'Headless core ZIP missing. Obtain v0.2.1 complete Release to install from scratch.'}
+    if(-not(Present $bundle)){Caution 'Headless core ZIP missing. Obtain v0.2.2 Complete Release to install from scratch.'}
     if($hasNode){Good 'Node.js 22.19+ and npm already available.'}
     else{
       $node=(Get-NaosPrerequisiteDefinition node)
@@ -154,11 +157,11 @@ function PrepareCore {
     Note 'PLAN: Install Headless + Letta + PM2 + codebase-memory to empty paths; npm package installation still requires Internet (not a fully offline setup).'
     return
   }
-  Require (Present $bundle) 'Headless core ZIP missing. Download the complete v0.2.1 Release before fresh install.'
+  Require (Present $bundle) 'Headless core ZIP missing. Download the complete v0.2.2 Release before fresh install.'
   $lockFile=Join-Path $root 'dependencies.lock.json'
   Require (Present $lockFile) 'Dependency lock file missing.'
   $lock=Get-Content -LiteralPath $lockFile -Raw -Encoding UTF8|ConvertFrom-Json
-  Require ($lock.packageVersion -eq '0.2.1' -and $lock.core.sha256 -match '^[a-fA-F0-9]{64}$') 'Dependency lock version/core checksum invalid.'
+  Require ($lock.packageVersion -eq '0.2.2' -and $lock.core.sha256 -match '^[a-fA-F0-9]{64}$') 'Dependency lock version/core checksum invalid.'
   Assert-NaosTrustedArchive $bundle $lock.core.sha256
   # Preflight every required offline archive before installing anything.
   if(-not $hasNode){$node=Get-NaosPrerequisiteDefinition node;Assert-NaosTrustedArchive (Join-Path $offlinePackages $node.Archive) $node.Sha256}
@@ -374,10 +377,19 @@ if($Mode -eq 'Plan'){
   Good 'PLAN_ONLY_NO_CHANGES'
   exit 0
 }
-Require ($Mode -eq 'Apply') 'Unknown operation'
-if($terminalSelected){
-  # Verify selected optional binary payloads before changing anything in the core or user settings.
-  Invoke-NaosTerminalSetup -Mode Preflight -PowerShell7:$PowerShell7 -OhMyPosh:$OhMyPosh -NerdFont:$NerdFont -TerminalDefault:$SetTerminalDefault -AssetsRoot $terminalAssets
+if($Mode -eq 'Preflight' -or $Mode -eq 'Apply'){
+  # No components have been installed at this point. In particular, missing
+  # optional Git / Terminal files must fail BEFORE the user types INSTALL.
+  $coreRuntime=Present (Join-Path $runtimeRoot 'package.json')
+  $coreHeadless=Present (Join-Path $headlessRoot 'start-headless.ps1')
+  Require (-not ($coreRuntime -xor $coreHeadless)) 'Partial OpenChatX installation found. Refusing to overwrite.'
+  $needCore=($InstallCore -and -not $coreRuntime -and -not $coreHeadless)
+  $needNode=($needCore -and -not(Test-NaosSystemNode))
+  $needGit=($InstallGit -and -not(Test-NaosSystemGit))
+  Assert-NaosSelectedPayload -PackageRoot $root -RequireCore:$needCore -RequireNode:$needNode -RequireGit:$needGit
+  if($terminalSelected){
+    Invoke-NaosTerminalSetup -Mode Preflight -PowerShell7:$PowerShell7 -OhMyPosh:$OhMyPosh -NerdFont:$NerdFont -TerminalDefault:$SetTerminalDefault -AssetsRoot $terminalAssets
+  }
 }
 if($ConfigureSharing){
   # Fail before installing the core or touching tasks/firewall when dual-PC prerequisites
@@ -402,6 +414,11 @@ if($ConfigureSharing){
     Require ([bool]($sshAgent -and $sshAgent.Status -eq 'Running')) 'Shared client requires Windows ssh-agent running before setup.'
   }
 }
+if($Mode -eq 'Preflight'){
+  Good 'ALL_SELECTED_COMPONENTS_READY_BEFORE_INSTALL_CONFIRMATION'
+  exit 0
+}
+Require ($Mode -eq 'Apply') 'Unknown operation'
 PrepareOptionalGitWhenCoreIsSkipped
 PrepareCore
 if($ConfigureSharing){

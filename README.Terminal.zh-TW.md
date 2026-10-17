@@ -1,52 +1,40 @@
-# Naos Agent Stack v0.2.1：可選終端機強化套件
+# 終端機強化套件 — 單一 ZIP 內的可選功能
 
-安裝套件分為 Standard、Developer、Terminal Add-on。
+自 v0.2.2 起，**不需要另外下載 Terminal Add-on**。PowerShell 7、Oh My Posh、Nerd Font 都放在 `Naos-Agent-Stack-v0.2.2-Complete-pre-release.zip` 內，但**預設不會安裝**。
 
-| 套件 | 內容 |
-|---|---|
-| Standard | OpenChatX / Letta、Node.js/npm、Doctor、互動安裝器；不含 Git |
-| Developer | Standard 加上可選 MinGit CLI |
-| Terminal Add-on | 官方 Microsoft PowerShell 7.6.6、Oh My Posh 31.8.0、JetBrainsMono Nerd Font Mono 3.5.1 |
+## 安裝方式
 
-**Git 預設不安裝，Terminal Add-on 也預設不安裝。** 大型二進位檔只放 GitHub Releases，不放 Git 歷史。
+1. 先到 [GitHub Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 確認 v0.2.2 Complete Pre-release 附件存在，再下載並驗證 **Complete ZIP**。請勿使用 v0.2.1 Standard ZIP 或 GitHub Source code ZIP 期待取得終端機元件。
+2. 解壓到新目錄，進入 Windows PowerShell 5.1。
+3. 執行 `.\naos-agent-stack.ps1 install`。
+4. 在「終端機強化」提示選 `y`，接著可**個別決定**要不要 PowerShell 7、Oh My Posh、JetBrainsMono Nerd Font Mono，以及是否將新的 Naos PowerShell 7 Profile 設成 Windows Terminal 預設。
+5. 安裝器在要求輸入 `INSTALL` 之前，會核對所有選中工具的發布檔案與 SHA256。
 
-下載 Standard 或 Developer ZIP，並將 Terminal Add-on ZIP 解壓到同一個主安裝資料夾，官方工具檔應位於 payload/terminal/ 下。下載附加包本身不會修改任何設定。
+或使用唯讀預覽：
 
-## 安裝指令
+```powershell
+.\naos-agent-stack.ps1 plan -Role single -InstallTerminal
+```
 
-    # 在 PowerShell 5.1 中進入安裝資料夾
-    .\naos-agent-stack.ps1 install
+非互動腳本使用：`.\naos-agent-stack.ps1 install -Role single -InstallTerminal -Yes`（請先明確核准；不顯示安裝確認）。
 
-    # 不套用的選項預覽
-    .\naos-agent-stack.ps1 plan -Interactive
+## 提供的工具與系統影響
 
-    # 選取整套終端機功能
-    .\naos-agent-stack.ps1 plan -Role single -InstallTerminal
+| 可選項 | 版本 | 行為 |
+| --- | --- | --- |
+| Microsoft PowerShell | 7.6.6 | 安裝為目前使用者的可攜版本，保留內建 PowerShell 5.1 |
+| Oh My Posh | 31.8.0 | 安裝執行檔與官方主題，不覆寫原本 `$PROFILE` |
+| JetBrainsMono Nerd Font Mono | 3.5.1 | 僅未安裝且勾選時加入目前使用者字體，預設 `JetBrainsMono NFM` |
+| Windows Terminal Profile | 安裝器設定 | 建立 Naos PowerShell 7 設定檔；選擇設成預設時先備份 `settings.json` |
 
-    # 非互動式，使用者明確核准後
-    .\naos-agent-stack.ps1 install -Role single -InstallTerminal -Yes
+Windows Terminal 應用程式本身**未打包**，如果電腦尚未安裝，需自行安裝。設定 Windows Terminal 的預設 Profile 並不等於更改整個 Windows 的預設終端機應用程式。
 
-可各自選取 -PowerShell7、-OhMyPosh、-NerdFont、-SetTerminalDefault。沒有勾選的工具或設定不會被更動。若沒有相應 Terminal Add-on 檔案，安裝前會明確拒絕，避免部分安裝。
+## 故障排查
 
-## 終端機設定
+- `INSTALL_PREFLIGHT_MISSING: payload/terminal/...`：代表選到的檔案不在安裝資料夾；請重新下載**完整 v0.2.2 Complete ZIP**，不要補裝獨立附件。
+- 提示 `TERMINAL_ADDON_SHA256_MISMATCH`：檔案雜湊不一致，請停止安裝並重抓完整 ZIP。
+- 沒有 Oh My Posh 圖示：檢查字體是否設定成 `JetBrainsMono NFM`，然後重新開啟 Windows Terminal。
 
-- Microsoft PowerShell 7 只安裝在目前使用者的工具目錄，保留 Windows PowerShell 5.1 與已有 PowerShell。
-- Oh My Posh 只在使用者目錄安裝官方執行檔與主題，不改動目前的 PowerShell 全域 Profile。
-- JetBrainsMono Nerd Font Mono 只有選取後且尚未安裝才會裝進目前使用者的字體目錄，預設字體名稱使用 JetBrainsMono NFM。
-- Windows Terminal 會透過官方 JSON Fragment 新增「Naos PowerShell 7」設定檔。只有使用者選擇設定預設 Profile 時才更改 settings.json 中的 defaultProfile，原檔先備份，不觸碰 WSL 或 CMD 設定。會保留原始註解。
-- Windows Terminal 若尚未安裝，會提示使用者先安裝，再從 Windows Terminal Settings → Startup 選擇「Naos PowerShell 7」。
-- Windows Terminal 的「預設 Profile」和 Windows 本身的「預設終端機應用程式」是不同設定；不會擅自修改後者。
+工具的官方發布來源及 SHA256 鎖定在 `terminal.lock.json`；授權聲明位於 `third_party`，字體原始壓縮檔附有 OFL。
 
-## 安全及授權
-
-官方元件的版本、URL 和 SHA256 寫在 terminal.lock.json：
-
-- PowerShell-7.6.6-win-x64.zip：Microsoft PowerShell GitHub Release
-- posh-windows-amd64.exe / themes.zip：Oh My Posh v31.8.0 GitHub Release
-- JetBrainsMono.tar.xz：Nerd Fonts v3.5.1 GitHub Release，內含 OFL.txt
-
-PowerShell 與 Oh My Posh 的 MIT 授權聲明由 third_party/ 收錄；字體 OFL 由官方原始 tar.xz 提供。
-
-本版只支援 Windows x64。終端機模組的測試只在隔離目錄與合成 Windows Terminal 設定檔中執行，不對正式使用者設定進行測試修改。
-
-注意：OpenChatX 與 Letta 的 npm 依賴仍可能需要連線 npm registry，所以整套安裝不是完全離線。
+**v0.2.1 Release 仍使用舊的分包模式**。本頁僅適用於 [Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 提供的 v0.2.2 Complete ZIP。

@@ -75,7 +75,7 @@ function Invoke-NaosSetupWizard {
     )
     if($CorePartial){throw 'PARTIAL_CORE_DETECTED: repair is required, no changes made.'}
     Write-Host ''
-    Write-Host '===== Naos Agent Stack v0.2.1 安裝選單 ====='
+    Write-Host '===== Naos Agent Stack v0.2.2 安裝選單 ====='
     Write-Host '[必要] OpenChatX Headless / Letta 核心；Node.js 和 npm 不存在時自動安裝。'
     if($CoreInstalled){Write-Host '[已存在] 核心已安裝，會保留而不覆蓋。'}
     Write-Host '[選配] Git 命令列、雙電腦記憶共享、Git 目錄唯讀掃描、PowerShell 7 / Oh My Posh / Nerd Font。'
@@ -110,18 +110,32 @@ function Invoke-NaosSetupWizard {
         throw 'SHARING_REQUIRES_HOST_OR_CLIENT_ROLE'
     }
 
-    if(-not $GitExplicit){
-        if($GitInstalled){
-            Write-Host '[已安裝] Git：不重新安裝。'
-            $InstallGit=$false
-        }else{
-            $selection=Read-NaosSetupChoice -Ask $Ask -Prompt '選配：安裝 Git CLI (MinGit)？ [y/N]' -Valid @('y','n') -Default 'n'
-            $InstallGit=($selection -eq 'y')
-        }
+    # One clear high-level decision for people who do not write code.
+    # Git binaries are bundled but stay UNINSTALLED unless explicitly selected.
+    if($GitExplicit -or $ScanExplicit){
+        $developmentSelected=($InstallGit -or $ScanProjects)
+    }else{
+        $selection=Read-NaosSetupChoice -Ask $Ask -Prompt '需要程式開發 / Git 工具嗎？ [y/N]' -Valid @('y','n') -Default 'n'
+        $developmentSelected=($selection -eq 'y')
     }
-    if(-not $ScanExplicit){
-        $selection=Read-NaosSetupChoice -Ask $Ask -Prompt '選配：唯讀掃描現有 Git 專案目錄？ [y/N]' -Valid @('y','n') -Default 'n'
-        $ScanProjects=($selection -eq 'y')
+    if($developmentSelected){
+        if(-not $GitExplicit){
+            if($GitInstalled){
+                Write-Host '[已安裝] Git：沿用現有版本，不重新安裝。'
+                $InstallGit=$false
+            }else{
+                $selection=Read-NaosSetupChoice -Ask $Ask -Prompt '安裝 Git CLI (MinGit)？ [Y/n]' -Valid @('y','n') -Default 'y'
+                $InstallGit=($selection -eq 'y')
+            }
+        }
+        if(-not $ScanExplicit){
+            $selection=Read-NaosSetupChoice -Ask $Ask -Prompt '唯讀掃描現有 Git 專案目錄？ [y/N]' -Valid @('y','n') -Default 'n'
+            $ScanProjects=($selection -eq 'y')
+        }
+    }else{
+        if(-not $GitExplicit){$InstallGit=$false}
+        if(-not $ScanExplicit){$ScanProjects=$false}
+        Write-Host '[略過] 開發工具和 Git 專案掃描。'
     }
     if($ScanProjects -and -not $ProjectRoot){
         $ProjectRoot=Read-NaosSetupValue -Ask $Ask -Prompt '要掃描的主要資料夾路徑'
@@ -165,7 +179,7 @@ function Invoke-NaosSetupWizard {
     if(-not $TerminalExplicit){
         $choice=Read-NaosSetupChoice -Ask $Ask -Prompt '選配：終端機強化 (PowerShell 7 / Oh My Posh / Nerd Font)？ [y/N]' -Valid @('y','n') -Default 'n'
         if($choice -eq 'y'){
-            Write-Host '[資訊] 終端機工具位於獨立的 Terminal Add-on ZIP；未選取時不會安裝。'
+            Write-Host '[資訊] 終端機工具已包含在同一份完整安裝包；未選取時不會安裝。'
             $PowerShell7=(Read-NaosSetupChoice -Ask $Ask -Prompt '安裝 Microsoft PowerShell 7？ [Y/n]' -Valid @('y','n') -Default 'y') -eq 'y'
             $OhMyPosh=(Read-NaosSetupChoice -Ask $Ask -Prompt '安裝 Oh My Posh？ [Y/n]' -Valid @('y','n') -Default 'y') -eq 'y'
             $NerdFont=(Read-NaosSetupChoice -Ask $Ask -Prompt '安裝 JetBrainsMono Nerd Font Mono？ [Y/n]' -Valid @('y','n') -Default 'y') -eq 'y'

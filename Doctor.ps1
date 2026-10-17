@@ -94,7 +94,7 @@ else {
 }
  $npm=Get-Command npm.cmd -ErrorAction SilentlyContinue
 if(-not $npm){
-    AddCheck 'npm CLI' 'fail' 'npm.cmd not in PATH (required for fresh install).' 'Use the v0.2.1 complete Release to prepare bundled portable Node/npm, or install official Node.js 22.19+.'
+    AddCheck 'npm CLI' 'fail' 'npm.cmd not in PATH (required for fresh install).' 'Use the v0.2.2 Complete installer ZIP to prepare bundled portable Node/npm, or install official Node.js 22.19+.'
 }else {
     try{
         $npmVersion=([string](& $npm.Source --version 2>$null)).Trim()

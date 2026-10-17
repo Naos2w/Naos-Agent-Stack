@@ -10,10 +10,11 @@ $names = @(
     'Doctor.ps1',
     'Prerequisites.ps1',
     'Install-Wizard.ps1',
+    'Installer-Preflight.ps1',
     'Terminal-Extras.ps1',
     'Terminal-Json-Validate.ps1',
     'Launch-NaosPowerShell.ps1',
-    'Build-TerminalAddon.ps1',
+    'tests\validate-unified.ps1',
     'tests\validate-wizard.ps1',
     'tests\validate-terminal.ps1',
     'ForwardWatchdog.ps1',
@@ -50,10 +51,15 @@ if($terminalExit -ne 0 -or -not ($terminalTest -match 'TERMINAL_VALIDATION_PASSE
     throw 'Optional terminal add-on synthetic tests failed.'
 }
 Write-Output '[PASS] Optional PowerShell 7, Oh My Posh, Nerd Font, Windows Terminal settings'
+$unifiedOutput=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'validate-unified.ps1'))
+if($LASTEXITCODE -ne 0 -or -not($unifiedOutput -match 'UNIFIED_SOURCE_VALIDATION_PASSED')){
+    throw 'Unified ZIP and pre-install dependency tests failed.'
+}
+Write-Output '[PASS] Single Complete ZIP, all optional packages, early pre-install checks'
 $lockFile=Join-Path $root 'dependencies.lock.json'
 if(-not(Test-Path -LiteralPath $lockFile)){throw 'Missing dependency lock file.'}
 $lock=Get-Content -LiteralPath $lockFile -Raw -Encoding UTF8 | ConvertFrom-Json
-if($lock.packageVersion -ne '0.2.1' -or
+if($lock.packageVersion -ne '0.2.2' -or
    $lock.core.sha256 -notmatch '^[a-f0-9]{64}$' -or
    $lock.core.package -ne 'naos-headless-stack-bundle.zip' -or
    $lock.node.sha256 -notmatch '^[a-f0-9]{64}$' -or
