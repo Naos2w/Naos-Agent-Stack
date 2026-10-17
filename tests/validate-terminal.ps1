@@ -18,7 +18,7 @@ Write-Output '[PASS] Official PowerShell, Oh My Posh, Nerd Font pins and default
 
 $nonexistent=Join-Path $env:TEMP ('naos-missing-terminal-addon-'+[guid]::NewGuid().ToString('N'))
 $plan=@(Invoke-NaosTerminalSetup -Mode Plan -PowerShell7 -OhMyPosh -NerdFont -TerminalDefault -AssetsRoot $nonexistent -ForceBundled)
-if(-not($plan -match 'TERMINAL_PLAN_ONLY_NO_CHANGES') -or -not($plan -match 'requires optional Terminal add-on ZIP')){
+if(-not($plan -match 'TERMINAL_PLAN_ONLY_NO_CHANGES') -or -not($plan -match 'MISSING from Complete ZIP')){
     throw 'TERMINAL_PLAN_MISSING_PACKAGE_WARNING'
 }
 Write-Output '[PASS] Optional Terminal Add-on plan remains read-only'
@@ -27,7 +27,7 @@ $blocked=$false
 try{
     $null=Invoke-NaosTerminalSetup -Mode Preflight -PowerShell7 -OhMyPosh -TerminalDefault -AssetsRoot $nonexistent -ForceBundled
 }catch{
-    if($_.Exception.Message -match 'TERMINAL_ADDON_MISSING'){$blocked=$true}else{throw}
+    if($_.Exception.Message -match 'INSTALL_PREFLIGHT_MISSING'){$blocked=$true}else{throw}
 }
 if(-not $blocked){throw 'MISSING_TERMINAL_ADDON_DID_NOT_BLOCK'}
 Write-Output '[PASS] Missing Terminal Add-on refused before any installation'
@@ -68,9 +68,12 @@ if($pwsh){
 }else{Write-Output '[WARN] PowerShell 7 unavailable on runner: synthetic default-profile test skipped.'}
 
 $builder=Get-Content -LiteralPath (Join-Path $root 'Build-Package.ps1') -Raw -Encoding UTF8
-if($builder -notmatch "ValidateSet\('Standard','Developer'\)" -or $builder -notmatch "Edition -eq 'Developer'"){
+if($builder -notmatch "edition='Complete'" -or
+   $builder -notmatch 'terminalLock\.pwsh' -or
+   $builder -notmatch 'dependencyLock\.git'){
+
     throw 'STANDARD_DEVELOPER_EDITION_SELECTORS_MISSING'
 }
-Write-Output '[PASS] Standard excludes optional MinGit; Developer selects MinGit'
+Write-Output '[PASS] Complete builder includes optional MinGit and terminal dependencies'
 Write-Output 'TERMINAL_VALIDATION_PASSED'
 exit 0

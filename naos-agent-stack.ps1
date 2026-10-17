@@ -41,7 +41,7 @@ $doctor=Join-Path $PSScriptRoot 'Doctor.ps1'
 
 if($Command -eq 'help') {
     @'
-Naos Agent Stack v0.2.1 - Windows PowerShell installer
+Naos Agent Stack v0.2.2 - Windows PowerShell installer
 
 Usage:
   .\naos-agent-stack.ps1 doctor [-Deep] [-Json] [-Strict]
@@ -64,10 +64,10 @@ Options:
   -Strict     Treat doctor warnings as a failure exit.
   -NoCore     Configure sharing using an already installed Headless core.
   -NoSharing  Use only core install; no SSH/Tailscale configuration.
-  -InstallGit  Install optional portable MinGit (requires Developer edition ZIP).
+  -InstallGit  Install optional portable MinGit from the SAME complete ZIP.
   -InstallTerminal  Select PowerShell 7, Oh My Posh, JetBrainsMono NFM, and Terminal default.
   -PowerShell7 -OhMyPosh -NerdFont -SetTerminalDefault  Select components independently.
-  Terminal components require the separate verified Terminal Add-on ZIP.
+  Git, PowerShell 7, Oh My Posh and Nerd Font are all included in ONE complete ZIP.
   -Interactive  Use interactive option selector in plan mode (read-only).
   -NoWizard  Skip selector for install; still requires confirmation unless -Yes.
   -ScanProjects -ProjectRoot PATH [-ExtraRoot PATH]  Read-only Git checkout discovery.
@@ -206,6 +206,12 @@ if($useWizard){
     & $engine @preview
     if($LASTEXITCODE -ne 0){throw 'INSTALL_WIZARD_PREFLIGHT_FAILED: no changes were made.'}
     Write-Output '--- End of installation preview ---'
+    Write-Output '--- Checking every selected component before confirmation (read-only) ---'
+    $preflight=$opts.Clone()
+    $preflight.Mode='Preflight'
+    & $engine @preflight
+    if($LASTEXITCODE -ne 0){throw 'INSTALL_PREFLIGHT_FAILED: Selected components are not ready. No settings modified.'}
+    Write-Output '--- All selected components verified; installation has not started ---'
 }
 Write-Output 'Naos Agent Stack INSTALL: the selected modules can modify Windows configuration.'
 Write-Output ('Role='+$engineRole+' InstallCore='+$core+' InstallGit='+$InstallGit+' ConfigureSharing='+$share+' PowerShell7='+$PowerShell7+' OhMyPosh='+$OhMyPosh+' NerdFont='+$NerdFont+' TerminalDefault='+$SetTerminalDefault)

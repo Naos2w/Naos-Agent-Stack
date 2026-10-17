@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "packageVersion": "0.2.1",
+  "packageVersion": "0.2.2",
   "architecture": "windows-x64",
-  "note": "Terminal add-on is fully optional. It contains verified upstream binaries and font files, installed only when explicitly selected.",
+  "note": "Terminal enhancements are optional and bundled in the one Complete installer ZIP. Only explicitly selected components are installed.",
   "pwsh": {
     "name": "Microsoft PowerShell",
     "version": "7.6.6",

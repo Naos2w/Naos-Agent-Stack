@@ -7,14 +7,14 @@ function Get-NaosTerminalLock {
     $p=Join-Path $PSScriptRoot 'terminal.lock.json'
     if(-not(Test-Path -LiteralPath $p)){throw 'TERMINAL_LOCK_MISSING'}
     $lock=Get-Content -LiteralPath $p -Raw -Encoding UTF8|ConvertFrom-Json
-    if($lock.schema -ne 1 -or $lock.packageVersion -ne '0.2.1'){throw 'TERMINAL_LOCK_INVALID'}
+    if($lock.schema -ne 1 -or $lock.packageVersion -ne '0.2.2'){throw 'TERMINAL_LOCK_INVALID'}
     return $lock
 }
 function Assert-NaosTerminalAsset([string]$Root,$Item) {
     $file=[string]$Item.file
     if($file -notmatch '^[A-Za-z0-9._-]+$'){throw 'UNSAFE_TERMINAL_ASSET_NAME'}
     $path=Join-Path $Root $file
-    if(-not(Test-Path -LiteralPath $path -PathType Leaf)){throw ('TERMINAL_ADDON_MISSING: '+$file)}
+    if(-not(Test-Path -LiteralPath $path -PathType Leaf)){throw ('INSTALL_PREFLIGHT_MISSING: payload/terminal/'+$file+'. Re-download the ONE v0.2.2 Complete installer ZIP. No extra add-on is necessary.')}
     if((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne [string]$Item.sha256){
         throw ('TERMINAL_ADDON_SHA256_MISMATCH: '+$file)
     }
@@ -208,7 +208,7 @@ function Invoke-NaosTerminalSetup {
         Write-Output ('[INFO] Terminal add-on: pwsh='+[bool]$PowerShell7+' oh-my-posh='+[bool]$OhMyPosh+' JetBrainsMono NFM='+[bool]$NerdFont+' default PowerShell='+[bool]$TerminalDefault)
         foreach($item in $assets){
             $present=Test-Path -LiteralPath (Join-Path $AssetsRoot $item.file)
-            Write-Output ('[INFO] '+$item.file+': '+$(if($present){'bundled'}else{'requires optional Terminal add-on ZIP'}))
+            Write-Output ('[INFO] '+$item.file+': '+$(if($present){'bundled'}else{'MISSING from Complete ZIP (re-download)'}))
         }
         Write-Output '[PASS] TERMINAL_PLAN_ONLY_NO_CHANGES'
         return

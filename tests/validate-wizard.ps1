@@ -25,7 +25,7 @@ Assert-NaosTest ($single.Role -eq 'single' -and -not $single.NoCore -and -not $s
 Write-Output '[PASS] Wizard defaults: mandatory core + Node/npm, optional Git and sharing disabled'
 
 # Explicit yes enables optional Git; never forces two-machine setup.
-$reader=New-NaosMockAnswerReader @('1','y','n','n')
+$reader=New-NaosMockAnswerReader @('1','y','y','n','n')
 $withGit=Invoke-NaosSetupWizard -Role auto -GitInstalled:$false -Ask $reader
 Assert-NaosTest ($withGit.InstallGit -and -not $withGit.ConfigureSharing) 'optional Git choice must be respected'
 Write-Output '[PASS] Wizard optional MinGit can be selected independently'
@@ -49,13 +49,13 @@ Assert-NaosTest ($existing.Role -eq 'existing' -and $existing.NoCore -and -not $
 Write-Output '[PASS] Wizard existing-core mode skips reinstallation'
 
 # Optional read-only project discovery is independent of Git installation.
-$reader=New-NaosMockAnswerReader @('1','n','y',$root,'','n')
+$reader=New-NaosMockAnswerReader @('1','y','n','y',$root,'','n')
 $scan=Invoke-NaosSetupWizard -Role auto -GitInstalled:$false -Ask $reader
 Assert-NaosTest ($scan.ScanProjects -and $scan.ProjectRoot -eq $root -and -not $scan.InstallGit) 'directory scan must remain optional'
 Write-Output '[PASS] Wizard optional project scan selection'
 
 # The terminal kit is entirely optional and selects its individual parts only after opting in.
-$reader=New-NaosMockAnswerReader @('1','n','n','y','','','','')
+$reader=New-NaosMockAnswerReader @('1','n','y','','','','')
 $term=Invoke-NaosSetupWizard -Role auto -GitInstalled:$false -Ask $reader
 Assert-NaosTest ($term.PowerShell7 -and $term.OhMyPosh -and $term.NerdFont -and $term.TerminalDefault -and -not $term.InstallGit) 'terminal group should be independent of Git and select all four parts'
 Write-Output '[PASS] Wizard optional PowerShell, Oh My Posh, Nerd Font and Terminal defaults'

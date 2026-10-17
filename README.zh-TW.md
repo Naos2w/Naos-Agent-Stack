@@ -1,86 +1,47 @@
-﻿# Naos Agent Stack v0.2.1 — PowerShell 安裝與 Doctor
+# Naos Agent Stack — Windows 安裝與健康檢查
 
-> **第一次安裝請先看：[繁體中文完整安裝指南](INSTALL.zh-TW.md)** · [下載 v0.2.1 Pre-release](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1) · [終端機附加包說明](README.Terminal.zh-TW.md)
+> **安裝入口：[繁體中文完整安裝指南](INSTALL.zh-TW.md)** · [GitHub Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) · [終端機強化說明](README.Terminal.zh-TW.md)
 
-## 全新 Windows 電腦首次安裝問題
+## 為什麼調整成單一安裝包？
 
-在 v0.2.0 的新電腦安裝紀錄中，Doctor 出現 Node.js、OpenChatX、PM2 及 Letta 缺失，並非 ZIP 核心不存在，而是**完整 Node/npm 前置環境未打包**。核心 bootstrap 在 npm.cmd 不存在時便停止。Git 不存在造成 Doctor 警告，不是當次中止主因。
+在 v0.2.1 的新電腦安裝測試中，使用者從選單勾選 **Git、PowerShell 7、Oh My Posh 與 Nerd Font**，但 Standard ZIP 不含 MinGit，而終端機元件必須再下載獨立的 Add-on，導致直到輸入 `INSTALL` 後才報缺檔。
 
-**修復方向：** v0.2.1 完整 Release 新增官方 Windows x64 Node.js 22.23.3（含 npm）與可選 MinGit 2.56.0.2 ZIP。新機安裝時可在不需管理員權限的使用者工具目錄解壓使用；既有可用的 Node/npm、Git 不會被改動。
+**這是發行版架構和安裝預檢的設計缺陷**，不是使用者選錯選項。
 
-## 新 Windows x64 電腦安裝
+因此 v0.2.2 改為 **Complete 單一 ZIP**。所有可選元件都打包進去，卻仍維持「**預設不安裝**」；選單決定使用哪些工具，而非下載時決定取得哪一種 ZIP。
 
-下載 **v0.2.1 的完整 Pre-release ZIP**（不是舊 v0.2.0，不是 GitHub 的 Source code ZIP）。先核對搭配發布的 .sha256.txt，再解壓縮。
+| 元件 | Complete ZIP 內含 | 執行時選擇 |
+| --- | --- | --- |
+| OpenChatX Headless / Letta | 必備核心 | 全新安裝必要，既有正常安裝不覆寫 |
+| Node.js 22.23.3 + npm | 必備前置工具 | 缺少相容版本時安裝 |
+| MinGit 2.56.0.2 | 選配 | 不寫程式、不管理 Git 就保持 No |
+| PowerShell 7.6.6 | 選配 | 預設 No |
+| Oh My Posh 31.8.0 | 選配 | 預設 No |
+| JetBrainsMono Nerd Font Mono 3.5.1 | 選配 | 預設 No |
+| Windows Terminal 設定檔 | 選配 | 預設 No，修改前備份 |
+| Tailscale / SSH 共享設定 | 選配 | 只在 Host 或 Client 模式要求 |
 
-從 Windows PowerShell 5.1 進入解壓縮目錄：
+**此功能在 v0.2.2 發布候選中，尚未發布正式 ZIP。** 現有的 [v0.2.1 Release](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1) 不會被覆蓋，仍是舊版分包設計。發布新版後，請從 [Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 下載 **Complete ZIP**，不要下載自動產生的 GitHub Source code ZIP。
 
-    # 互動式安裝：挑選單機／雙機，以及選配功能
-    .\naos-agent-stack.ps1 install
+## 操作
 
-    # 同一個選單的唯讀預覽，不會安裝
-    .\naos-agent-stack.ps1 plan -Interactive
+解壓到新的資料夾，在 Windows PowerShell 5.1 進入該資料夾：
 
-    # 自動化、非互動安裝（參數明確指定後才使用）
-    .\naos-agent-stack.ps1 install -Role single -Yes
+```powershell
+# 只預覽，不修改設定
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\naos-agent-stack.ps1 plan -Interactive
 
-    # 安裝後確認，重新開啟 PowerShell 可更新使用者 PATH
-    .\naos-agent-stack.ps1 doctor
+# 開啟安裝選單
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\naos-agent-stack.ps1 install
 
-**安裝選單的 Git 預設為「否」**，雙電腦共享也只有主動選擇主機或用戶端模式才會設定。必要的 OpenChatX/Letta 核心與 Node/npm 由安裝器自動檢查與補齊，已存在的版本不會被覆蓋。使用者選擇後，會先顯示不修改系統的安裝預覽，再要求輸入 `INSTALL` 才真正執行。可選擇唯讀掃描 Git 專案目錄；若需要非互動執行，使用明確參數搭配 `-Yes`。`-NoWizard` 可略過選單但保留最後確認。
+# 安裝完成後
+.\naos-agent-stack.ps1 doctor -Deep
+```
 
-**安裝包也包含 `Install-Wizard.ps1`：負責選項收集，不自行安裝程式或修改服務。**
+`install` 會先顯示計畫，接著對**使用者選擇的必要及選配元件**進行唯讀檔案完整性及 SHA256 檢查。只有全部通過才要求輸入大寫 `INSTALL`。缺任何檔案都會提示重新下載單一 Complete ZIP，**不用另外找 MinGit 或 Terminal Add-on**。
 
-**安裝檔包含的前置工具：**
-- payload/prerequisites/node-v22.23.3-win-x64.zip — Node.js 22.23.3 + npm 10.9.9。
-- payload/prerequisites/MinGit-2.56.0.2-64-bit.zip — **僅 Developer 安裝包提供**的可選 Git CLI，非完整 Git for Windows。
-- payload/naos-headless-stack-bundle.zip — OpenChatX Headless 核心程式。
-- dependencies.lock.json — 官方來源網址與預期 SHA256，安裝會驗證哈希，拒絕使用不符的檔案。
+一般單機安裝不用 Git、Tailscale 或 OpenSSH；雙電腦共享時必須另外登入 Tailscale 並完成 SSH 授權。
 
-**重要限制：** Node/npm 由 Standard 和 Developer 安裝包提供；Git 僅 Developer 提供，但 OpenChatX / Letta 第一次安裝仍會執行 npm ci 與 npm install，需可連線 npm registry，因此不是 100% 離線安裝；還需要另外設定 ChatGPT Tunnel、OAuth、模型供應商等授權。
+**限制：** 本版支援 Windows x64，OpenChatX 首次執行 `npm ci` 仍可能需要網路；Windows Terminal GUI 本身沒有隨包附上。完整乾淨 Windows 的實際安裝及重開機恢復還沒有端到端驗收，因此新版本應維持 **Pre-release**。
 
-本版僅明確支援 Windows x64。如果電腦是 ARM64，會安全停止並回報不支援，避免裝錯架構。
-
-## 雙電腦模式（選配）
-
-雙機共享的是 Letta Agent 記憶，**不是 Git、檔案、分支或密碼同步**。需要 Tailscale、Windows SSH Server、用戶端獨有的 SSH 私鑰與人工核對主機指紋。既有主機與用戶端都不需要重裝核心。
-
-主機端預覽（在系統管理員 PowerShell；請替換為實際 IP）：
-
-    $hostIp = Read-Host '本機 Tailscale IPv4'
-    $peerIp = Read-Host '另一台電腦 Tailscale IPv4'
-    $user = Read-Host 'SSH Windows 使用者'
-    .\naos-agent-stack.ps1 plan -Role host -NoCore -HostIp $hostIp -PeerIp $peerIp -SshUser $user
-
-用戶端預覽（先確認 ssh-agent / 主機指紋）：
-
-    $hostIp = Read-Host 'Letta 主機 Tailscale IPv4'
-    $user = Read-Host 'Letta 主機 SSH 帳號'
-    .\naos-agent-stack.ps1 plan -Role client -NoCore -HostIp $hostIp -SshUser $user
-
-計畫核對無誤後，install 指令才真正套用；會要求輸入 INSTALL。新機沒有 OpenChatX 時，請勿使用 -NoCore。用戶端轉送僅在 127.0.0.1:4501，主機 Letta 僅在 127.0.0.1:4500。
-
-## Doctor 用法與驗收
-
-    .\naos-agent-stack.ps1 doctor
-    .\naos-agent-stack.ps1 doctor -Deep
-    .\naos-agent-stack.ps1 doctor -Deep -Json
-    .\naos-agent-stack.ps1 doctor -Strict
-
-Doctor 會檢查 Node、npm、Git、OpenChatX、PM2、Letta WebSocket、MCP 健康端點、Tailscale、SSH、重連排程以及 Project/Git/Agent 綁定。檢查只讀，不會對系統執行自動修復，並提供正確退出碼。
-
-## 從來源碼自行打包
-
-Git Repository 刻意不包含大型 ZIP 和任何私密憑證；完整 Pre-release ZIP 透過 GitHub Releases 另行發佈。
-
-    .\tests\validate.ps1
-    .\Build-Package.ps1 -CoreBundlePath C:\Packages\naos-headless-stack-bundle.zip -PrerequisiteRoot C:\Packages\prerequisites -OutputPath C:\Packages\Naos-Agent-Stack-v0.2.1-pre-release.zip
-
-Build-Package.ps1 會比對 Node/npm、MinGit 官方 SHA256，並產生最終 ZIP 與 .sha256.txt，避免未經驗證的下載被打包執行。含原始碼與授權通知；不包含 SSH 私鑰、OAuth、Letta Agent 記憶或個人 Git 儲存庫。
-
-## 已驗證與尚未驗證
-
-- v0.2.0 的既有主機與用戶端 9 個共享 Agent 健康檢查通過。
-- v0.2.1 新增的 Node/npm 與 MinGit 已在隔離的暫存安裝目錄中成功解壓、執行、清除；未動現有程式或使用者 PATH。
-- PowerShell 5.1 Source tests、安裝選單和唯讀 plan 已通過 [GitHub Actions Validate Run #3](https://github.com/Naos2w/Naos-Agent-Stack/actions/runs/38513129859)，合併後的 main 亦已完成來源測試。
-
-**尚未完成全新 Windows VM 的完整首次安裝。** 也未進行重新開機測試；請保持本版為 Pre-release。此工具不安裝 OpenClaw、Naos-Teams 或其他排除的舊專案。
+參考：[詳細安裝步驟](INSTALL.zh-TW.md) · [終端機設定](README.Terminal.zh-TW.md) · [提出問題](https://github.com/Naos2w/Naos-Agent-Stack/issues)
