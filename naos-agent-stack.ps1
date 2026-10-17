@@ -48,7 +48,7 @@ Usage:
   .\naos-agent-stack.ps1 install                       # interactive option selector
   .\naos-agent-stack.ps1 plan -Interactive             # preview options without applying
   .\naos-agent-stack.ps1 install -Role single [-InstallGit] [-InstallTerminal] [-Yes]
-  .\naos-agent-stack.ps1 plan -Role single -InstallTerminal  # requires optional Terminal add-on for installation
+  .\naos-agent-stack.ps1 plan -Role single -InstallTerminal  # preview bundled optional terminal tools
   .\naos-agent-stack.ps1 plan -Role host -HostIp HOST_TAILNET_IP -PeerIp PC2_TAILNET_IP -SshUser WINDOWS_USER
   .\naos-agent-stack.ps1 install -Role host -HostIp HOST_IP -PeerIp PC2_IP -SshUser WINDOWS_USER -PublicKeyPath PATH_TO_PUBKEY [-InstallOpenSSH] [-Yes]
   .\naos-agent-stack.ps1 plan -Role client -HostIp HOST_TAILNET_IP -SshUser WINDOWS_USER [-NoCore]

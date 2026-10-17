@@ -6,9 +6,9 @@ Naos Agent Stack sets up OpenChatX Headless and Letta on Windows x64 using Windo
 
 > [**繁體中文安裝指南**](INSTALL.zh-TW.md) · [中文說明](README.zh-TW.md) · [Terminal customization](README.Terminal.zh-TW.md) · [GitHub Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases)
 
-## One Complete installer — v0.2.2 candidate
+## One Complete installer — v0.2.2 Pre-release
 
-The next pre-release consolidates the former **Standard, Developer and Terminal Add-on** downloads into a single versioned ZIP:
+v0.2.2 consolidates the former **Standard, Developer and Terminal Add-on** downloads into a single versioned ZIP:
 
 `Naos-Agent-Stack-v0.2.2-Complete-pre-release.zip`
 
@@ -27,9 +27,9 @@ All verified upstream binaries are **included**, but **not installed unless the 
 
 The installer does **not** bundle the Windows Terminal app, Tailscale login, SSH credentials, OAuth credentials, private keys, or Letta Agent state. First-time Headless npm dependencies still require Internet.
 
-**Compatibility:** The already published [v0.2.1 Release](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1) remains unchanged and uses separate downloads. The single-ZIP v0.2.2 candidate is **not released until its new PR and CI have passed**; do not use the GitHub Source code ZIP for installation.
+**Compatibility:** The existing [v0.2.1 Release](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1) remains unchanged and uses separate downloads. For v0.2.2, use only the published **Complete ZIP** under [Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases), not GitHub's automatically generated Source code ZIP. Keep v0.2.2 marked Pre-release until clean-Windows end-to-end acceptance passes.
 
-## Quick start (when v0.2.2 Complete is published)
+## Quick start (v0.2.2 Complete Pre-release)
 
 1. Download the Complete ZIP from [Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases), verify the published SHA256, and extract it to a new directory.
 2. Open Windows PowerShell in that directory and run:

@@ -1,12 +1,12 @@
 # Naos Agent Stack 安裝指南（繁體中文）
 
-> **預計適用版本：v0.2.2 Complete Pre-release（尚待完成驗證與發布）** · [GitHub Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) · [回到 README](README.md)
+> **適用版本：v0.2.2 Complete Pre-release（新機端到端驗收尚待完成）** · [GitHub Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) · [回到 README](README.md)
 
-> 已發布的 [v0.2.1](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1) 仍是舊的 Standard / Developer / Terminal Add-on 分包模式。請不要把 v0.2.2 操作說明誤認為已經發布的版本。
+> 舊版 [v0.2.1](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1) 仍使用 Standard / Developer / Terminal Add-on 分包模式。請在 [Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 確認 v0.2.2 Complete Pre-release 附件存在後再依本文操作。
 
 ## 1. 一次只下載一個 ZIP
 
-v0.2.2 的設計目標是：**所有安裝檔打包在一份 Complete ZIP，執行 install 時再決定安裝哪些工具。**
+v0.2.2 將**所有安裝檔打包在一份 Complete ZIP，執行 install 時再決定安裝哪些工具。**
 
 下載名為 `Naos-Agent-Stack-v0.2.2-Complete-pre-release.zip` 的官方 Release 附件。請勿下載 GitHub 自動產生的 Source code ZIP（缺少大型的 Node/npm、Headless 和可選工具）。
 

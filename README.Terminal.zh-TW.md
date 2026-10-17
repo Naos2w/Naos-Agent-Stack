@@ -4,7 +4,7 @@
 
 ## 安裝方式
 
-1. 從 [GitHub Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 下載並驗證 **v0.2.2 Complete ZIP**（新版需先正式發布）。請勿使用已發布 v0.2.1 的 Standard ZIP 或 GitHub Source code ZIP 期待取得終端機元件。
+1. 先到 [GitHub Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 確認 v0.2.2 Complete Pre-release 附件存在，再下載並驗證 **Complete ZIP**。請勿使用 v0.2.1 Standard ZIP 或 GitHub Source code ZIP 期待取得終端機元件。
 2. 解壓到新目錄，進入 Windows PowerShell 5.1。
 3. 執行 `.\naos-agent-stack.ps1 install`。
 4. 在「終端機強化」提示選 `y`，接著可**個別決定**要不要 PowerShell 7、Oh My Posh、JetBrainsMono Nerd Font Mono，以及是否將新的 Naos PowerShell 7 Profile 設成 Windows Terminal 預設。
@@ -37,4 +37,4 @@ Windows Terminal 應用程式本身**未打包**，如果電腦尚未安裝，�
 
 工具的官方發布來源及 SHA256 鎖定在 `terminal.lock.json`；授權聲明位於 `third_party`，字體原始壓縮檔附有 OFL。
 
-**目前 v0.2.1 Release 仍使用舊的分包模式**。只有 v0.2.2 完成發布後，才能使用本頁描述的單一 ZIP。
+**v0.2.1 Release 仍使用舊的分包模式**。本頁僅適用於 [Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 提供的 v0.2.2 Complete ZIP。

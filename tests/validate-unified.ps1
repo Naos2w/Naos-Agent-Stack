@@ -46,6 +46,7 @@ if(-not ($none -match 'SELECTED_PAYLOAD_PREFLIGHT_OK')){throw 'UNSELECTED_ARCHIV
 Write-Output '[PASS] Unselected optional tools do not block installation'
 
 $entry=Get-Content (Join-Path $root 'naos-agent-stack.ps1') -Raw -Encoding UTF8
+if($entry -match 'requires optional Terminal add-on'){throw 'LEGACY_SEPARATE_ADDON_HELP_TEXT'}
 $pre=$entry.IndexOf("Mode='Preflight'",[StringComparison]::Ordinal)
 $confirmation=$entry.IndexOf('Type INSTALL to apply the selected options',[StringComparison]::Ordinal)
 if($pre -lt 0 -or $confirmation -lt 0 -or $pre -gt $confirmation){

@@ -21,7 +21,7 @@
 | Windows Terminal 設定檔 | 選配 | 預設 No，修改前備份 |
 | Tailscale / SSH 共享設定 | 選配 | 只在 Host 或 Client 模式要求 |
 
-**此功能在 v0.2.2 發布候選中，尚未發布正式 ZIP。** 現有的 [v0.2.1 Release](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1) 不會被覆蓋，仍是舊版分包設計。發布新版後，請從 [Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 下載 **Complete ZIP**，不要下載自動產生的 GitHub Source code ZIP。
+**v0.2.2 Complete 以 Pre-release 發布，正式實機驗收仍需完成。** 現有的 [v0.2.1 Release](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1) 不會被覆蓋，仍是舊版分包設計。請先到 [Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 確認有 v0.2.2 **Complete ZIP** 附件再下載，不要下載 GitHub 自動產生的 Source code ZIP。
 
 ## 操作
 
