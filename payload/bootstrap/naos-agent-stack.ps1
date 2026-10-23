@@ -29,21 +29,23 @@ function AddTree([System.Collections.ArrayList]$a,[string]$root,[string]$prefix,
   foreach($f in (Get-ChildItem -LiteralPath $root -Recurse -File)){
     $rel=$f.FullName.Substring($root.Length).TrimStart('\').Replace('\','/')
     if($type -ne 'runtime' -and $rel -match '(?i)(^|/)node_modules(/|$)'){continue}
-    if($rel -match '(?i)(^|/)(\.env($|\.)|\.git|\.ssh|\.aws|\.letta|\.ops|\.services|\.external-tool-ledger|tunnel-profiles|backups|logs|secrets|credentials)(/|$)|(^|/)(state|operations|letta-service|projects|mcp-servers|subagents)\.json$|(\.pem|\.p12|\.pfx|\.key|\.log|\.db|\.sqlite|\.zst)$'){continue}
+    if($rel -match '(?i)(^|/)(\.env(?:\.[^/]*)?|\.git|\.ssh|\.aws|\.letta|\.ops|\.services|\.external-tool-ledger|tunnel-profiles|backups|logs|secrets|credentials)(/|$)|(^|/)(state|operations|letta-service|projects|mcp-servers|subagents)\.json$|(\.pem|\.p12|\.pfx|\.key|\.log|\.db|\.sqlite|\.zst)$'){continue}
+    # Runtime dependencies can contain registry credentials too; never ship local npm/pip config.
+    if($rel -match '(?i)(^|/)(\.npmrc|\.yarnrc(\.yml)?|\.pypirc|\.netrc)$'){continue}
     if($type -ne 'runtime' -and $rel -match '(?i)(^|/)(private|memory|memories|sessions|session|state|storage|profiles|auth|tokens|cache|tmp|temp|artifacts|fixtures)(/|$)'){continue}
     if($type -eq 'toolboxes' -and -not($rel -match '(?i)(\.ts|\.mjs|\.cjs|\.md|\.mdc|toolbox\.json)$')){continue}
     if($type -eq 'toolboxes' -and $rel -match '(?i)\.mdc?$' -and $rel -notmatch '(?i)^skills/[^/]+/SKILL\.md$'){continue}
     if($type -eq 'codebase-index' -and ($rel -notmatch '(?i)\.(mjs|cjs)$' -or $rel -match '(?i)\.(test|spec)\.(mjs|cjs)$')){continue}
     # Letta's private runtime state is not application source; only ship the minimal POC scripts.
     if($type -eq 'letta' -and $rel -notmatch '(?i)^(package(-lock)?\.json|compact-poc\.mjs|scripts/([a-z0-9._-]+/)*[a-z0-9._-]+\.(js|mjs|ps1))$'){continue}
-    if($type -ne 'runtime'){
-      if(($f.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){Fail ('Symlinked bundle source refused: '+$prefix+'/'+$rel)}
-      $directory=$f.Directory
-      while($null -ne $directory -and $directory.FullName.Length -ge $root.Length){
-        if(($directory.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){Fail ('Junction bundle source refused: '+$prefix+'/'+$rel)}
-        if($directory.FullName -eq $root){break}
-        $directory=$directory.Parent
-      }
+    # Reject reparse points for Runtime dependencies as well as source files.
+    # A linked node_modules subtree could otherwise import files from outside the approved roots.
+    if(($f.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){Fail ('Symlinked bundle source refused: '+$prefix+'/'+$rel)}
+    $directory=$f.Directory
+    while($null -ne $directory -and $directory.FullName.Length -ge $root.Length){
+      if(($directory.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){Fail ('Junction bundle source refused: '+$prefix+'/'+$rel)}
+      if($directory.FullName -eq $root){break}
+      $directory=$directory.Parent
     }
     AddFile $a $f.FullName ($prefix+'/'+$rel)
   }

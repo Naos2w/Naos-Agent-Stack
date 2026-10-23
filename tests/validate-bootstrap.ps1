@@ -139,8 +139,30 @@ try {
     $indexItems=New-Object System.Collections.ArrayList
     AddTree $indexItems (Join-Path $testRoot 'codebase-index') 'headless/codebase-index' 'codebase-index'
     Assert-SyntheticPaths $indexItems @('headless/codebase-index/ecosystem.config.cjs','headless/codebase-index/qa-review-bundle-source.mjs') @('headless/codebase-index/sync.test.mjs','headless/codebase-index/profiles/private.mjs','headless/codebase-index/config.json')
+    # Runtime dependencies are executable package code, but must never carry local npm auth files.
+    foreach($file in @(
+        'runtime\node_modules\example\index.js',
+        'runtime\node_modules\example\.npmrc',
+        'runtime\node_modules\example\.yarnrc.yml',
+        'runtime\node_modules\example\.pypirc',
+        'runtime\node_modules\example\.netrc',
+        'runtime\node_modules\example\.env.local'
+    )){New-SyntheticFile $file}
+    $runtimeItems=New-Object System.Collections.ArrayList
+    AddTree $runtimeItems (Join-Path $testRoot 'runtime\node_modules') 'runtime/node_modules' 'runtime'
+    Assert-SyntheticPaths $runtimeItems @('runtime/node_modules/example/index.js') @(
+        'runtime/node_modules/example/.npmrc',
+        'runtime/node_modules/example/.yarnrc.yml',
+        'runtime/node_modules/example/.pypirc',
+        'runtime/node_modules/example/.netrc',
+        'runtime/node_modules/example/.env.local'
+    )
+    if((Get-Body 'AddTree').Contains("if(" + '$type' + " -ne 'runtime'){")){
+        throw 'BOOTSTRAP_RUNTIME_REPARSE_BYPASS_NOT_ALLOWED'
+    }
     Write-Output '[PASS] Exporter scopes core toolboxes, required Letta scripts and Codebase Memory helper sources'
     Write-Output '[PASS] Exporter excludes synthetic memory, runtime config, credentials and user-installed skills'
+    Write-Output '[PASS] Runtime dependency tree excludes registry authentication files and enforces reparse guard'
 } finally {
     Remove-Item -LiteralPath $testRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
