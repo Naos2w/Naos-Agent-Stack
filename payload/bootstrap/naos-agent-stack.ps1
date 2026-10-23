@@ -166,7 +166,7 @@ module.exports={apps};
 '@
   WriteUtf8 (Join-Path $Headless 'ecosystem.config.cjs') $js
   WriteUtf8 (Join-Path $Headless 'config\openchatx.toml') ('# Safe defaults; per-machine config'+[Environment]::NewLine)
-  $cfg=[ordered]@{version=2;engine='letta';defaultModel='opencode/nemotron-3-ultra-free';lettaServerUrl='ws://127.0.0.1:4500';lettaServerCwd=$LettaRoot;lettaNodeBinary=(Join-Path $LettaRoot 'node_modules\node\bin\node.exe');lettaAutoStart=$true;compactResults=$true;maxResultChars=6000;statusOperationLimit=3;autoCompactEnabled=$true;autoCompactTurns=8}
+  $cfg=[ordered]@{version=2;engine='letta';defaultModel='letta/agent-config';lettaServerUrl='ws://127.0.0.1:4500';lettaServerCwd=$LettaRoot;lettaNodeBinary=(Join-Path $LettaRoot 'node_modules\node\bin\node.exe');lettaAutoStart=$true;compactResults=$true;maxResultChars=6000;statusOperationLimit=3;autoCompactEnabled=$true;autoCompactTurns=8}
   WriteUtf8 (Join-Path $Headless 'toolboxes\agent-runtime\config.json') ($cfg|ConvertTo-Json -Depth 6)
   $wrapper=Join-Path $Headless 'tunnel-wrapper.ps1';Require $wrapper
   $existing=Get-Content -LiteralPath $wrapper -Raw -Encoding UTF8

@@ -139,6 +139,31 @@ try {
 } finally {
     Remove-Item -LiteralPath $testRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
+# Exercise the fresh-install configuration writer only inside an isolated TEMP fixture.
+# The active MSI Headless/Letta profiles must not be touched by source tests.
+foreach($name in @('EnsureDir','Require','WriteUtf8','CreateHeadlessConfiguration')){
+    $fn=@($definitions|Where-Object {$_.Name -eq $name})
+    if($fn.Count -ne 1){throw ('BOOTSTRAP_FUNCTION_MISSING: '+$name)}
+    Invoke-Expression $fn[0].Extent.Text
+}
+$configRoot=Join-Path $env:TEMP ('naos-letta-first-config-'+[guid]::NewGuid().ToString('N'))
+try {
+    $Headless=Join-Path $configRoot 'headless'
+    $LettaRoot=Join-Path $configRoot 'letta'
+    WriteUtf8 (Join-Path $Headless 'tunnel-wrapper.ps1') '$tunnelExe = "C:\Legacy\tunnel-client.exe"'
+    CreateHeadlessConfiguration
+    $generated=Get-Content -LiteralPath (Join-Path $Headless 'toolboxes\agent-runtime\config.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    if($generated.engine -ne 'letta' -or $generated.defaultModel -ne 'letta/agent-config' -or
+       $generated.lettaServerCwd -ne $LettaRoot -or -not $generated.lettaAutoStart){
+        throw 'BOOTSTRAP_FRESH_INSTALL_NOT_LETTA_FIRST'
+    }
+    if($generated.defaultModel -match 'opencode' -or $generated.lettaNodeBinary -ne (Join-Path $LettaRoot 'node_modules\node\bin\node.exe')){
+        throw 'BOOTSTRAP_FRESH_INSTALL_USES_RETIRED_ENGINE_OR_WRONG_LETTA_PATH'
+    }
+    Write-Output '[PASS] Fresh-install generated Agent Runtime config uses canonical Letta-first model and per-install paths'
+} finally {
+    Remove-Item -LiteralPath $configRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
 # A manifest-hashed archive must also reject *unlisted* entries, even when they
 # use an otherwise allowed extraction prefix. This closes a ZIP injection path.
 $extraBundle=Join-Path $env:TEMP ('naos-bootstrap-extra-entry-'+[guid]::NewGuid().ToString('N')+'.zip')
