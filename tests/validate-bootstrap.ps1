@@ -22,12 +22,13 @@ $export=Get-Body 'ExportStack'
 $verify=Get-Body 'VerifyBundle'
 $install=Get-Body 'InstallStack'
 $doctor=Get-Body 'Doctor'
+$requiredContract=Get-Body 'RequiredBundleEntries'
 foreach($relative in @('codebase-project-sync.mjs','codebase-index\ecosystem.config.cjs')){
     if(([regex]::Matches($export,[regex]::Escape($relative))).Count -lt 2){
         throw ('BOOTSTRAP_EXPORT_MUST_REQUIRE_AND_INCLUDE: '+$relative)
     }
     Require-Text $doctor $relative ('BOOTSTRAP_DOCTOR_MISSING: '+$relative)
-    Require-Text $verify ('headless/'+$relative.Replace('\','/')) ('BOOTSTRAP_VERIFY_MISSING: '+$relative)
+    Require-Text $requiredContract ('headless/'+$relative.Replace('\','/')) ('BOOTSTRAP_VERIFY_MISSING: '+$relative)
 }
 Require-Text $install "'codebase-memory-mcp@0.11.0'" 'BOOTSTRAP_MISSING_CBM_INSTALL'
 Require-Text $install "'config\codebase-index.json'" 'BOOTSTRAP_MISSING_INDEX_CONFIG'
@@ -65,7 +66,7 @@ try {
         $result=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $bootstrap -Mode install -BundlePath $fixture -DryRun 2>&1)
         $code=$LASTEXITCODE
     } finally {$ErrorActionPreference=$savedPreference}
-    if($code -eq 0 -or -not(($result -join [Environment]::NewLine) -match 'Required bundle component missing: headless/start-headless.ps1')){
+    if($code -eq 0 -or -not(($result -join [Environment]::NewLine) -match 'Required bundle component missing: runtime/package.json')){
         throw 'BOOTSTRAP_MISSING_CORE_BUNDLE_NOT_REJECTED'
     }
     Write-Output '[PASS] Missing mandatory core bundle entries rejected before installation'
@@ -73,7 +74,7 @@ try {
     Remove-Item -LiteralPath $fixture -Force -ErrorAction SilentlyContinue
 }
 # Exercise the actual exporter selector against synthetic files, never production state.
-foreach($name in @('Fail','AddFile','AddTree')){
+foreach($name in @('Fail','AddFile','AddTree','RequiredBundleEntries')){
     $fn=@($definitions|Where-Object {$_.Name -eq $name})
     if($fn.Count -ne 1){throw ('BOOTSTRAP_FUNCTION_MISSING: '+$name)}
     Invoke-Expression $fn[0].Extent.Text
@@ -84,9 +85,13 @@ if($export.Contains("AddTree " + '$items' + " (Join-Path " + '$Headless' + " 'to
    -not $export.Contains("AddTree " + '$items' + " (Join-Path " + '$Headless' + " 'codebase-index')")){
     throw 'BOOTSTRAP_EXPORT_USES_UNSCOPED_TOOLBOXES_OR_OMITS_INDEX_SOURCE'
 }
-foreach($required in @('headless/codebase-index/qa-review-bundle-source.mjs','toolboxes/agent-runtime/toolbox.json','toolboxes/skills/toolbox.json','letta-poc/scripts/postinstall-patches.mjs')){
-    Require-Text $verify $required ('BOOTSTRAP_VERIFY_MISSING: '+$required)
+foreach($required in @('headless/codebase-index/qa-review-bundle-source.mjs','toolboxes/agent-runtime/toolbox.json','toolboxes/skills/toolbox.json','letta-poc/scripts/postinstall-patches.mjs','runtime/dist/index.js','runtime/package.json','runtime/bin/node.exe','headless/package.json','headless/package-lock.json','headless/tunnel-wrapper.ps1','headless/import-persistent-environment.ps1','letta-poc/compact-poc.mjs')){
+    Require-Text $requiredContract $required ('BOOTSTRAP_REQUIRED_CONTRACT_MISSING: '+$required)
 }
+Require-Text $verify '(RequiredBundleEntries)' 'BOOTSTRAP_VERIFIER_NOT_USING_REQUIRED_CONTRACT'
+Require-Text $export '(RequiredBundleEntries)' 'BOOTSTRAP_EXPORTER_NOT_USING_REQUIRED_CONTRACT'
+Require-Text $export 'Required export source missing:' 'BOOTSTRAP_EXPORT_MISSING_FAIL_CLOSED_SOURCE_CHECK'
+Require-Text $export "'..\..\README.md'" 'BOOTSTRAP_SOURCE_ROOT_README_FALLBACK_MISSING'
 $testRoot=Join-Path $env:TEMP ('naos-export-safety-'+[guid]::NewGuid().ToString('N'))
 function New-SyntheticFile([string]$relative) {
     $target=Join-Path $testRoot $relative
@@ -168,7 +173,7 @@ try {
 # use an otherwise allowed extraction prefix. This closes a ZIP injection path.
 $extraBundle=Join-Path $env:TEMP ('naos-bootstrap-extra-entry-'+[guid]::NewGuid().ToString('N')+'.zip')
 try {
-    $required=@('headless/start-headless.ps1','headless/codebase-project-sync.mjs','headless/codebase-index/ecosystem.config.cjs','headless/codebase-index/qa-review-bundle-source.mjs','toolboxes/agent-runtime/toolbox.json','toolboxes/skills/toolbox.json','toolboxes/agent-runtime/tools/agent_runtime.ts','letta-poc/package.json','letta-poc/package-lock.json','letta-poc/scripts/postinstall-patches.mjs')
+    $required=@(RequiredBundleEntries)
     $zip=[IO.Compression.ZipFile]::Open($extraBundle,[IO.Compression.ZipArchiveMode]::Create)
     try {
         foreach($path in $required){$zip.CreateEntry($path)|Out-Null}
@@ -195,6 +200,39 @@ try {
     Write-Output '[PASS] Verified archive rejects undeclared ZIP entries before install'
 } finally {
     Remove-Item -LiteralPath $extraBundle -Force -ErrorAction SilentlyContinue
+}
+# A ZIP can pass all individual SHA-256 checks yet still be unusable if a
+# required entry (such as the runtime entry point) is missing from its manifest.
+$missingRuntimeBundle=Join-Path $env:TEMP ('naos-bootstrap-missing-runtime-'+[guid]::NewGuid().ToString('N')+'.zip')
+try {
+    $missing='runtime/dist/index.js'
+    $required=@(RequiredBundleEntries|Where-Object {$_ -ne $missing})
+    if($required.Count -ne (@(RequiredBundleEntries).Count - 1)){throw 'BOOTSTRAP_REQUIRED_RUNTIME_NOT_DEFINED'}
+    $zip=[IO.Compression.ZipFile]::Open($missingRuntimeBundle,[IO.Compression.ZipArchiveMode]::Create)
+    try {
+        foreach($path in $required){$zip.CreateEntry($path)|Out-Null}
+        $manifest=[ordered]@{
+            format=2;arch=$env:PROCESSOR_ARCHITECTURE;version='1.0.0-beta.2'
+            files=@($required|ForEach-Object {
+                [ordered]@{path=$_;sha256='e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}
+            })
+        }
+        $entry=$zip.CreateEntry('manifest.json')
+        $writer=[IO.StreamWriter]::new($entry.Open(),[Text.UTF8Encoding]::new($false))
+        try {$writer.Write(($manifest|ConvertTo-Json -Depth 6))} finally {$writer.Dispose()}
+    } finally {$zip.Dispose()}
+    $savedPreference=$ErrorActionPreference
+    $ErrorActionPreference='Continue'
+    try {
+        $output=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $bootstrap -Mode install -BundlePath $missingRuntimeBundle -DryRun 2>&1)
+        $code=$LASTEXITCODE
+    } finally {$ErrorActionPreference=$savedPreference}
+    if($code -eq 0 -or -not(($output -join [Environment]::NewLine) -match 'Required bundle component missing: runtime/dist/index.js')){
+        throw 'BOOTSTRAP_MISSING_RUNTIME_ENTRY_NOT_REJECTED'
+    }
+    Write-Output '[PASS] Verified archive rejects missing runtime entry point before installation'
+} finally {
+    Remove-Item -LiteralPath $missingRuntimeBundle -Force -ErrorAction SilentlyContinue
 }
 Write-Output 'BOOTSTRAP_VALIDATION_PASSED'
 exit 0

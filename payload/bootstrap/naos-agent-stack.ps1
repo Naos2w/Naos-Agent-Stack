@@ -48,6 +48,34 @@ function AddTree([System.Collections.ArrayList]$a,[string]$root,[string]$prefix,
     AddFile $a $f.FullName ($prefix+'/'+$rel)
   }
 }
+function RequiredBundleEntries {
+  @(
+    'runtime/package.json',
+    'runtime/dist/index.js',
+    'runtime/bin/node.exe',
+    'runtime/bin/tunnel-client.exe',
+    'headless/package.json',
+    'headless/package-lock.json',
+    'headless/start-headless.ps1',
+    'headless/stop-headless.ps1',
+    'headless/status-headless.ps1',
+    'headless/tunnel-launcher.cjs',
+    'headless/tunnel-wrapper.ps1',
+    'headless/import-persistent-environment.ps1',
+    'headless/codebase-project-sync.mjs',
+    'headless/codebase-index/ecosystem.config.cjs',
+    'headless/codebase-index/qa-review-bundle-source.mjs',
+    'toolboxes/agent-runtime/toolbox.json',
+    'toolboxes/skills/toolbox.json',
+    'toolboxes/agent-runtime/tools/agent_runtime.ts',
+    'letta-poc/package.json',
+    'letta-poc/package-lock.json',
+    'letta-poc/compact-poc.mjs',
+    'letta-poc/scripts/postinstall-patches.mjs',
+    'naos-agent-stack.ps1',
+    'README.md'
+  )
+}
 function ExportStack {
   foreach($p in @((Join-Path $Runtime 'package.json'),(Join-Path $Runtime 'bin\node.exe'),(Join-Path $Runtime 'bin\tunnel-client.exe'),(Join-Path $Headless 'package-lock.json'),(Join-Path $Headless 'start-headless.ps1'),(Join-Path $Headless 'codebase-project-sync.mjs'),(Join-Path $Headless 'codebase-index\ecosystem.config.cjs'),(Join-Path $Headless 'codebase-index\qa-review-bundle-source.mjs'),(Join-Path $Headless 'toolboxes\agent-runtime\toolbox.json'),(Join-Path $Headless 'toolboxes\skills\toolbox.json'),(Join-Path $Headless 'toolboxes\agent-runtime\tools\agent_runtime.ts'),(Join-Path $LettaRoot 'package-lock.json'),(Join-Path $LettaRoot 'scripts\postinstall-patches.mjs'))){Require $p}
   $items=New-Object System.Collections.ArrayList
@@ -75,8 +103,17 @@ function ExportStack {
   $base=Split-Path -Parent $PSCommandPath
   $readme=Join-Path $base 'README_HEADLESS.md'
   if(-not(Test-Path -LiteralPath $readme)){$readme=Join-Path $base 'README.md'}
+  # Source checkout and Complete installer put the README two levels above payload/bootstrap.
+  if(-not(Test-Path -LiteralPath $readme)){$readme=Join-Path $base '..\..\README.md'}
   AddFile $items $readme 'README.md'
   $items=@($items|Sort-Object Key -Unique)
+  $included=@($items|ForEach-Object {$_.Key})
+  foreach($required in (RequiredBundleEntries)){
+    if($included -notcontains $required){Fail ('Required export source missing: '+$required)}
+  }
+  foreach($name in $coreToolboxes){
+    if($included -notcontains ('toolboxes/'+$name+'/toolbox.json')){Fail ('Required core toolbox descriptor missing: '+$name)}
+  }
   if($DryRun){Log ('Would bundle '+$items.Count+' whitelisted files; no changes');return}
   $target=[IO.Path]::GetFullPath($BundlePath)
   EnsureDir (Split-Path -Parent $target)
@@ -114,7 +151,7 @@ function VerifyBundle([string]$bundle){
     if($m.arch -ne $env:PROCESSOR_ARCHITECTURE){Fail 'Windows CPU architecture mismatch'}
     if($m.version -ne '1.0.0-beta.2'){Fail 'Unverified OpenChatX core version; cannot apply local patches'}
     $declared=@($m.files|ForEach-Object {[string]$_.path})
-    foreach($required in @('headless/start-headless.ps1','headless/codebase-project-sync.mjs','headless/codebase-index/ecosystem.config.cjs','headless/codebase-index/qa-review-bundle-source.mjs','toolboxes/agent-runtime/toolbox.json','toolboxes/skills/toolbox.json','toolboxes/agent-runtime/tools/agent_runtime.ts','letta-poc/package.json','letta-poc/package-lock.json','letta-poc/scripts/postinstall-patches.mjs')){
+    foreach($required in (RequiredBundleEntries)){
       if($declared -notcontains $required){Fail ('Required bundle component missing: '+$required)}
     }
     if($declared -contains 'manifest.json' -or @($declared|Select-Object -Unique).Count -ne $declared.Count){
