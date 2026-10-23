@@ -41,7 +41,7 @@ $doctor=Join-Path $PSScriptRoot 'Doctor.ps1'
 
 if($Command -eq 'help') {
     @'
-Naos Agent Stack v0.2.2 - Windows PowerShell installer
+Naos Agent Stack v0.2.3 - Windows PowerShell installer
 
 Usage:
   .\naos-agent-stack.ps1 doctor [-Deep] [-Json] [-Strict]

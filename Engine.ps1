@@ -139,7 +139,7 @@ function PrepareCore {
   $hasNode=Test-NaosSystemNode
   $hasGit=Test-NaosSystemGit
   if($Mode -ne 'Apply'){
-    if(-not(Present $bundle)){Caution 'Headless core ZIP missing. Obtain v0.2.2 Complete Release to install from scratch.'}
+    if(-not(Present $bundle)){Caution 'Headless core ZIP missing. Obtain v0.2.3 Complete Release to install from scratch.'}
     if($hasNode){Good 'Node.js 22.19+ and npm already available.'}
     else{
       $node=(Get-NaosPrerequisiteDefinition node)
@@ -157,11 +157,11 @@ function PrepareCore {
     Note 'PLAN: Install Headless + Letta + PM2 + codebase-memory to empty paths; npm package installation still requires Internet (not a fully offline setup).'
     return
   }
-  Require (Present $bundle) 'Headless core ZIP missing. Download the complete v0.2.2 Release before fresh install.'
+  Require (Present $bundle) 'Headless core ZIP missing. Download the complete v0.2.3 Release before fresh install.'
   $lockFile=Join-Path $root 'dependencies.lock.json'
   Require (Present $lockFile) 'Dependency lock file missing.'
   $lock=Get-Content -LiteralPath $lockFile -Raw -Encoding UTF8|ConvertFrom-Json
-  Require ($lock.packageVersion -eq '0.2.2' -and $lock.core.sha256 -match '^[a-fA-F0-9]{64}$') 'Dependency lock version/core checksum invalid.'
+  Require ($lock.packageVersion -eq '0.2.3' -and $lock.core.sha256 -match '^[a-fA-F0-9]{64}$') 'Dependency lock version/core checksum invalid.'
   Assert-NaosTrustedArchive $bundle $lock.core.sha256
   # Preflight every required offline archive before installing anything.
   if(-not $hasNode){$node=Get-NaosPrerequisiteDefinition node;Assert-NaosTrustedArchive (Join-Path $offlinePackages $node.Archive) $node.Sha256}

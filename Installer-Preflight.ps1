@@ -1,4 +1,4 @@
-# Naos Agent Stack v0.2.2: read-only, selection-aware preflight.
+# Naos Agent Stack v0.2.3: read-only, selection-aware preflight.
 # Guarantees selected core / Node / Git files are present and SHA256-valid BEFORE
 # the user types INSTALL. Optional terminal files are checked by Terminal-Extras.ps1.
 # Dot-sourcing this module does not access any files or modify the machine.
@@ -14,11 +14,11 @@ function Assert-NaosSelectedPayload {
     )
     $lockFile=Join-Path $PackageRoot 'dependencies.lock.json'
     if(-not(Test-Path -LiteralPath $lockFile -PathType Leaf)){
-        throw 'INSTALL_PREFLIGHT_MISSING: dependencies.lock.json. Re-download the single v0.2.2 Complete installer ZIP; do not use the GitHub Source code ZIP.'
+        throw 'INSTALL_PREFLIGHT_MISSING: dependencies.lock.json. Re-download the single v0.2.3 Complete installer ZIP; do not use the GitHub Source code ZIP.'
     }
     $lock=Get-Content -LiteralPath $lockFile -Raw -Encoding UTF8|ConvertFrom-Json
-    if($lock.schema -ne 1 -or $lock.packageVersion -ne '0.2.2'){
-        throw 'INSTALL_PREFLIGHT_VERSION_MISMATCH: the package must be v0.2.2 Complete.'
+    if($lock.schema -ne 1 -or $lock.packageVersion -ne '0.2.3'){
+        throw 'INSTALL_PREFLIGHT_VERSION_MISMATCH: the package must be v0.2.3 Complete.'
     }
     $items=New-Object 'System.Collections.Generic.List[object]'
     if($RequireCore){
@@ -39,7 +39,7 @@ function Assert-NaosSelectedPayload {
         if($relative -match '(^|[\\/])\.\.([\\/]|$)|:'){throw 'INSTALL_PREFLIGHT_UNSAFE_PAYLOAD_PATH'}
         $absolute=Join-Path $PackageRoot $relative
         if(-not(Test-Path -LiteralPath $absolute -PathType Leaf)){
-            throw ('INSTALL_PREFLIGHT_MISSING: '+$relative.Replace('\','/')+'. This selected component is absent. Re-download the single v0.2.2 Complete ZIP; no separate add-on is needed.')
+            throw ('INSTALL_PREFLIGHT_MISSING: '+$relative.Replace('\','/')+'. This selected component is absent. Re-download the single v0.2.3 Complete ZIP; no separate add-on is needed.')
         }
         if(-not([string]$entry.Sha -match '^[a-fA-F0-9]{64}$')){throw 'INSTALL_PREFLIGHT_SHA256_LOCK_INVALID'}
         if($relative -like '*.zip' -and (Get-Command Assert-NaosTrustedArchive -ErrorAction SilentlyContinue)){

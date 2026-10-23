@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "packageVersion": "0.2.2",
+  "packageVersion": "0.2.3",
   "supportedWindowsArchitectures": [
     "AMD64"
   ],
@@ -8,8 +8,8 @@
   "core": {
     "package": "naos-headless-stack-bundle.zip",
     "version": "OpenChatX Headless 1.0.0-beta.2",
-    "sha256": "9dfea6c1f64c65f5dc0ebe268e2eb91f6ece9f78dc8e6854af538acfe77d2163",
-    "note": "Existing previously verified Headless core bundle; its internal manifest is validated by the bootstrap installer."
+    "sha256": "776b4169bb406f79b06a661e43711ea38c882e48f2b297266540e539e102c178",
+    "note": "Freshly exported 2026-10-24 v0.2.3 candidate from MSI Headless (2960 source files); per-file SHA256 and core manifest validated. Not yet a published Complete ZIP or clean-machine E2E approval."
   },
   "node": {
     "package": "node-v22.23.3-win-x64.zip",

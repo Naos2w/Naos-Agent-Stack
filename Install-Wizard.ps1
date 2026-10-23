@@ -75,7 +75,7 @@ function Invoke-NaosSetupWizard {
     )
     if($CorePartial){throw 'PARTIAL_CORE_DETECTED: repair is required, no changes made.'}
     Write-Host ''
-    Write-Host '===== Naos Agent Stack v0.2.2 安裝選單 ====='
+    Write-Host '===== Naos Agent Stack v0.2.3 安裝選單 ====='
     Write-Host '[必要] OpenChatX Headless / Letta 核心；Node.js 和 npm 不存在時自動安裝。'
     if($CoreInstalled){Write-Host '[已存在] 核心已安裝，會保留而不覆蓋。'}
     Write-Host '[選配] Git 命令列、雙電腦記憶共享、Git 目錄唯讀掃描、PowerShell 7 / Oh My Posh / Nerd Font。'

@@ -1,4 +1,4 @@
-# Naos Agent Stack v0.2.2 - ONE complete, self-contained Windows x64 installer.
+# Naos Agent Stack v0.2.3 - ONE complete, self-contained Windows x64 installer.
 # All optional binaries are bundled, but installed ONLY if selected by the user.
 # This builder never downloads files or modifies a Windows installation.
 [CmdletBinding()]
@@ -12,15 +12,15 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $root=$PSScriptRoot
-if(-not $OutputPath){$OutputPath=Join-Path (Split-Path -Parent $root) 'Naos-Agent-Stack-v0.2.2-Complete-pre-release.zip'}
+if(-not $OutputPath){$OutputPath=Join-Path (Split-Path -Parent $root) 'Naos-Agent-Stack-v0.2.3-Complete-pre-release.zip'}
 if(-not $CoreBundlePath){$CoreBundlePath=Join-Path $root 'payload\naos-headless-stack-bundle.zip'}
 if(-not $PrerequisiteRoot){$PrerequisiteRoot=Join-Path $root 'payload\prerequisites'}
 if(-not $TerminalAssetRoot){$TerminalAssetRoot=Join-Path $root 'payload\terminal'}
 
 $dependencyLock=Get-Content -LiteralPath (Join-Path $root 'dependencies.lock.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 $terminalLock=Get-Content -LiteralPath (Join-Path $root 'terminal.lock.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-if($dependencyLock.schema -ne 1 -or $dependencyLock.packageVersion -ne '0.2.2' -or
-   $terminalLock.schema -ne 1 -or $terminalLock.packageVersion -ne '0.2.2'){
+if($dependencyLock.schema -ne 1 -or $dependencyLock.packageVersion -ne '0.2.3' -or
+   $terminalLock.schema -ne 1 -or $terminalLock.packageVersion -ne '0.2.3'){
     throw 'UNIFIED_RELEASE_LOCK_VERSION_MISMATCH'
 }
 $sourceFiles=@(
@@ -93,7 +93,7 @@ foreach($item in $items){
 $manifest=[ordered]@{
     format=1
     package='Naos Agent Stack'
-    version='0.2.2'
+    version='0.2.3'
     edition='Complete'
     selectionMode='interactive; Git, Terminal enhancements and sharing disabled by default'
     generatedUtc=[DateTime]::UtcNow.ToString('o')

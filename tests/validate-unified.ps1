@@ -1,4 +1,4 @@
-# Read-only tests: one Complete v0.2.2 ZIP, selected tools checked before INSTALL.
+# Read-only tests: one Complete v0.2.3 ZIP, selected tools checked before INSTALL.
 [CmdletBinding()]
 param()
 Set-StrictMode -Version Latest
@@ -8,13 +8,13 @@ $root=Split-Path -Parent $PSScriptRoot
 . (Join-Path $root 'Installer-Preflight.ps1')
 $dep=Get-Content (Join-Path $root 'dependencies.lock.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 $terminal=Get-Content (Join-Path $root 'terminal.lock.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-if($dep.packageVersion -ne '0.2.2' -or $terminal.packageVersion -ne '0.2.2'){throw 'UNIFIED_RELEASE_VERSION_INVALID'}
+if($dep.packageVersion -ne '0.2.3' -or $terminal.packageVersion -ne '0.2.3'){throw 'UNIFIED_RELEASE_VERSION_INVALID'}
 if($dep.git.sha256 -notmatch '^[a-f0-9]{64}$'){throw 'VERIFIED_MINGIT_PIN_MISSING'}
 if(@($terminal.pwsh,$terminal.posh,$terminal.themes,$terminal.nerdFont).Count -ne 4){throw 'REQUIRED_TERMINAL_METADATA_MISSING'}
 Write-Output '[PASS] Complete installer lock pins Node, MinGit and four terminal files'
 
 $builder=Get-Content (Join-Path $root 'Build-Package.ps1') -Raw -Encoding UTF8
-foreach($required in @('edition=''Complete''','dependencyLock.git','terminalLock.pwsh','terminalLock.posh','terminalLock.themes','terminalLock.nerdFont',"version='0.2.2'")) {
+foreach($required in @('edition=''Complete''','dependencyLock.git','terminalLock.pwsh','terminalLock.posh','terminalLock.themes','terminalLock.nerdFont',"version='0.2.3'")) {
     if(-not $builder.Contains($required)){throw ('UNIFIED_BUILDER_REQUIRED_COMPONENT_MISSING: '+$required)}
 }
 if($builder -match "ValidateSet\('Standard','Developer'\)"){throw 'LEGACY_SPLIT_EDITIONS_STILL_ENABLED'}

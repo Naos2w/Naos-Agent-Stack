@@ -65,7 +65,7 @@ Write-Output '[PASS] Headless bootstrap exports core index components, omits ret
 $lockFile=Join-Path $root 'dependencies.lock.json'
 if(-not(Test-Path -LiteralPath $lockFile)){throw 'Missing dependency lock file.'}
 $lock=Get-Content -LiteralPath $lockFile -Raw -Encoding UTF8 | ConvertFrom-Json
-if($lock.packageVersion -ne '0.2.2' -or
+if($lock.packageVersion -ne '0.2.3' -or
    $lock.core.sha256 -notmatch '^[a-f0-9]{64}$' -or
    $lock.core.package -ne 'naos-headless-stack-bundle.zip' -or
    $lock.node.sha256 -notmatch '^[a-f0-9]{64}$' -or
