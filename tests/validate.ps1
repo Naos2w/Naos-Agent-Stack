@@ -15,6 +15,7 @@ $names = @(
     'Terminal-Json-Validate.ps1',
     'Launch-NaosPowerShell.ps1',
     'tests\validate-unified.ps1',
+    'tests\validate-bootstrap.ps1',
     'tests\validate-wizard.ps1',
     'tests\validate-terminal.ps1',
     'ForwardWatchdog.ps1',
@@ -56,6 +57,11 @@ if($LASTEXITCODE -ne 0 -or -not($unifiedOutput -match 'UNIFIED_SOURCE_VALIDATION
     throw 'Unified ZIP and pre-install dependency tests failed.'
 }
 Write-Output '[PASS] Single Complete ZIP, all optional packages, early pre-install checks'
+$bootstrapOutput=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'validate-bootstrap.ps1'))
+if($LASTEXITCODE -ne 0 -or -not($bootstrapOutput -match 'BOOTSTRAP_VALIDATION_PASSED')){
+    throw 'Core bootstrap export, index service, or bundle verification tests failed.'
+}
+Write-Output '[PASS] Headless bootstrap exports core index components, omits retired CLI, rejects incomplete bundles'
 $lockFile=Join-Path $root 'dependencies.lock.json'
 if(-not(Test-Path -LiteralPath $lockFile)){throw 'Missing dependency lock file.'}
 $lock=Get-Content -LiteralPath $lockFile -Raw -Encoding UTF8 | ConvertFrom-Json

@@ -36,11 +36,11 @@ function AddTree([System.Collections.ArrayList]$a,[string]$root,[string]$prefix,
   }
 }
 function ExportStack {
-  foreach($p in @((Join-Path $Runtime 'package.json'),(Join-Path $Runtime 'bin\node.exe'),(Join-Path $Runtime 'bin\tunnel-client.exe'),(Join-Path $Headless 'package-lock.json'),(Join-Path $Headless 'start-headless.ps1'),(Join-Path $Headless 'toolboxes\agent-runtime\tools\agent_runtime.ts'),(Join-Path $LettaRoot 'package-lock.json'))){Require $p}
+  foreach($p in @((Join-Path $Runtime 'package.json'),(Join-Path $Runtime 'bin\node.exe'),(Join-Path $Runtime 'bin\tunnel-client.exe'),(Join-Path $Headless 'package-lock.json'),(Join-Path $Headless 'start-headless.ps1'),(Join-Path $Headless 'codebase-project-sync.mjs'),(Join-Path $Headless 'codebase-index\ecosystem.config.cjs'),(Join-Path $Headless 'toolboxes\agent-runtime\tools\agent_runtime.ts'),(Join-Path $LettaRoot 'package-lock.json'))){Require $p}
   $items=New-Object System.Collections.ArrayList
   foreach($d in @('dist','node_modules','ui\dist')){AddTree $items (Join-Path $Runtime $d) ('runtime/'+$d.Replace('\','/')) 'runtime'}
   foreach($f in @('package.json','bin\node.exe','bin\tunnel-client.exe')){AddFile $items (Join-Path $Runtime $f) ('runtime/'+$f.Replace('\','/'))}
-  foreach($f in @('package.json','package-lock.json','start-headless.ps1','stop-headless.ps1','status-headless.ps1','tunnel-launcher.cjs','tunnel-wrapper.ps1','import-persistent-environment.ps1')){AddFile $items (Join-Path $Headless $f) ('headless/'+$f)}
+  foreach($f in @('package.json','package-lock.json','start-headless.ps1','stop-headless.ps1','status-headless.ps1','tunnel-launcher.cjs','tunnel-wrapper.ps1','import-persistent-environment.ps1','codebase-project-sync.mjs','codebase-index\ecosystem.config.cjs')){AddFile $items (Join-Path $Headless $f) ('headless/'+$f)}
   AddTree $items (Join-Path $Headless 'toolboxes') 'toolboxes' 'toolboxes'
   AddTree $items $LettaRoot 'letta-poc' 'letta'
   AddFile $items $PSCommandPath 'naos-agent-stack.ps1'
@@ -61,7 +61,7 @@ function ExportStack {
       [void]$meta.Add([ordered]@{path=$item.Key;sha256=(Get-FileHash -LiteralPath $item.Source -Algorithm SHA256).Hash.ToLowerInvariant()})
     }
     $version=(ReadJson (Join-Path $Runtime 'package.json')).version
-    $manifest=[ordered]@{format=2;sourceHost=$env:COMPUTERNAME;arch=$env:PROCESSOR_ARCHITECTURE;version=$version;createdUtc=[DateTime]::UtcNow.ToString('o');files=@($meta.ToArray());excluded=@('Tunnel secrets and profiles','OAuth','Letta Agent memory','Project registry','Session state','Logs')}
+    $manifest=[ordered]@{format=2;arch=$env:PROCESSOR_ARCHITECTURE;version=$version;createdUtc=[DateTime]::UtcNow.ToString('o');files=@($meta.ToArray());excluded=@('Tunnel secrets and profiles','OAuth','Letta Agent memory','Project registry','Session state','Logs')}
     $entry=$zip.CreateEntry('manifest.json')
     $writer=New-Object IO.StreamWriter($entry.Open(),[Text.UTF8Encoding]::new($false))
     try{$writer.Write(($manifest|ConvertTo-Json -Depth 10))}finally{$writer.Dispose()}
@@ -85,6 +85,10 @@ function VerifyBundle([string]$bundle){
     if($m.format -ne 2){Fail 'Old Desktop bundle is incompatible; export new Headless v2'}
     if($m.arch -ne $env:PROCESSOR_ARCHITECTURE){Fail 'Windows CPU architecture mismatch'}
     if($m.version -ne '1.0.0-beta.2'){Fail 'Unverified OpenChatX core version; cannot apply local patches'}
+    $declared=@($m.files|ForEach-Object {[string]$_.path})
+    foreach($required in @('headless/start-headless.ps1','headless/codebase-project-sync.mjs','headless/codebase-index/ecosystem.config.cjs','toolboxes/agent-runtime/tools/agent_runtime.ts')){
+      if($declared -notcontains $required){Fail ('Required bundle component missing: '+$required)}
+    }
     foreach($f in $m.files){
       if(-not $entries.ContainsKey([string]$f.path)){Fail ('Bundle missing '+$f.path)}
       $hash=[Security.Cryptography.SHA256]::Create();$stream=$entries[[string]$f.path].Open()
@@ -148,9 +152,8 @@ function NpmCi([string]$dir){Push-Location $dir;try{& npm.cmd ci --no-audit;if($
 function InstallStack {
   $zipPath=[IO.Path]::GetFullPath($BundlePath)
   $manifest=VerifyBundle $zipPath
-  if($manifest.sourceHost -eq $env:COMPUTERNAME){Fail 'Do not install over the source MSI host'}
   foreach($p in @($Runtime,$Headless,$LettaRoot)){if(Test-Path -LiteralPath $p){Fail ('Target already exists: '+$p+'; refuse overwrite')}}
-  if($DryRun){Log ('Install dry-run OK: '+$manifest.files.Count+' verified files from '+$manifest.sourceHost);return}
+  if($DryRun){Log ('Install dry-run OK: '+$manifest.files.Count+' verified files');return}
   $npm=CheckNpm
   $stage=Join-Path $env:TEMP ('naos-headless-'+[guid]::NewGuid().ToString('N'))
   EnsureDir $stage
@@ -164,10 +167,12 @@ function InstallStack {
     EnsureDir (Join-Path $Headless 'logs')
     NpmCi $Headless
     NpmCi $LettaRoot
-    & $npm install -g 'codebase-memory-mcp@0.11.0' '@opencode/cli@2.0.21'
+    & $npm install -g 'codebase-memory-mcp@0.11.0'
     if($LASTEXITCODE -ne 0){Fail 'Global tool installation failed'}
     $npmRoot=[string]((& $npm root -g)|Select-Object -First 1)
     $cbm=Join-Path $npmRoot.Trim() 'codebase-memory-mcp\bin\codebase-memory-mcp.exe';Require $cbm
+    $indexConfig=[ordered]@{binary=$cbm;indexMode='fast';scanIntervalMs=30000;gitCheckIntervalMs=600000;fallbackRefreshMs=86400000;maxPerSweep=1;maxGitChecksPerSweep=3;priorityProjects=@();excludedProjects=@()}
+    WriteUtf8 (Join-Path $Headless 'config\codebase-index.json') ($indexConfig|ConvertTo-Json -Depth 6)
     $servers=@{'codebase-memory'=@{type='local';command=@($cbm);enabled=$true;timeout=30000;description='Local code graph and project index'}}
     WriteUtf8 (Join-Path $Headless 'config\mcp-servers.json') ($servers|ConvertTo-Json -Depth 6)
     $addon=Join-Path $LettaRoot 'scripts\install-codebase-memory.ps1';Require $addon
@@ -200,7 +205,7 @@ function ConfigureTunnel {
   Log 'Then start Headless, and configure the new Tunnel as a ChatGPT MCP App.'
 }
 function Doctor {
-  $items=@((Join-Path $Runtime 'package.json'),(Join-Path $Runtime 'bin\node.exe'),(Join-Path $Runtime 'bin\tunnel-client.exe'),(Join-Path $Headless 'start-headless.ps1'),(Join-Path $Headless 'ecosystem.config.cjs'),(Join-Path $Headless 'node_modules\.bin\pm2.cmd'),(Join-Path $Headless 'toolboxes\agent-runtime\tools\agent_runtime.ts'),(Join-Path $Headless 'codebase-project-sync.mjs'),(Join-Path $Headless 'config\mcp-servers.json'),(Join-Path $LettaRoot 'node_modules\node\bin\node.exe'))
+  $items=@((Join-Path $Runtime 'package.json'),(Join-Path $Runtime 'bin\node.exe'),(Join-Path $Runtime 'bin\tunnel-client.exe'),(Join-Path $Headless 'start-headless.ps1'),(Join-Path $Headless 'ecosystem.config.cjs'),(Join-Path $Headless 'node_modules\.bin\pm2.cmd'),(Join-Path $Headless 'toolboxes\agent-runtime\tools\agent_runtime.ts'),(Join-Path $Headless 'codebase-project-sync.mjs'),(Join-Path $Headless 'codebase-index\ecosystem.config.cjs'),(Join-Path $Headless 'config\codebase-index.json'),(Join-Path $Headless 'config\mcp-servers.json'),(Join-Path $LettaRoot 'node_modules\node\bin\node.exe'))
   $missing=0
   foreach($i in $items){if(Test-Path -LiteralPath $i){Log ('OK '+$i)}else{Log ('MISSING '+$i);$missing++}}
   if($missing){Fail ("Doctor: $missing missing components")}
