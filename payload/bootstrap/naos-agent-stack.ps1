@@ -30,18 +30,46 @@ function AddTree([System.Collections.ArrayList]$a,[string]$root,[string]$prefix,
     $rel=$f.FullName.Substring($root.Length).TrimStart('\').Replace('\','/')
     if($type -ne 'runtime' -and $rel -match '(?i)(^|/)node_modules(/|$)'){continue}
     if($rel -match '(?i)(^|/)(\.env($|\.)|\.git|\.ssh|\.aws|\.letta|\.ops|\.services|\.external-tool-ledger|tunnel-profiles|backups|logs|secrets|credentials)(/|$)|(^|/)(state|operations|letta-service|projects|mcp-servers|subagents)\.json$|(\.pem|\.p12|\.pfx|\.key|\.log|\.db|\.sqlite|\.zst)$'){continue}
+    if($type -ne 'runtime' -and $rel -match '(?i)(^|/)(private|memory|memories|sessions|session|state|storage|profiles|auth|tokens|cache|tmp|temp|artifacts|fixtures)(/|$)'){continue}
     if($type -eq 'toolboxes' -and -not($rel -match '(?i)(\.ts|\.mjs|\.cjs|\.md|\.mdc|toolbox\.json)$')){continue}
-    if($type -eq 'letta' -and -not($rel -match '(?i)(\.json|\.js|\.mjs|\.ps1|\.md)$')){continue}
+    if($type -eq 'toolboxes' -and $rel -match '(?i)\.mdc?$' -and $rel -notmatch '(?i)^skills/[^/]+/SKILL\.md$'){continue}
+    if($type -eq 'codebase-index' -and ($rel -notmatch '(?i)\.(mjs|cjs)$' -or $rel -match '(?i)\.(test|spec)\.(mjs|cjs)$')){continue}
+    # Letta's private runtime state is not application source; only ship the minimal POC scripts.
+    if($type -eq 'letta' -and $rel -notmatch '(?i)^(package(-lock)?\.json|compact-poc\.mjs|scripts/([a-z0-9._-]+/)*[a-z0-9._-]+\.(js|mjs|ps1))$'){continue}
+    if($type -ne 'runtime'){
+      if(($f.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){Fail ('Symlinked bundle source refused: '+$prefix+'/'+$rel)}
+      $directory=$f.Directory
+      while($null -ne $directory -and $directory.FullName.Length -ge $root.Length){
+        if(($directory.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){Fail ('Junction bundle source refused: '+$prefix+'/'+$rel)}
+        if($directory.FullName -eq $root){break}
+        $directory=$directory.Parent
+      }
+    }
     AddFile $a $f.FullName ($prefix+'/'+$rel)
   }
 }
 function ExportStack {
-  foreach($p in @((Join-Path $Runtime 'package.json'),(Join-Path $Runtime 'bin\node.exe'),(Join-Path $Runtime 'bin\tunnel-client.exe'),(Join-Path $Headless 'package-lock.json'),(Join-Path $Headless 'start-headless.ps1'),(Join-Path $Headless 'codebase-project-sync.mjs'),(Join-Path $Headless 'codebase-index\ecosystem.config.cjs'),(Join-Path $Headless 'toolboxes\agent-runtime\tools\agent_runtime.ts'),(Join-Path $LettaRoot 'package-lock.json'))){Require $p}
+  foreach($p in @((Join-Path $Runtime 'package.json'),(Join-Path $Runtime 'bin\node.exe'),(Join-Path $Runtime 'bin\tunnel-client.exe'),(Join-Path $Headless 'package-lock.json'),(Join-Path $Headless 'start-headless.ps1'),(Join-Path $Headless 'codebase-project-sync.mjs'),(Join-Path $Headless 'codebase-index\ecosystem.config.cjs'),(Join-Path $Headless 'codebase-index\qa-review-bundle-source.mjs'),(Join-Path $Headless 'toolboxes\agent-runtime\toolbox.json'),(Join-Path $Headless 'toolboxes\skills\toolbox.json'),(Join-Path $Headless 'toolboxes\agent-runtime\tools\agent_runtime.ts'),(Join-Path $LettaRoot 'package-lock.json'),(Join-Path $LettaRoot 'scripts\postinstall-patches.mjs'))){Require $p}
   $items=New-Object System.Collections.ArrayList
   foreach($d in @('dist','node_modules','ui\dist')){AddTree $items (Join-Path $Runtime $d) ('runtime/'+$d.Replace('\','/')) 'runtime'}
   foreach($f in @('package.json','bin\node.exe','bin\tunnel-client.exe')){AddFile $items (Join-Path $Runtime $f) ('runtime/'+$f.Replace('\','/'))}
   foreach($f in @('package.json','package-lock.json','start-headless.ps1','stop-headless.ps1','status-headless.ps1','tunnel-launcher.cjs','tunnel-wrapper.ps1','import-persistent-environment.ps1','codebase-project-sync.mjs','codebase-index\ecosystem.config.cjs')){AddFile $items (Join-Path $Headless $f) ('headless/'+$f)}
-  AddTree $items (Join-Path $Headless 'toolboxes') 'toolboxes' 'toolboxes'
+  # Do not publish user-installed skills/toolboxes from the active MSI profile.
+  # Built-in toolboxes are compiled into the runtime; include their safe descriptors
+  # and the Agent Runtime source, including disabled QA modules still statically imported.
+  $coreToolboxes=@('agent-runtime','files','goals','jobs','mcp-manager','media','nodes','projects','providers','rules','search','shell','skills','store','subagents','system','teams','toolbox-manager')
+  foreach($name in $coreToolboxes){
+    $toolboxRoot=Join-Path $Headless ('toolboxes\'+$name)
+    if($name -eq 'agent-runtime'){
+      AddTree $items $toolboxRoot ('toolboxes/'+$name) 'toolboxes'
+    }else{
+      # Other built-ins run from the bundled Runtime; include descriptors, not user rules or skills.
+      AddFile $items (Join-Path $toolboxRoot 'toolbox.json') ('toolboxes/'+$name+'/toolbox.json')
+    }
+  }
+  # Some enabled Letta worker imports still reference disabled QA helper modules.
+  # Package source modules without historical reports, fixtures, test data or private indexes.
+  AddTree $items (Join-Path $Headless 'codebase-index') 'headless/codebase-index' 'codebase-index'
   AddTree $items $LettaRoot 'letta-poc' 'letta'
   AddFile $items $PSCommandPath 'naos-agent-stack.ps1'
   $base=Split-Path -Parent $PSCommandPath
@@ -86,8 +114,14 @@ function VerifyBundle([string]$bundle){
     if($m.arch -ne $env:PROCESSOR_ARCHITECTURE){Fail 'Windows CPU architecture mismatch'}
     if($m.version -ne '1.0.0-beta.2'){Fail 'Unverified OpenChatX core version; cannot apply local patches'}
     $declared=@($m.files|ForEach-Object {[string]$_.path})
-    foreach($required in @('headless/start-headless.ps1','headless/codebase-project-sync.mjs','headless/codebase-index/ecosystem.config.cjs','toolboxes/agent-runtime/tools/agent_runtime.ts')){
+    foreach($required in @('headless/start-headless.ps1','headless/codebase-project-sync.mjs','headless/codebase-index/ecosystem.config.cjs','headless/codebase-index/qa-review-bundle-source.mjs','toolboxes/agent-runtime/toolbox.json','toolboxes/skills/toolbox.json','toolboxes/agent-runtime/tools/agent_runtime.ts','letta-poc/package.json','letta-poc/package-lock.json','letta-poc/scripts/postinstall-patches.mjs')){
       if($declared -notcontains $required){Fail ('Required bundle component missing: '+$required)}
+    }
+    if($declared -contains 'manifest.json' -or @($declared|Select-Object -Unique).Count -ne $declared.Count){
+      Fail 'Bundle manifest has duplicate or reserved paths'
+    }
+    foreach($name in $entries.Keys){
+      if($name -ne 'manifest.json' -and $declared -notcontains $name){Fail ('Unlisted bundle entry refused: '+$name)}
     }
     foreach($f in $m.files){
       if(-not $entries.ContainsKey([string]$f.path)){Fail ('Bundle missing '+$f.path)}

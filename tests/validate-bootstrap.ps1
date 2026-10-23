@@ -66,5 +66,104 @@ try {
 } finally {
     Remove-Item -LiteralPath $fixture -Force -ErrorAction SilentlyContinue
 }
+# Exercise the actual exporter selector against synthetic files, never production state.
+foreach($name in @('Fail','AddFile','AddTree')){
+    $fn=@($definitions|Where-Object {$_.Name -eq $name})
+    if($fn.Count -ne 1){throw ('BOOTSTRAP_FUNCTION_MISSING: '+$name)}
+    Invoke-Expression $fn[0].Extent.Text
+}
+if($export.Contains("AddTree " + '$items' + " (Join-Path " + '$Headless' + " 'toolboxes')") -or
+   -not $export.Contains("coreToolboxes=@('agent-runtime','files'") -or
+   -not $export.Contains("('toolboxes/'+") -or
+   -not $export.Contains("AddTree " + '$items' + " (Join-Path " + '$Headless' + " 'codebase-index')")){
+    throw 'BOOTSTRAP_EXPORT_USES_UNSCOPED_TOOLBOXES_OR_OMITS_INDEX_SOURCE'
+}
+foreach($required in @('headless/codebase-index/qa-review-bundle-source.mjs','toolboxes/agent-runtime/toolbox.json','toolboxes/skills/toolbox.json','letta-poc/scripts/postinstall-patches.mjs')){
+    Require-Text $verify $required ('BOOTSTRAP_VERIFY_MISSING: '+$required)
+}
+$testRoot=Join-Path $env:TEMP ('naos-export-safety-'+[guid]::NewGuid().ToString('N'))
+function New-SyntheticFile([string]$relative) {
+    $target=Join-Path $testRoot $relative
+    [IO.Directory]::CreateDirectory((Split-Path -Parent $target))|Out-Null
+    [IO.File]::WriteAllText($target,'synthetic-no-private-content',[Text.UTF8Encoding]::new($false))
+}
+function Assert-SyntheticPaths([System.Collections.ArrayList]$entries,[string[]]$allowed,[string[]]$denied){
+    $paths=@($entries|ForEach-Object {$_.Key})
+    foreach($key in $allowed){if($paths -notcontains $key){throw ('BOOTSTRAP_EXPORT_MISSING_SAFE_SOURCE: '+$key)}}
+    foreach($key in $denied){if($paths -contains $key){throw ('BOOTSTRAP_EXPORT_LEAKED_PRIVATE_SOURCE: '+$key)}}
+}
+try {
+    foreach($file in @(
+        'toolboxes\agent-runtime\toolbox.json',
+        'toolboxes\agent-runtime\tools\agent_runtime.ts',
+        'toolboxes\agent-runtime\README.md',
+        'toolboxes\agent-runtime\skills\agent-runtime-usage\SKILL.md',
+        'toolboxes\agent-runtime\skills\agent-runtime-usage\notes.md',
+        'toolboxes\agent-runtime\memory\session.md',
+        'toolboxes\agent-runtime\cache\artifact.ts',
+        'toolboxes\agent-runtime\.env',
+        'toolboxes\agent-runtime\config.json',
+        'toolboxes\stock-investment\skills\daily-stock-workflow\SKILL.md',
+        'letta\package.json',
+        'letta\package-lock.json',
+        'letta\compact-poc.mjs',
+        'letta\scripts\postinstall-patches.mjs',
+        'letta\README.md',
+        'letta\config.json',
+        'letta\.letta\state.json',
+        'letta\scripts\private\secret.mjs',
+        'letta\tests\phase3.test.mjs',
+        'codebase-index\ecosystem.config.cjs',
+        'codebase-index\qa-review-bundle-source.mjs',
+        'codebase-index\sync.test.mjs',
+        'codebase-index\profiles\private.mjs',
+        'codebase-index\config.json'
+    )){New-SyntheticFile $file}
+    $toolboxItems=New-Object System.Collections.ArrayList
+    AddTree $toolboxItems (Join-Path $testRoot 'toolboxes\agent-runtime') 'toolboxes/agent-runtime' 'toolboxes'
+    Assert-SyntheticPaths $toolboxItems @('toolboxes/agent-runtime/toolbox.json','toolboxes/agent-runtime/tools/agent_runtime.ts','toolboxes/agent-runtime/skills/agent-runtime-usage/SKILL.md') @('toolboxes/agent-runtime/README.md','toolboxes/agent-runtime/skills/agent-runtime-usage/notes.md','toolboxes/agent-runtime/memory/session.md','toolboxes/agent-runtime/cache/artifact.ts','toolboxes/agent-runtime/.env','toolboxes/agent-runtime/config.json','toolboxes/stock-investment/skills/daily-stock-workflow/SKILL.md')
+    $lettaItems=New-Object System.Collections.ArrayList
+    AddTree $lettaItems (Join-Path $testRoot 'letta') 'letta-poc' 'letta'
+    Assert-SyntheticPaths $lettaItems @('letta-poc/package.json','letta-poc/package-lock.json','letta-poc/compact-poc.mjs','letta-poc/scripts/postinstall-patches.mjs') @('letta-poc/README.md','letta-poc/config.json','letta-poc/.letta/state.json','letta-poc/scripts/private/secret.mjs','letta-poc/tests/phase3.test.mjs')
+    $indexItems=New-Object System.Collections.ArrayList
+    AddTree $indexItems (Join-Path $testRoot 'codebase-index') 'headless/codebase-index' 'codebase-index'
+    Assert-SyntheticPaths $indexItems @('headless/codebase-index/ecosystem.config.cjs','headless/codebase-index/qa-review-bundle-source.mjs') @('headless/codebase-index/sync.test.mjs','headless/codebase-index/profiles/private.mjs','headless/codebase-index/config.json')
+    Write-Output '[PASS] Exporter scopes core toolboxes, required Letta scripts and Codebase Memory helper sources'
+    Write-Output '[PASS] Exporter excludes synthetic memory, runtime config, credentials and user-installed skills'
+} finally {
+    Remove-Item -LiteralPath $testRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
+# A manifest-hashed archive must also reject *unlisted* entries, even when they
+# use an otherwise allowed extraction prefix. This closes a ZIP injection path.
+$extraBundle=Join-Path $env:TEMP ('naos-bootstrap-extra-entry-'+[guid]::NewGuid().ToString('N')+'.zip')
+try {
+    $required=@('headless/start-headless.ps1','headless/codebase-project-sync.mjs','headless/codebase-index/ecosystem.config.cjs','headless/codebase-index/qa-review-bundle-source.mjs','toolboxes/agent-runtime/toolbox.json','toolboxes/skills/toolbox.json','toolboxes/agent-runtime/tools/agent_runtime.ts','letta-poc/package.json','letta-poc/package-lock.json','letta-poc/scripts/postinstall-patches.mjs')
+    $zip=[IO.Compression.ZipFile]::Open($extraBundle,[IO.Compression.ZipArchiveMode]::Create)
+    try {
+        foreach($path in $required){$zip.CreateEntry($path)|Out-Null}
+        $zip.CreateEntry('letta-poc/private-undeclared.mjs')|Out-Null
+        $manifest=[ordered]@{
+            format=2;arch=$env:PROCESSOR_ARCHITECTURE;version='1.0.0-beta.2'
+            files=@($required|ForEach-Object {
+                [ordered]@{path=$_;sha256='e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}
+            })
+        }
+        $entry=$zip.CreateEntry('manifest.json')
+        $writer=[IO.StreamWriter]::new($entry.Open(),[Text.UTF8Encoding]::new($false))
+        try {$writer.Write(($manifest|ConvertTo-Json -Depth 6))} finally {$writer.Dispose()}
+    } finally {$zip.Dispose()}
+    $savedPreference=$ErrorActionPreference
+    $ErrorActionPreference='Continue'
+    try {
+        $output=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $bootstrap -Mode install -BundlePath $extraBundle -DryRun 2>&1)
+        $code=$LASTEXITCODE
+    } finally {$ErrorActionPreference=$savedPreference}
+    if($code -eq 0 -or -not(($output -join [Environment]::NewLine) -match 'Unlisted bundle entry refused: letta-poc/private-undeclared.mjs')){
+        throw 'BOOTSTRAP_UNLISTED_ENTRY_NOT_REJECTED'
+    }
+    Write-Output '[PASS] Verified archive rejects undeclared ZIP entries before install'
+} finally {
+    Remove-Item -LiteralPath $extraBundle -Force -ErrorAction SilentlyContinue
+}
 Write-Output 'BOOTSTRAP_VALIDATION_PASSED'
 exit 0
