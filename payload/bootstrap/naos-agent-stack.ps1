@@ -209,8 +209,13 @@ function InstallStack {
     WriteUtf8 (Join-Path $Headless 'config\codebase-index.json') ($indexConfig|ConvertTo-Json -Depth 6)
     $servers=@{'codebase-memory'=@{type='local';command=@($cbm);enabled=$true;timeout=30000;description='Local code graph and project index'}}
     WriteUtf8 (Join-Path $Headless 'config\mcp-servers.json') ($servers|ConvertTo-Json -Depth 6)
-    $addon=Join-Path $LettaRoot 'scripts\install-codebase-memory.ps1';Require $addon
-    & $addon -Mode install -NativeBinary $cbm -SkipPackageInstall -SkipStart
+    # The exported Headless synchronizer and PM2 ecosystem are authoritative.
+    # Do not invoke the older Letta-POC installer: it rewrites the synchronizer
+    # and index config, silently downgrading a clean v0.2.3 installation.
+    $watcher=Join-Path $Headless 'codebase-project-sync.mjs';Require $watcher
+    $nodeExe=Join-Path $Runtime 'bin\node.exe';Require $nodeExe
+    & $nodeExe --check $watcher
+    if($LASTEXITCODE -ne 0){Fail 'Bundled Codebase Memory synchronizer syntax check failed'}
     $task=Get-ScheduledTask -TaskName 'OpenChatX Headless' -ErrorAction SilentlyContinue
     if(-not $task){
       try{

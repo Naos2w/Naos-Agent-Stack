@@ -32,11 +32,17 @@ foreach($relative in @('codebase-project-sync.mjs','codebase-index\ecosystem.con
 Require-Text $install "'codebase-memory-mcp@0.11.0'" 'BOOTSTRAP_MISSING_CBM_INSTALL'
 Require-Text $install "'config\codebase-index.json'" 'BOOTSTRAP_MISSING_INDEX_CONFIG'
 Require-Text $doctor 'config\codebase-index.json' 'BOOTSTRAP_DOCTOR_MISSING_INDEX_CONFIG'
+Require-Text $install "'codebase-project-sync.mjs';Require " 'BOOTSTRAP_MISSING_BUNDLED_WATCHER_CHECK'
+Require-Text $install '& $nodeExe --check $watcher' 'BOOTSTRAP_MISSING_WATCHER_SYNTAX_CHECK'
+if($install.Contains('install-codebase-memory.ps1') -or $install.Contains('-SkipPackageInstall -SkipStart')){
+    throw 'BOOTSTRAP_MUST_NOT_REPLACE_BUNDLED_CBM_WATCHER_WITH_OLDER_LETTA_SCRIPT'
+}
 if($install.Contains('@opencode/cli') -or $export.Contains('sourceHost=') -or $install.Contains('$manifest.sourceHost')){
     throw 'BOOTSTRAP_RETIRED_CLI_OR_PRIVATE_HOST_METADATA'
 }
 Write-Output '[PASS] Core exporter requires and includes Codebase Memory synchronizer and PM2 ecosystem'
 Write-Output '[PASS] Doctor and installer configure Codebase Memory; retired OpenCode CLI removed'
+Write-Output '[PASS] Installer preserves exported Codebase Memory watcher and checks its syntax without invoking obsolete Letta installer'
 
 # A real install invocation must reject a ZIP whose manifest omits required core files
 # during the verification stage, before touching any installation paths.
