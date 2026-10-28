@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "runtimePackage": "openchatx-mcp",
+  "runtimeVersion": "1.0.0-beta.2",
+  "overlayRevision": "2026-10-28.audit.1",
+  "policy": "verified-local-MSI-overlay-do-not-auto-apply-to-unknown-upstream-versions",
+  "files": [
+    {
+      "relativePath": "dist/projects/project-executor.js",
+      "snapshot": "baseline/project-executor.js",
+      "sha256": "C36F82A914F0C1BFF0915298DA7075B3074FB1B3F6D9D16B60B757C4D3929DD7",
+      "purpose": "Project scoped WSL argv execution, quote handling and command-chain boundary"
+    },
+    {
+      "relativePath": "dist/server/audit/audit-log.js",
+      "snapshot": "baseline/audit-log.js",
+      "sha256": "BD5040C72407D3FFC26BB088D793A80BFA078DAF0DCA889156CCF5538F37584D",
+      "purpose": "Verified nonblocking audit rotation and interrupted temp recovery"
+    },
+    {
+      "relativePath": "dist/server/audit/audit-format.js",
+      "snapshot": "baseline/audit-format.js",
+      "sha256": "A6702EBA21A04B8CCD287781509AB3BC14E86EAD9F50968AE4DCFF258565DF87",
+      "purpose": "Retain explicit tool failure codes and distinguish observed transport failures"
+    }
+  ],
+  "regressionTests": [
+    "codebase-index/wsl-shell-policy.test.mjs",
+    "codebase-index/audit-rotation.test.mjs"
+  ]
+}

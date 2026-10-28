@@ -3,3 +3,7 @@
 *.md text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
+
+# SHA-pinned runtime overlays must use LF even when core.autocrlf is enabled.
+# The bootstrap retains the explicit *.ps1 CRLF policy above.
+runtime/** text eol=lf

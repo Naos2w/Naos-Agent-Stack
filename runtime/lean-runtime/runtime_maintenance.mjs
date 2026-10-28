@@ -15,7 +15,7 @@ async function noLink(path) {
 
 // mkdir is the cross-process admission mutex. Never steal it on a timer: a
 // paused updater must not lose ownership. Orphaned locks require recovery.
-export async function acquireRuntimeMutex(root, waitMs = 1500) {
+export async function acquireRuntimeMutex(root, waitMs = 1500, purpose = 'admission') {
   const path = join(root, LOCK), token = randomUUID();
   const deadline = Date.now() + waitMs;
   await noLink(root);
@@ -27,7 +27,7 @@ export async function acquireRuntimeMutex(root, waitMs = 1500) {
       await delay(25);
     }
   }
-  try { await writeFile(join(path, 'owner.json'), JSON.stringify({ pid: process.pid, token }), { flag: 'wx' }); }
+  try { await writeFile(join(path, 'owner.json'), JSON.stringify({ pid: process.pid, token, purpose }), { flag: 'wx' }); }
   catch (error) { await rmdir(path); throw error; }
   return async () => {
     const owner = JSON.parse(await readFile(join(path, 'owner.json'), 'utf8'));
@@ -82,7 +82,7 @@ export async function assertNoRuntimeActivity(root) {
 }
 
 export async function acquireRuntimeMaintenance(root, { recovery = false } = {}) {
-  const release = await acquireRuntimeMutex(root);
+  const release = await acquireRuntimeMutex(root, 1500, 'maintenance');
   try {
     if (!recovery) await assertNoRecovery(root);
     await assertNoRuntimeActivity(root);
