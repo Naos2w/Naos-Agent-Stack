@@ -1,0 +1,124 @@
+{
+  "schema": 1,
+  "baselineCommit": "afadf6e",
+  "tests": {
+    "node": 154,
+    "failed": 0,
+    "skipped": 0,
+    "workerCandidate": 7,
+    "powerShell51": "SOURCE_VALIDATION_PASSED",
+    "faultInjection": "actual handler and ledger, fake tool/transport, three owned-process interruption points"
+  },
+  "backendCancellation": {
+    "ok": true,
+    "operationId": "op_dadf867acfb646eb",
+    "state": "failed",
+    "alreadyStopped": true,
+    "remoteStatus": "backend_orphan_cancelled",
+    "orphanRunId": "local-run-36",
+    "reconciliation": {
+      "schema": 1,
+      "source": "recorded_execution_evidence",
+      "remoteState": "settled",
+      "requiresReconciliation": false,
+      "automaticRetryAllowed": false,
+      "reason": "REMOTE_SETTLED_EFFECTS_NOT_ROLLED_BACK",
+      "clientMessageId": "openchatx-op_dadf867acfb646eb",
+      "conversationId": "local-conv-84",
+      "runId": null,
+      "externalRequests": 0,
+      "rejectedBeforeExecution": true,
+      "externalCompleted": 0,
+      "externalCompletedAtTimeout": null,
+      "externalExecution": null,
+      "idempotency": [],
+      "settlement": {
+        "schema": 1,
+        "source": "explicit_cancel",
+        "operationId": "op_dadf867acfb646eb",
+        "projectId": "letta-poc",
+        "conversationId": "local-conv-84",
+        "clientMessageId": "openchatx-op_dadf867acfb646eb",
+        "status": "cancelled",
+        "runId": "local-run-36",
+        "observedAt": "2026-10-31T06:20:47.471Z",
+        "ownerOperationId": "op_ee8d98ebbd1f403c",
+        "ownerClientMessageId": "openchatx-op_ee8d98ebbd1f403c"
+      }
+    }
+  },
+  "smoke": {
+    "operationId": "op_92696cf9c9fc4cd6",
+    "state": "completed",
+    "modelConfiguration": {
+      "version": 1,
+      "effectiveModel": "openai-codex/gpt-6.1-sol",
+      "reasoningEffort": "high",
+      "reasoningState": "observed",
+      "reasoningSource": "model_settings.reasoning",
+      "contextWindow": 272000,
+      "source": "letta.conversation_retrieve",
+      "observedAt": "2026-10-31T06:21:23.028Z",
+      "scope": "before_turn"
+    },
+    "toolsUsed": [
+      "openchatx_read_file"
+    ],
+    "toolOutcomes": {
+      "version": 1,
+      "scope": "runtime_recorded_calls",
+      "total": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unknown": 0,
+      "recovered": 0,
+      "reviewRequired": 0,
+      "failures": [],
+      "failuresTruncated": false
+    },
+    "changedFiles": [],
+    "reconciliation": {
+      "schema": 1,
+      "source": "recorded_execution_evidence",
+      "remoteState": "completed",
+      "requiresReconciliation": false,
+      "automaticRetryAllowed": false,
+      "reason": "COMPLETED_RESULT",
+      "clientMessageId": "openchatx-op_92696cf9c9fc4cd6",
+      "conversationId": "local-conv-84",
+      "runId": null,
+      "externalRequests": null,
+      "rejectedBeforeExecution": false,
+      "externalCompleted": null,
+      "externalCompletedAtTimeout": null,
+      "externalExecution": null,
+      "idempotency": []
+    },
+    "lifecycleEvents": [
+      {
+        "kind": "EXTERNAL_TOOL_EXECUTION",
+        "phase": "started",
+        "sequence": 1,
+        "sideEffecting": false
+      },
+      {
+        "kind": "EXTERNAL_TOOL_EXECUTION",
+        "phase": "completed",
+        "sequence": 1,
+        "idempotencyStatus": "not_applicable",
+        "outcome": "succeeded"
+      }
+    ]
+  },
+  "fixture": {
+    "path": "Letta-POC/tests/runtime-continuity-v1/msi-20261031-a/UNCHANGED.txt",
+    "bytes": 47,
+    "sha256": "999BE00564C899D12C53555B496689714BD12FCE757974419FD9214635DD6055",
+    "sourceConstant": "runtime/benchmarks/continuity-v1/benchmark.mjs:39"
+  },
+  "limits": [
+    "Fault injection does not establish complete remote approval resumption",
+    "Incomplete effect claims remain blocked; no identity replacement or automatic replay",
+    "No Windows VM/reboot/whole-platform upgrade or PC2 acceptance"
+  ]
+}

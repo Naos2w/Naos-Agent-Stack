@@ -31,6 +31,32 @@ In-flight tools, uncertain writes and missing execution evidence remain
 unresolved even when the remote conversation is idle. No automatic retry or
 resumption of interrupted tool approval is implied.
 
+Letta 0.34.1 listener idle is not sufficient backend-settlement evidence: a
+backend-only Run may still reject the next input. `already_idle` therefore
+keeps reconciliation unresolved. When a new input is explicitly rejected by
+that backend Run, recovery of the preceding read-only timeout additionally
+checks the latest remote user-message identity, Agent and conversation, with
+no intervening tool activity. It cancels only the exact conflicting Run,
+requires backend cancellation confirmation, and saves settlement for both the
+original timeout and the input rejected before execution. It never relies on
+elapsed time alone, clears an unknown execution claim, or replays either prompt.
+
+Workers emit bounded, content-free tool start/completion records before sending
+tool responses. If a tool finishes after the turn timeout, later polling can
+observe that completion; a closed response socket cannot erase it or trigger
+re-execution. The original timeout counts remain visible separately. These
+records contain local sequence numbers and fixed status enums, not arguments,
+commands, paths or result content. At most 256 calls are considered for automatic
+evidence reconciliation; incomplete, contradictory or overflowing traces remain
+unresolved. Confirmed remote settlement is still required.
+
+The unchanged idempotency guard is now source-controlled and hash-pinned with
+the Runtime. A completed identical tool identity can return its saved result;
+an incomplete execution claim remains uncertain after a process restart. Never
+delete that claim or replace the identity to force a retry. Hard interruption
+without complete execution evidence and interrupted Letta approvals still need
+explicit investigation; the Runtime does not claim automatic resumption.
+
 - The existing project task/TODO owns the goal, acceptance criteria and next
   approved action. Keep using that record; do not create a second task ledger.
 - `agent_runtime` owns operation/session lifecycle, permissions, cancellation,

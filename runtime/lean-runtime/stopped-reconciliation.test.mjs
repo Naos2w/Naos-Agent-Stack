@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { stripTypeScriptTypes } from 'node:module';
-import { summarizeReconciliation, applyRemoteSettlement } from './operation_reconciliation.mjs';
+import { summarizeReconciliation, applyRemoteSettlement, describeReadOnlyBackendConflict } from './operation_reconciliation.mjs';
 import { patchStoppedReconciliation } from './stopped-reconciliation-patch.mjs';
 
 const source = await readFile(new URL('./source/agent_runtime.ts', import.meta.url), 'utf8');
@@ -27,10 +27,10 @@ function fixture(options = {}) {
     readJsonFile:async()=>input,
     ensureState:async()=>({}), ensureProjectState:()=>projectState,
     ensureConfig:async()=>({}),
-    runLettaWorkerSync:async(...args)=>{calls.push(args);options.afterRemote?.(operations);return options.remote??{ok:true,status:'already_idle'};},
+    runLettaWorkerSync:async(...args)=>{calls.push(args);options.afterRemote?.(operations);return options.remote??{ok:true,status:'cancelled'};},
     withOperationsLock:async fn=>fn(), isProcessRunning:()=>false,
     readText:async path=>path==='stdout'?JSON.stringify(error):diagnostic,
-    parseLettaWorkerOutput:JSON.parse, summarizeReconciliation, applyRemoteSettlement,
+    parseLettaWorkerOutput:JSON.parse, summarizeReconciliation, applyRemoteSettlement, describeReadOnlyBackendConflict,
     saveOperations:async()=>{saves++;}, now:()=> '2026-10-31T01:00:00Z',
     findRecoverableBackendRun:()=>{throw Error('Unrelated orphan recovery must not run');},
   };
@@ -42,12 +42,18 @@ function fixture(options = {}) {
 
 test('explicit cancel reconciles a stopped timeout without declaring task success or replaying work', async()=>{
   const f=fixture();const result=await f.cancel();
-  assert.equal(result.state,'failed');assert.equal(result.remoteStatus,'already_idle');
+  assert.equal(result.state,'failed');assert.equal(result.remoteStatus,'cancelled');
   assert.equal(result.reconciliation.requiresReconciliation,false);
   assert.equal(result.reconciliation.automaticRetryAllowed,false);
   assert.equal(f.calls.length,1);assert.equal(f.calls[0][0].action,'cancel');
   assert.equal(f.calls[0][0].clientMessageId,'openchatx-op_test');assert.equal(f.saves,1);
   assert.equal(f.operations.op_test.remoteSettlement.operationId,'op_test');
+});
+
+test('listener idle alone does not prove the backend Run has stopped',async()=>{
+  const result=await fixture({remote:{ok:true,status:'already_idle'}}).cancel();
+  assert.equal(result.reconciliation.requiresReconciliation,true);
+  assert.equal(result.reconciliation.reason,'REMOTE_BACKEND_IDLE_UNVERIFIED');
 });
 
 test('settled remote cannot clear in-flight tools, uncertain writes, or missing execution evidence', async()=>{

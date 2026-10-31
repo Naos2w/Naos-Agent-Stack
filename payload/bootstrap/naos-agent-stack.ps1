@@ -144,6 +144,7 @@ function RequiredBundleEntries {
     'toolboxes/skills/toolbox.json',
     'toolboxes/agent-runtime/tools/agent_runtime.ts',
     'toolboxes/agent-runtime/tools/letta_worker.ts',
+    'toolboxes/agent-runtime/tools/external_tool_idempotency.ts',
     'toolboxes/agent-runtime/tools/runtime_contract.ts',
     'toolboxes/agent-runtime/tools/model_routing.mjs',
     'toolboxes/agent-runtime/tools/tool_evidence.mjs',

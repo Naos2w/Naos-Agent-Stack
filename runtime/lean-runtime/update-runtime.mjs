@@ -9,6 +9,8 @@ import { acquireRuntimeMaintenance, RECOVERY_FILE } from './runtime_maintenance.
 import { patchModelWorker, patchModelRuntime } from './model-observation-patch.mjs';
 import { patchRoutingWorker, patchRoutingRuntime, patchRoutingGuidance } from './model-routing-patch.mjs';
 import { patchStoppedReconciliation } from './stopped-reconciliation-patch.mjs';
+import { patchInflightRecovery } from './inflight-recovery-patch.mjs';
+import { patchBackendOrphanWorker, patchBackendOrphanRuntime } from './backend-orphan-patch.mjs';
 import { patchContextWorker, patchContextRuntime, patchContextGuidance } from './context-paths-patch.mjs';
 import { patchToolEvidenceWorker, patchEvidenceGuidance } from './tool-evidence-patch.mjs';
 
@@ -16,6 +18,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 export const targets = [
   'tools/runtime_maintenance.mjs',
   'tools/runtime_readiness.mjs', 'tools/operation_reconciliation.mjs',
+  'tools/external_tool_idempotency.ts',
   'tools/runtime_contract.ts', 'tools/model_routing.mjs', 'tools/tool_evidence.mjs', 'tools/letta_worker.ts', 'tools/agent_runtime.ts', 'tools/agent_capabilities.ts',
   'docs/history/runtime-before-20261028.md', 'README.md',
   'rules/shared-development-preflight.mdc', 'skills/agent-runtime-usage/SKILL.md',
@@ -146,8 +149,8 @@ function patchRuntimeBase(original) {
     '      stalePoll: !sessionUpdate.current,\n      reconciliation: operation.reconciliation,');
 }
 
-export function patchWorker(original) { return patchToolEvidenceWorker(patchContextWorker(patchRoutingWorker(patchModelWorker(patchWorkerBase(original))))); }
-export function patchRuntime(original) { return patchStoppedReconciliation(patchContextRuntime(patchRoutingRuntime(patchModelRuntime(patchRuntimeBase(original))))); }
+export function patchWorker(original) { return patchBackendOrphanWorker(patchInflightRecovery(patchToolEvidenceWorker(patchContextWorker(patchRoutingWorker(patchModelWorker(patchWorkerBase(original))))))); }
+export function patchRuntime(original) { return patchBackendOrphanRuntime(patchStoppedReconciliation(patchContextRuntime(patchRoutingRuntime(patchModelRuntime(patchRuntimeBase(original)))))); }
 
 export function patchCapabilities(original, candidate) {
   if (normalize(original) === normalize(candidate)) return candidate;
@@ -176,6 +179,9 @@ export async function prepare(root, stage) {
   const readme = await readFile(join(root, 'README.md'), 'utf8');
   const rule = await readFile(join(root, 'rules/shared-development-preflight.mdc'), 'utf8');
   const skill = await readFile(join(root, 'skills/agent-runtime-usage/SKILL.md'), 'utf8');
+  const idempotency = normalize(await readFile(join(here, 'source/external_tool_idempotency.ts'), 'utf8'));
+  if (normalize(await readFile(join(root, 'tools/external_tool_idempotency.ts'), 'utf8')) !== idempotency)
+    throw Error('IDEMPOTENCY_SOURCE_CHANGED: preserve the installed change and review it before updating');
   let newRule = normalize(rule);
   if (!newRule.includes('## Current runtime contract')) newRule = replaceOnce(newRule,
     'Letta Runtime 對有寫入權的 Project 仍可能自動產生內部稽核 receipt；**這不是 QA 派工、發布許可或日常新待辦**。',
@@ -200,6 +206,7 @@ export async function prepare(root, stage) {
     ['tools/runtime_maintenance.mjs', await readFile(join(here, 'runtime_maintenance.mjs'), 'utf8')],
     ['tools/runtime_readiness.mjs', await readFile(join(here, 'runtime_readiness.mjs'), 'utf8')],
     ['tools/operation_reconciliation.mjs', await readFile(join(here, 'operation_reconciliation.mjs'), 'utf8')],
+    ['tools/external_tool_idempotency.ts', idempotency],
     ['tools/runtime_contract.ts', await readFile(join(here, 'runtime_contract.ts'), 'utf8')],
     ['tools/model_routing.mjs', await readFile(join(here, 'model_routing.mjs'), 'utf8')],
     ['tools/tool_evidence.mjs', await readFile(join(here, 'tool_evidence.mjs'), 'utf8')],

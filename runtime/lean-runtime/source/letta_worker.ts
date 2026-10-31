@@ -1,3 +1,4 @@
+import { verifyReadOnlyOrphanTail } from "./operation_reconciliation.mjs"
 import { describeToolResult, observeWriteTarget, describeFileEffect, summarizeToolEvidence } from "./tool_evidence.mjs"
 import { withRuntimeActivity } from "./runtime_maintenance.mjs"
 import { promises as fs } from "node:fs"
@@ -682,6 +683,7 @@ async function registerExternalToolHandler(
   agentId: string,
   calls: Array<Record<string, unknown>>,
 ) {
+  let executionSequence = 0
   return client.onMessage(async (message) => {
     if (message.type !== "external_tool_call_request") return
     const requestId =
@@ -707,6 +709,10 @@ async function registerExternalToolHandler(
         ? message.tool_call_id.trim()
         : requestId
 
+    const executionSequenceId = ++executionSequence
+    // Local sequence and fixed enums only: never log tool inputs or result text.
+    process.stderr.write(JSON.stringify({kind: "EXTERNAL_TOOL_EXECUTION", phase: "started",
+      sequence: executionSequenceId, sideEffecting: isSideEffectingExternalTool(toolName)}) + "\n")
     const toolStartMs = Date.now()
     let result: ToolResult
     let replayed = false
@@ -759,6 +765,10 @@ async function registerExternalToolHandler(
       result = { is_error: true, content: [{ type: "text", text: "EXTERNAL_TOOL_DISPATCH_FAILED: inspect execution and ledger state before retrying" }] }
     }
 
+    const toolResult = describeToolResult(toolName, result)
+    // Written after the idempotency guard has saved the result, before transport.
+    process.stderr.write(JSON.stringify({kind: "EXTERNAL_TOOL_EXECUTION", phase: "completed",
+      sequence: executionSequenceId, idempotencyStatus, outcome: toolResult.status}) + "\n")
     calls.push({
       toolCallId: toolCallId || null,
       toolName,
@@ -766,15 +776,21 @@ async function registerExternalToolHandler(
       replayed,
       idempotencyStatus,
       durationMs: Date.now() - toolStartMs,
-      toolResult: describeToolResult(toolName, result),
+      toolResult,
       fileEffect,
     })
 
-    client.send({
-      type: "external_tool_call_response",
-      request_id: requestId,
-      result,
-    })
+    try {
+      client.send({
+        type: "external_tool_call_response",
+        request_id: requestId,
+        result,
+      })
+    } catch {
+      // The effect may already be committed. Preserve evidence, never resend.
+      process.stderr.write(JSON.stringify({kind: "EXTERNAL_TOOL_EXECUTION", phase: "response_delivery_failed",
+        sequence: executionSequenceId}) + "\n")
+    }
   })
 }
 
@@ -1028,6 +1044,7 @@ async function runTurn(
           configured_timeout_ms: timeoutMs,
           last_progress_type: lastProgressType,
           last_progress_age_ms: Date.now() - lastProgressMs,
+          external_execution_schema: 1,
           external_requests: externalRequests,
           external_completed: externalCalls.length,
           last_tool_category: lastToolCategory,
@@ -1061,7 +1078,7 @@ async function runTurn(
           reason: recovery.reason ?? null,
         }) + "\n")
         throw new Error(
-          recovery.status === "uncertain"
+          recovery.status !== "cancelled"
             ? "LETTA_TURN_TIMEOUT_REMOTE_UNCERTAIN"
             : "LETTA_TURN_TIMEOUT_REMOTE_SETTLED",
         )
@@ -1640,12 +1657,22 @@ async function workerRecoverOrphan(input: WorkerInput) {
     throw new Error("LETTA_ORPHAN_RECOVERY_LISTENER_BUSY")
   }
 
-  const response = await withClient((client) => client.request({
+  if (!input.clientMessageId) throw new Error("LETTA_ORPHAN_REMOTE_TAIL_UNVERIFIED")
+  const response = await withClient(async (client) => {
+    const tail = await client.request({
+      type: "conversation_messages_list", request_id: client.nextRequestId("orphan-ownership"),
+      conversation_id: conversationId, query: {limit: 20, order: "desc", include_err: true},
+    }, "conversation_messages_list_response", 8_000)
+    if (tail.success !== true || !verifyReadOnlyOrphanTail(tail.messages, {
+      agentId, conversationId, clientMessageId: input.clientMessageId,
+    })) throw new Error("LETTA_ORPHAN_REMOTE_TAIL_UNVERIFIED")
+    return client.request({
     type: "abort_message",
     request_id: client.nextRequestId("recover-backend-orphan"),
     runtime: { agent_id: agentId, conversation_id: conversationId },
     run_id: runId,
-  }, "abort_message_response", 8_000))
+  }, "abort_message_response", 8_000)
+  })
   if (response.success !== true || response.aborted !== true) {
     throw new Error("LETTA_ORPHAN_RECOVERY_NOT_CONFIRMED")
   }

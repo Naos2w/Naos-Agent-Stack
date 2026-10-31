@@ -1,5 +1,9 @@
 # MSI stopped-operation reconciliation — 2026-10-31
 
+Later verification found that listener idle did not prove backend idle. See
+[the superseding in-flight/backend validation](MSI_INFLIGHT_VALIDATION_20261031.md)
+for the reproduced backend Run, confirmed cancellation and corrected policy.
+
 ## Reproduced defect and correction
 
 The existing Letta test Agent and conversation accepted a read-only, one-second

@@ -19,7 +19,7 @@ await copyFile(join(here, '.candidate/candidate/tools/runtime_maintenance.mjs'),
 for (const name of ['runtime_readiness.mjs', 'operation_reconciliation.mjs', 'model_routing.mjs', 'tool_evidence.mjs']) {
   await copyFile(join(here, '.candidate/candidate/tools', name), join(tools, name));
 }
-for (const name of ['letta_worker.ts', 'agent_runtime.ts', 'runtime_contract.ts', 'agent_capabilities.ts']) {
+for (const name of ['letta_worker.ts', 'agent_runtime.ts', 'runtime_contract.ts', 'agent_capabilities.ts', 'external_tool_idempotency.ts']) {
   const input = await readFile(join(here, '.candidate/candidate/tools', name), 'utf8');
   await writeFile(join(tools, name), input);
   const output = stripTypeScriptTypes(input, { mode: 'transform', sourceMap: false });

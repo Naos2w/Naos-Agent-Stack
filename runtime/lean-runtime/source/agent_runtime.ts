@@ -37,7 +37,7 @@ const { withRuntimeActivity } = await import(maintenanceUrl.href)
 
 const reconciliationUrl = new URL("./operation_reconciliation.mjs", import.meta.url)
 reconciliationUrl.searchParams.set("source_mtime", String((await fs.stat(fileURLToPath(reconciliationUrl))).mtimeMs))
-const { summarizeReconciliation, retainUnresolvedOperation, applyRemoteSettlement } = await import(reconciliationUrl.href)
+const { summarizeReconciliation, retainUnresolvedOperation, applyRemoteSettlement, describeReadOnlyBackendConflict } = await import(reconciliationUrl.href)
 
 const execFileAsync = promisify(execFile)
 
@@ -1608,7 +1608,7 @@ async function cancelOperation(project: ProjectRecord, operationId: string) {
           readError(prior.stdoutPath),
           readText(prior.stderrPath),
         ])
-        const proof = findRecoverableBackendRun(
+        const proof = describeReadOnlyBackendConflict(
           before, currentError, prior, previousError, previousStderr,
         )
         if (proof) {
@@ -1619,17 +1619,41 @@ async function cancelOperation(project: ProjectRecord, operationId: string) {
             agentId: projectState.lettaAgentId,
             conversationId: proof.conversationId,
             runId: proof.runId,
+            clientMessageId: proof.clientMessageId,
           }, config, 25_000)
           if (recovered.ok !== true || recovered.status !== "cancelled" ||
               recovered.runId !== proof.runId ||
               recovered.conversationId !== proof.conversationId) {
             throw new Error(`LETTA_ORPHAN_RECOVERY_NOT_CONFIRMED: ${operationId}`)
           }
-          return {
-            ok: true, operationId, state: before.state,
-            alreadyStopped: true, remoteStatus: "backend_orphan_cancelled",
-            orphanRunId: proof.runId,
-          }
+          return withOperationsLock(async () => {
+            const latest = await readOperations()
+            const current = latest[before.id]
+            const owner = latest[proof.ownerOperationId]
+            if (!current || !owner || current.state !== "failed" || current.inputPath !== before.inputPath ||
+                current.sessionId !== proof.conversationId || owner.sessionId !== proof.conversationId ||
+                current.projectId !== project.id || owner.projectId !== project.id ||
+                isProcessRunning(current.pid) || isProcessRunning(owner.pid)) {
+              throw new Error(`OPERATION_CHANGED_DURING_CANCEL: ${operationId}`)
+            }
+            const observedAt = now()
+            for (const record of [owner, current]) {
+              record.remoteSettlement = {
+                schema: 1, source: "explicit_cancel", operationId: record.id, projectId: project.id,
+                conversationId: proof.conversationId, clientMessageId: `openchatx-${record.id}`,
+                status: "cancelled", runId: proof.runId, observedAt,
+                ownerOperationId: proof.ownerOperationId, ownerClientMessageId: proof.clientMessageId,
+              }
+              const output = await readText(record.stdoutPath)
+              record.reconciliation = summarizeReconciliation(record,
+                output.trim() ? parseLettaWorkerOutput(output) : {}, await readText(record.stderrPath))
+              record.updatedAt = observedAt
+            }
+            await saveOperations(latest)
+            return { ok: true, operationId, state: current.state, alreadyStopped: true,
+              remoteStatus: "backend_orphan_cancelled", orphanRunId: proof.runId,
+              reconciliation: current.reconciliation }
+          })
         }
       }
     }
