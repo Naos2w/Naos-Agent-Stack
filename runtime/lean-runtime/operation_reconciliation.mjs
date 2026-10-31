@@ -111,7 +111,7 @@ export function summarizeReconciliation(operation, result = {}, stderr = '') {
     if (!line.startsWith('{')) continue;
     try {
       const entry = JSON.parse(line);
-      if (entry.kind === 'LETTA_TURN_TIMEOUT_DIAGNOSTIC') timeout = entry;
+      if (entry.kind === 'LETTA_TURN_TIMEOUT_DIAGNOSTIC' || entry.kind === 'LETTA_TURN_INTERRUPTION_DIAGNOSTIC') timeout = entry;
       if (entry.kind === 'LETTA_TIMEOUT_RECOVERY') recovery = entry;
       if (entry.kind === 'EXTERNAL_TOOL_EXECUTION') {
         // 256 calls x start/complete/delivery failure. Overflow is invalid.

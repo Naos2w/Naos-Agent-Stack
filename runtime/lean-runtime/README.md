@@ -74,6 +74,10 @@ excluded from the current MSI task by the owner.
 [MSI/PC2 closeout](../MSI_PC2_CLOSEOUT_20261031.md) records the subsequent real
 model/tool checks on both hosts, completed PC2 migration and PM2 compatibility fix.
 
+[MSI Letta reconnect repair](../MSI_LETTA_RECONNECT_20261031.md) records the later
+control-connection recovery, actual approval/in-flight fault injection, 175-test
+CI run and guarded MSI installation. This repair is not yet synchronized to PC2.
+
 The existing Headless exporter includes the updated TypeScript sources. A future
 Complete installer still requires its own package/build/fresh-install acceptance;
 this local change makes no claim that such a release has been published.

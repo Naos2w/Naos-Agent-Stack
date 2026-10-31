@@ -4,6 +4,26 @@ Policy version: **2026-10-28.3**. Active execution uses **Letta only**.
 OpenCode and the standalone Phase 2 toolbox are retired. Their records and
 POC results are historical evidence, not current operating instructions.
 
+## Live connection interruption recovery
+
+Each active turn now uses two scoped WebSocket connections to the same Agent
+and conversation: one control connection handles input/approvals; a stable tool
+connection owns external tool registrations and results. This is one Worker and
+one model turn, not another Agent or a second execution of the task.
+Letta's supported subscriber failover keeps the turn alive when control drops.
+The Worker reattaches control at most twice within the original turn deadline,
+with stale-approval recovery disabled, and handles the original approval IDs.
+It never resends `create_message`. Tools already running finish through the same
+tool connection and unchanged idempotency ledger. Terminal events from either
+connection can complete the turn. Both connections close at the end of the Worker.
+
+This covers a control-connection loss while the Worker, Letta process and tool
+connection remain alive. Loss of the tool connection, both connections, Worker
+or Letta process is not transparent recovery. Such operations retain uncertain
+effect evidence and require reconciliation. Missing input acceptance, changed
+runtime scope and exhausted reconnect attempts also cannot authorize a replay.
+No provider source, permissions, denial decision or replay claim is overridden.
+
 The authoritative installed workflow is
 `rules/shared-development-preflight.mdc`. Explicit current user instructions,
 Project permissions and applicable repository release requirements retain

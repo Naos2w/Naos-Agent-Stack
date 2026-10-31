@@ -13,6 +13,7 @@ import { patchInflightRecovery } from './inflight-recovery-patch.mjs';
 import { patchBackendOrphanWorker, patchBackendOrphanRuntime } from './backend-orphan-patch.mjs';
 import { patchContextWorker, patchContextRuntime, patchContextGuidance } from './context-paths-patch.mjs';
 import { patchToolEvidenceWorker, patchEvidenceGuidance } from './tool-evidence-patch.mjs';
+import { patchTurnReconnectWorker } from './turn-reconnect-patch.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const targets = [
@@ -150,7 +151,7 @@ function patchRuntimeBase(original) {
     '      stalePoll: !sessionUpdate.current,\n      reconciliation: operation.reconciliation,');
 }
 
-export function patchWorker(original) { return patchBackendOrphanWorker(patchInflightRecovery(patchToolEvidenceWorker(patchContextWorker(patchRoutingWorker(patchModelWorker(patchWorkerBase(original))))))); }
+export function patchWorker(original) { return patchTurnReconnectWorker(patchBackendOrphanWorker(patchInflightRecovery(patchToolEvidenceWorker(patchContextWorker(patchRoutingWorker(patchModelWorker(patchWorkerBase(original)))))))); }
 export function patchRuntime(original) { return patchDispatchReconciliation(patchBackendOrphanRuntime(patchStoppedReconciliation(patchContextRuntime(patchRoutingRuntime(patchModelRuntime(patchRuntimeBase(original))))))); }
 
 export function patchDispatchReconciliation(text) {

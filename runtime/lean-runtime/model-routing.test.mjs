@@ -128,9 +128,11 @@ test('actual runTurn sends input only after verified conversation selection',asy
     if(request.type==='conversation_messages_list')return {success:true,messages:[]};
     return original(request);
   };
+  f.client.setToolScope=()=>{};f.client.onDisconnect=()=>()=>{};f.client.isOpen=()=>true;
   f.client.onMessage=()=>()=>{};f.client.waitFor=async()=>({stop_reason:'end_turn'});
   const dependencies={withClient:fn=>fn(f.client),registerExternalToolHandler:()=>{},registerApprovalHandler:()=>{},
     runtimeStartCommand:()=>({type:'runtime_start'}),requireSuccess:r=>assert.equal(r.success,true),
+    runtimeMatches:(m,r)=>m.runtime===r,
     applyConversationModelSelection,workerInspect:async()=>({status:'idle'}),assertRemoteStateIdle:()=>{},
     externalToolDefinitions:()=>[],latestAssistantText:()=> 'verified',truncate:text=>({text,truncated:false}),planModelSelection};
   const run=new Function(...Object.keys(dependencies),'selection',body+'\nreturn runTurn({},{agentId:"a"},{conversationId:"c"},"fixture",1000,"message-fixture",selection);');

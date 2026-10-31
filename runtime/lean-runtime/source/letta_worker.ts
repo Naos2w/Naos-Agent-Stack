@@ -318,6 +318,7 @@ function registerApprovalHandler(
   client: LettaSocket,
   project: ProjectRecord,
   decisions: Array<Record<string, unknown>>,
+  toolController: LettaSocket = client,
 ) {
   const cache = new Map<string, Record<string, unknown>>()
 
@@ -355,10 +356,10 @@ function registerApprovalHandler(
       decision = await decideExternalToolApproval(project, toolName, input)
 
       if (decision.behavior === "allow") {
-        const registration = await client.request(
+        const registration = await toolController.request(
           {
             type: "runtime_external_tools_update",
-            request_id: client.nextRequestId("external-tools-rebind"),
+            request_id: toolController.nextRequestId("external-tools-rebind"),
             updates: [
               {
                 runtimes: [runtime],
@@ -414,40 +415,78 @@ class LettaSocket {
   private requestCounter = 0
   private closed = false
   private readonly url: string
+  private disconnectHandlers = new Set<() => void>()
+  private toolScope: Record<string, unknown> | null = null
 
   constructor(url: string) {
     this.url = url
+    this.openSocket()
+  }
+
+  private openSocket() {
     const WebSocketCtor = (globalThis as any).WebSocket
     if (typeof WebSocketCtor !== "function") {
       throw new Error("WEBSOCKET_UNAVAILABLE: Node 22+ global WebSocket required")
     }
-    this.socket = new WebSocketCtor(url)
-    this.socket.addEventListener("message", (event: any) => {
-      void this.handleData(event.data)
+    const socket = new WebSocketCtor(this.url)
+    this.socket = socket
+    socket.addEventListener("message", (event: any) => {
+      if (socket === this.socket && !this.closed) void this.handleData(event.data)
     })
-    this.socket.addEventListener("close", () => {
-      if (!this.closed) {
+    socket.addEventListener("close", () => {
+      if (socket === this.socket && !this.closed) {
         this.rejectAll(new Error("LETTA_SOCKET_CLOSED"))
+        for (const handler of this.disconnectHandlers) handler()
       }
     })
+  }
+
+  onDisconnect(handler: () => void) {
+    this.disconnectHandlers.add(handler)
+    return () => this.disconnectHandlers.delete(handler)
+  }
+
+  setToolScope(scope: Record<string, unknown>) {
+    this.toolScope = scope
+  }
+
+  isOpen() {
+    return !this.closed && this.socket.readyState === 1
+  }
+
+  async reconnect(timeoutMs: number) {
+    if (this.closed) throw new Error("LETTA_SOCKET_CLOSED")
+    const previous = this.socket
+    this.openSocket()
+    try { previous.close() } catch { /* Already disconnected. */ }
+    await this.connect(timeoutMs)
   }
 
   async connect(timeoutMs = 5000) {
     if (this.socket.readyState === 1) return
     await new Promise<void>((resolvePromise, rejectPromise) => {
+      const socket = this.socket
+      const cleanup = () => {
+        clearTimeout(timer)
+        socket.removeEventListener("open", onOpen)
+        socket.removeEventListener("error", onError)
+        socket.removeEventListener("close", onError)
+      }
       const timer = setTimeout(() => {
+        cleanup()
         rejectPromise(new Error(`LETTA_CONNECT_TIMEOUT: ${this.url}`))
       }, timeoutMs)
       const onOpen = () => {
-        clearTimeout(timer)
+        cleanup()
         resolvePromise()
       }
       const onError = () => {
-        clearTimeout(timer)
+        cleanup()
         rejectPromise(new Error(`LETTA_CONNECT_FAILED: ${this.url}`))
       }
-      this.socket.addEventListener("open", onOpen, { once: true })
-      this.socket.addEventListener("error", onError, { once: true })
+      socket.addEventListener("open", onOpen, { once: true })
+      socket.addEventListener("error", onError, { once: true })
+      socket.addEventListener("close", onError, { once: true })
     })
   }
 
@@ -570,8 +609,14 @@ class LettaSocket {
       }
 
       const message = JSON.parse(text) as Record<string, unknown>
+      if (this.toolScope && (message.type === "control_request" || message.type === "external_tool_call_request") &&
+          !runtimeMatches(message, this.toolScope)) return
       for (const handler of [...this.handlers]) {
-        void Promise.resolve(handler(message))
+        // A lost approval/rebind response is replayed by the same live runtime
+        // after reattachment. Never leave the old handler rejection unobserved.
+        void Promise.resolve(handler(message)).catch(() => {
+          process.stderr.write(JSON.stringify({kind: "LETTA_HANDLER_DELIVERY_FAILED"}) + "\n")
+        })
       }
 
       const requestId =
@@ -900,24 +945,26 @@ async function runTurn(
   requestMessageId?: string,
   modelSelection = planModelSelection({ model: "letta/agent-config" }),
 ) {
-  return withClient(async (client) => {
+  return withClient(async (client) => withClient(async (standby) => {
     const externalCalls: Array<Record<string, unknown>> = []
     const approvalDecisions: Array<Record<string, unknown>> = []
+    client.setToolScope({agent_id: binding.agentId, conversation_id: conversation.conversationId})
+    standby.setToolScope({agent_id: binding.agentId, conversation_id: conversation.conversationId})
     registerExternalToolHandler(
-      client,
+      standby,
       project,
       binding.agentId,
       externalCalls,
     )
-    registerApprovalHandler(client, project, approvalDecisions)
+    registerApprovalHandler(client, project, approvalDecisions, standby)
 
     const start = await client.request(
-      runtimeStartCommand(
+      {...runtimeStartCommand(
         client,
         project,
         binding.agentId,
         conversation.conversationId,
-      ),
+      ), external_tools: []},
       "runtime_start_response",
       timeoutMs,
     )
@@ -928,6 +975,17 @@ async function runTurn(
         ? (start.runtime as Record<string, unknown>)
         : null
     if (!runtime) throw new Error("LETTA_RUNTIME_SCOPE_MISSING")
+    // Letta cancels an active turn when its last subscribed controller closes.
+    // The per-turn tool connection keeps the captured tool registration alive
+    // while the control connection reattaches. It never answers approvals.
+    // Re-registering a tool on a NEW connection cannot repair a tool definition
+    // already captured by Letta's pending approval executor.
+    const standbyStart = await standby.request({
+      ...runtimeStartCommand(standby, project, binding.agentId, conversation.conversationId),
+      recover_approvals: false,
+    }, "runtime_start_response", timeoutMs)
+    requireSuccess(standbyStart, "LETTA_STANDBY_START_FAILED")
+    if (!runtimeMatches({runtime: standbyStart.runtime}, runtime)) throw new Error("LETTA_STANDBY_SCOPE_MISMATCH")
     const selectedModel = await applyConversationModelSelection(client, runtime, modelSelection, async () => {
       const remote = await workerInspect({ action: "inspect", agentId: binding.agentId, conversationId: conversation.conversationId })
       assertRemoteStateIdle(remote)
@@ -941,8 +999,14 @@ async function runTurn(
     let lastProgressType = "none"
     let externalRequests = 0
     let unmatchedFinishEvents = 0
+    let inputAccepted = false
+    let turnFinished = false
+    let transportFailure: Error | null = null
+    let reconnecting: Promise<void> | null = null
+    let reconnectAttempts = 0
+    const terminalAbortController = new AbortController()
     let lastToolCategory: "project_tool" | "memory_tool" | "capability_tool" | "unrecognized" | null = null
-    const removeProgressListener = client.onMessage((message) => {
+    const observeProgress = (message: Record<string, unknown>) => {
       const type = typeof message.type === "string" ? message.type : ""
       if (
         type === "external_tool_call_request" ||
@@ -970,20 +1034,58 @@ async function runTurn(
       if (type === "turn_finished" && !runtimeMatches(message, runtime)) {
         unmatchedFinishEvents += 1
       }
+    }
+    const removeControlProgress = client.onMessage(observeProgress)
+    const removeToolProgress = standby.onMessage(observeProgress)
+    const removeProgressListener = () => { removeControlProgress(); removeToolProgress() }
+
+    // Reattach control only while the SAME tool connection remains alive.
+    // Its in-flight executions continue without replay or a new tool identity.
+    const removeToolDisconnectListener = standby.onDisconnect(() => {
+      if (turnFinished || terminalAbortController.signal.aborted) return
+      transportFailure = new Error("LETTA_TOOL_CONNECTION_LOST_REMOTE_UNCERTAIN")
+      terminalAbortController.abort()
+    })
+    const removeDisconnectListener = client.onDisconnect(() => {
+      if (turnFinished || reconnecting || terminalAbortController.signal.aborted) return
+      reconnecting = (async () => {
+        while (reconnectAttempts < 2 && !turnFinished && !terminalAbortController.signal.aborted) {
+          if (!inputAccepted || !standby.isOpen()) break
+          const remaining = timeoutMs - (Date.now() - turnWaitStartMs)
+          if (remaining <= 0) break
+          reconnectAttempts += 1
+          try {
+            await client.reconnect(Math.min(5000, remaining))
+            if (turnFinished || terminalAbortController.signal.aborted) return
+            const attached = await client.request({
+              ...runtimeStartCommand(client, project, binding.agentId, conversation.conversationId),
+              external_tools: [],
+              recover_approvals: false,
+              resume_interrupted_turn: false,
+            }, "runtime_start_response", Math.max(1, Math.min(10000, timeoutMs - (Date.now() - turnWaitStartMs))))
+            requireSuccess(attached, "LETTA_REATTACH_FAILED")
+            if (!runtimeMatches({runtime: attached.runtime}, runtime)) throw new Error("LETTA_REATTACH_SCOPE_MISMATCH")
+            process.stderr.write(JSON.stringify({kind: "LETTA_TRANSPORT_RECOVERY", status: "reattached", attempt: reconnectAttempts}) + "\n")
+            return
+          } catch {
+            // Retry the connection, never the input or an external execution.
+          }
+        }
+        if (!turnFinished && !terminalAbortController.signal.aborted) {
+          transportFailure = new Error("LETTA_TRANSPORT_INTERRUPTED_REMOTE_UNCERTAIN")
+          terminalAbortController.abort()
+        }
+      })().finally(() => { reconnecting = null })
     })
 
     try {
-    const terminalAbortController = new AbortController()
     // Attach both outcomes immediately: input rejection / RPC failure must
     // never leave a pending terminal promise to reject unhandled later.
-    const finishedOutcome = client.waitFor(
-      (message) =>
-        message.type === "turn_finished" &&
-        runtimeMatches(message, runtime),
-      timeoutMs,
-      terminalAbortController.signal,
-    ).then(
-      (message) => ({ ok: true as const, message }),
+    const finishedOutcome = Promise.race([client, standby].map(channel => channel.waitFor(
+      (message) => message.type === "turn_finished" && runtimeMatches(message, runtime),
+      timeoutMs, terminalAbortController.signal,
+    ))).then(
+      (message) => { turnFinished = true; terminalAbortController.abort(); return { ok: true as const, message } },
       (error: unknown) => ({
         ok: false as const,
         error: error instanceof Error ? error : new Error(String(error)),
@@ -1022,6 +1124,7 @@ async function runTurn(
             : "LETTA_INPUT_REJECTED",
         )
       }
+      inputAccepted = true
     } catch (error) {
       // All early exits cancel the terminal timer + listener. Its rejection
       // was already consumed by finishedOutcome, so no orphaned rejection.
@@ -1032,7 +1135,16 @@ async function runTurn(
 
     const outcome = await finishedOutcome
     if (!outcome.ok) {
-      const error = outcome.error
+      const error = transportFailure ?? outcome.error
+      if (transportFailure) {
+        process.stderr.write(JSON.stringify({
+          kind: "LETTA_TURN_INTERRUPTION_DIAGNOSTIC", client_message_id: clientMessageId,
+          external_execution_schema: 1, external_requests: externalRequests,
+          external_completed: externalCalls.length,
+          idempotency: summarizeRunTrace({ external_tool_calls: externalCalls }).validation.idempotency,
+          reconnect_attempts: reconnectAttempts,
+        }) + "\n")
+      }
       if (error instanceof Error && error.message === "LETTA_EVENT_TIMEOUT") {
         const lastCompleted = externalCalls.at(-1)
         const lastCompletedDuration = lastCompleted?.durationMs
@@ -1090,10 +1202,10 @@ async function runTurn(
       throw new Error(`LETTA_TURN_FAILED: ${finished.error}`)
     }
 
-    const messagesResponse = await client.request(
+    const messagesResponse = await standby.request(
       {
         type: "conversation_messages_list",
-        request_id: client.nextRequestId("messages"),
+        request_id: standby.nextRequestId("messages"),
         conversation_id: conversation.conversationId,
         query: {
           limit: 20,
@@ -1125,8 +1237,12 @@ async function runTurn(
       // The current client is per-turn, but release this turn's diagnostic
       // observer explicitly on every success, input failure and timeout.
       removeProgressListener()
+      removeDisconnectListener()
+      removeToolDisconnectListener()
+      terminalAbortController.abort()
+      if (reconnecting) await reconnecting
     }
-  })
+  }))
 }
 
 function summarizeRunTrace(result: Record<string, any>) {

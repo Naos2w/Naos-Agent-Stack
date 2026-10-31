@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "timestamp": "2026-10-31T13:50:31.182Z",
+  "status": "passed",
+  "agentId": "agent-local-31166c4b-56a4-4e39-9bdb-04a2ed91e41c",
+  "conversationId": "local-conv-84",
+  "clientMessageId": "openchatx-reconnect-probe-1793454626016",
+  "runId": "local-run-47",
+  "phase": "approval",
+  "connectionCount": 3,
+  "droppedConnections": 1,
+  "executionCount": 1,
+  "createMessageCount": 1,
+  "originalApprovalReplayed": true,
+  "toolCallIds": [
+    "call_57ca3a2f523140cbaa0af93448247a51|fc_0a96018f36b8f390016ae5f2242218819181de903b49da47bb"
+  ],
+  "elapsedMs": 5166,
+  "modelConfigurationBefore": "openai-codex/gpt-6.1-sol",
+  "workerSourceSha256": "9fa104f259acaf0241ce1ba921768ab1b2cc1a58324eb053fcd5e8c9f035c97c",
+  "scope": "Real installed Letta/model and WebSocket loss; source Worker transport/approval/turn code, fixed local fixture tool and existing conversation. No provider or live installation patch."
+}
