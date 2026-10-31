@@ -133,8 +133,24 @@ function PrepareCore {
   if(-not $InstallCore){Note 'Core installation skipped (not selected).';return}
   $runtimeExists = Present (Join-Path $runtimeRoot 'package.json')
   $headlessExists = Present (Join-Path $headlessRoot 'start-headless.ps1')
-  if($runtimeExists -and $headlessExists){Good 'Existing OpenChatX Headless detected: will not reinstall or overwrite.';return}
+  if($runtimeExists -and $headlessExists){
+    if($Mode -eq 'Plan'){
+      try{
+        $null=Assert-NaosExistingCoreComplete -RuntimeRoot $runtimeRoot -HeadlessRoot $headlessRoot -LettaRoot $letRoot
+      }catch{
+        Caution ('PLAN: Existing OpenChatX Headless detected but may be incomplete; no repair/upgrade will be attempted. '+$_.Exception.Message)
+        return
+      }
+    }else{
+      Assert-NaosExistingCoreComplete -RuntimeRoot $runtimeRoot -HeadlessRoot $headlessRoot -LettaRoot $letRoot
+    }
+    Caution 'Existing OpenChatX Headless kept as-is. This is NOT a v0.2.3 upgrade or complete health check; use explicit migration for version changes.'
+    return
+  }
   Require (-not $runtimeExists -and -not $headlessExists) 'Partial OpenChatX installation detected. Refusing to overwrite; repair manually.'
+  if($Mode -eq 'Apply'){
+    Assert-NaosFreshInstallTargets -RuntimeRoot $runtimeRoot -HeadlessRoot $headlessRoot -LettaRoot $letRoot
+  }
   Require (Present $installerScript) 'Headless bootstrap script missing in payload/bootstrap.'
   $hasNode=Test-NaosSystemNode
   $hasGit=Test-NaosSystemGit
@@ -189,8 +205,12 @@ function PrepareOptionalGitWhenCoreIsSkipped {
 function SetupClient {
   ValidateNetworking
   $key=if($KeyPath){[Environment]::ExpandEnvironmentVariables($KeyPath)}else{Join-Path $HOME '.ssh\id_ed25519'}
-  Require (Present $key) ('SSH key not found: '+$key)
-  Require (Present "$key.pub") 'SSH public-key companion missing.'
+  if($Mode -eq 'Apply'){
+    Require (Present $key) ('SSH key not found: '+$key)
+    Require (Present "$key.pub") 'SSH public-key companion missing.'
+  }elseif(-not(Present $key) -or -not(Present "$key.pub")){
+    Caution 'PLAN: Client SSH private key and matching .pub file must exist before installation; no key is needed to preview.'
+  }
   $expectedUrl='ws://127.0.0.1:'+$LocalPort
   $agent=Get-Service ssh-agent -ErrorAction SilentlyContinue
   if(-not $agent -or $agent.Status -ne 'Running'){
@@ -383,10 +403,19 @@ if($Mode -eq 'Preflight' -or $Mode -eq 'Apply'){
   $coreRuntime=Present (Join-Path $runtimeRoot 'package.json')
   $coreHeadless=Present (Join-Path $headlessRoot 'start-headless.ps1')
   Require (-not ($coreRuntime -xor $coreHeadless)) 'Partial OpenChatX installation found. Refusing to overwrite.'
+  if($InstallCore -and $coreRuntime -and $coreHeadless){
+    Assert-NaosExistingCoreComplete -RuntimeRoot $runtimeRoot -HeadlessRoot $headlessRoot -LettaRoot $letRoot
+  }
   $needCore=($InstallCore -and -not $coreRuntime -and -not $coreHeadless)
+  if($needCore){
+    Assert-NaosFreshInstallTargets -RuntimeRoot $runtimeRoot -HeadlessRoot $headlessRoot -LettaRoot $letRoot
+  }
   $needNode=($needCore -and -not(Test-NaosSystemNode))
   $needGit=($InstallGit -and -not(Test-NaosSystemGit))
   Assert-NaosSelectedPayload -PackageRoot $root -RequireCore:$needCore -RequireNode:$needNode -RequireGit:$needGit
+  if($needCore){
+    Assert-NaosCoreBundleStructure -BootstrapPath $installerScript -BundlePath $bundle
+  }
   if($terminalSelected){
     Invoke-NaosTerminalSetup -Mode Preflight -PowerShell7:$PowerShell7 -OhMyPosh:$OhMyPosh -NerdFont:$NerdFont -TerminalDefault:$SetTerminalDefault -AssetsRoot $terminalAssets
   }

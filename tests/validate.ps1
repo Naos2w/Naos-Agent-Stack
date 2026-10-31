@@ -15,12 +15,21 @@ $names = @(
     'Terminal-Json-Validate.ps1',
     'Launch-NaosPowerShell.ps1',
     'tests\validate-unified.ps1',
+    'tests\validate-package-builder.ps1',
     'tests\validate-bootstrap.ps1',
     'tests\validate-wizard.ps1',
     'tests\validate-terminal.ps1',
     'ForwardWatchdog.ps1',
     'Build-Package.ps1',
     'payload\bootstrap\naos-agent-stack.ps1'
+    'runtime\Rebuild-CoreBundle.ps1',
+    'runtime\Install-HealthObservers.ps1',
+    'runtime\core-maintenance\Apply-AuditDiagnostics.ps1',
+    'runtime\headless\Watch-OpenChatXHealth.ps1',
+    'runtime\headless\status-headless.ps1',
+    'runtime\headless\runtime-readiness.ps1',
+    'runtime\lean-runtime\apply-offline.ps1',
+    'tests\validate-runtime-health.ps1'
 )
 foreach($name in $names) {
     $path=Join-Path $root $name
@@ -57,6 +66,11 @@ if($LASTEXITCODE -ne 0 -or -not($unifiedOutput -match 'UNIFIED_SOURCE_VALIDATION
     throw 'Unified ZIP and pre-install dependency tests failed.'
 }
 Write-Output '[PASS] Single Complete ZIP, all optional packages, early pre-install checks'
+$builderOutput=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'validate-package-builder.ps1'))
+if($LASTEXITCODE -ne 0 -or -not($builderOutput -match 'PACKAGE_BUILDER_VALIDATION_PASSED')){
+    throw 'Synthetic release ZIP integrity and failed-publication rollback tests failed.'
+}
+Write-Output '[PASS] Synthetic release archive hashes, force replacement, and failed-publication rollback'
 $bootstrapOutput=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'validate-bootstrap.ps1'))
 if($LASTEXITCODE -ne 0 -or -not($bootstrapOutput -match 'BOOTSTRAP_VALIDATION_PASSED')){
     throw 'Core bootstrap export, index service, or bundle verification tests failed.'
@@ -95,6 +109,25 @@ if($LASTEXITCODE -ne 0 -or -not($plan -match 'PLAN_ONLY_NO_CHANGES')) {
     throw 'Single mode dry-run failed.'
 }
 Write-Output '[PASS] Single mode dry-run (no changes)'
+# A clean client must be able to preview host/client sharing without creating
+# or reading real SSH credentials. Apply/Preflight must still require the key.
+$missingClientKey=Join-Path $root 'tests\synthetic-absent-client-ssh-key'
+if((Test-Path -LiteralPath $missingClientKey) -or (Test-Path -LiteralPath ($missingClientKey+'.pub'))){
+    throw 'CLIENT_PLAN_FIXTURE_KEY_MUST_NOT_EXIST'
+}
+$clientPlan=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $entry plan -Role client -NoCore -HostIp '100.64.40.3' -SshUser 'testuser' -KeyPath $missingClientKey)
+if($LASTEXITCODE -ne 0 -or -not($clientPlan -match 'PLAN_ONLY_NO_CHANGES') -or
+   -not($clientPlan -match 'no key is needed to preview') -or
+   -not($clientPlan -match 'PLAN: Create local-only SSH forward')){
+    throw 'CLIENT_PLAN_WITHOUT_SSH_KEY_MUST_SUCCEED_READ_ONLY'
+}
+Write-Output '[PASS] Client mode plan previews without a private SSH key (no changes)'
+$hostPlan=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $entry plan -Role host -NoCore -HostIp '100.64.20.1' -PeerIp '100.64.20.2' -SshUser 'testuser')
+if($LASTEXITCODE -ne 0 -or -not($hostPlan -match 'PLAN_ONLY_NO_CHANGES') -or
+   -not($hostPlan -match 'Password login disabled')){
+    throw 'HOST_PLAN_MUST_SUCCEED_READ_ONLY'
+}
+Write-Output '[PASS] Host mode plan previews restricted Tailnet SSH (no changes)'
 $firstInstallPlan=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $entry plan -Role single -InstallGit)
 if($LASTEXITCODE -ne 0 -or -not($firstInstallPlan -match 'PLAN_ONLY_NO_CHANGES') -or
    (-not($firstInstallPlan -match 'Existing OpenChatX Headless detected') -and
@@ -111,18 +144,41 @@ if($negativeExitCode -eq 0 -or -not (($invalid -join [Environment]::NewLine) -ma
     throw 'Contradictory sharing flags did not fail for the expected reason.'
 }
 Write-Output '[PASS] Contradictory sharing option rejected'
-$requiredIgnore=@('*.zip','**/.ssh/','**/state.json','**/tunnel-profiles/')
+$requiredIgnore=@('*.zip','*.tar.xz','**/.ssh/','**/state.json','**/tunnel-profiles/')
 $ignore=Get-Content -LiteralPath (Join-Path $root '.gitignore') -Raw -Encoding UTF8
 foreach($rule in $requiredIgnore) {
     if(-not($ignore.Contains($rule))) {throw "Missing ignore rule: $rule"}
 }
 Write-Output '[PASS] Sensitive and large-file ignore policies'
+# Official binary release assets are intentionally large and remain untracked.
+# Exempt only the seven exact locked paths, and only after their hashes match.
+# Never exempt a whole payload directory: unexpected files still fail the scan.
+$terminalLock=Get-Content -LiteralPath (Join-Path $root 'terminal.lock.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+$lockedAssets=@(
+    @{Relative=('payload\'+[string]$lock.core.package); Sha256=[string]$lock.core.sha256},
+    @{Relative=('payload\prerequisites\'+[string]$lock.node.package); Sha256=[string]$lock.node.sha256},
+    @{Relative=('payload\prerequisites\'+[string]$lock.git.package); Sha256=[string]$lock.git.sha256}
+)
+foreach($part in @($terminalLock.pwsh,$terminalLock.posh,$terminalLock.themes,$terminalLock.nerdFont)){
+    $lockedAssets+=@{Relative=('payload\terminal\'+[string]$part.file); Sha256=[string]$part.sha256}
+}
+$verifiedAssets=@{}
+foreach($asset in $lockedAssets){
+    $path=Join-Path $root $asset.Relative
+    if(-not(Test-Path -LiteralPath $path -PathType Leaf)){continue} # No assets required for source-only CI.
+    if($asset.Sha256 -notmatch '^[0-9a-fA-F]{64}$' -or
+       (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne $asset.Sha256){
+        throw ('BUNDLED_RELEASE_ASSET_SHA256_MISMATCH: '+$asset.Relative)
+    }
+    $verifiedAssets[[IO.Path]::GetFullPath($path)]=$true
+}
 $sourcePaths=@(Get-ChildItem -LiteralPath $root -Recurse -File -ErrorAction Stop |
     Where-Object {$_.FullName -notmatch '\\.git\\' -and $_.Name -ne '.gitignore'})
 $sensitive=@($sourcePaths|Where-Object{$_.Name -match '(?i)^(?:id_ed25519.*|state\.json|operations\.json|\.env.*|.*\.key|.*\.pfx|.*\.pem)$'})
 if($sensitive.Count) {throw 'Sensitive file name discovered in source tree.'}
-$large=@($sourcePaths | Where-Object {$_.Length -gt 1048576})
-if($large.Count){throw 'Source tree contains unexpectedly large files. Releases should hold binaries.'}
+$large=@($sourcePaths | Where-Object {$_.Length -gt 1048576 -and -not $verifiedAssets.ContainsKey($_.FullName)})
+if($large.Count){throw 'Source tree contains unexpectedly large files outside the seven verified release assets.'}
+Write-Output ('[PASS] Verified release asset allowlist: '+$verifiedAssets.Count+' present')
 Write-Output '[PASS] Source tree excludes secrets and large binaries'
 Write-Output 'SOURCE_VALIDATION_PASSED'
 # The negative test intentionally returns 1; without an explicit exit here,

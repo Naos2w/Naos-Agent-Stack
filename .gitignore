@@ -4,6 +4,7 @@
 *.rar
 *.tar
 *.tar.gz
+*.tar.xz
 *.cab
 *.exe
 *.msi
@@ -51,3 +52,6 @@ id_ed25519*
 *.ps1.bak*
 **/.vs/
 **/.idea/
+
+# Reviewed source metadata, not a generated release manifest.
+!runtime/core-maintenance/manifest.json

@@ -1,14 +1,14 @@
 # Naos Agent Stack 安裝指南（繁體中文）
 
-> **適用版本：v0.2.2 Complete Pre-release（新機端到端驗收尚待完成）** · [GitHub Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) · [回到 README](README.md)
+> **本指南適用：v0.2.3 Complete 候選版（尚未發布；新機端到端驗收未完成）** · [GitHub Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) · [回到 README](README.md)
 
-> 舊版 [v0.2.1](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1) 仍使用 Standard / Developer / Terminal Add-on 分包模式。請在 [Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 確認 v0.2.2 Complete Pre-release 附件存在後再依本文操作。
+> 目前可下載的是 [v0.2.2 Complete Pre-release](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.2)；舊 [v0.2.1](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1) 使用分包模式。**v0.2.3 尚無公開附件**；請勿把本指南的候選版本檔名當成已發布的下載連結。只有在 [Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 真正提供 v0.2.3 Complete ZIP 及對應 SHA256 檔後，才能依下列安裝步驟操作。
 
 ## 1. 一次只下載一個 ZIP
 
-v0.2.2 將**所有安裝檔打包在一份 Complete ZIP，執行 install 時再決定安裝哪些工具。**
+v0.2.3 延續 v0.2.2 的單包設計：**所有安裝檔集中於一份 Complete ZIP，執行 install 時才決定安裝哪些工具。** 此版並更新 OpenChatX Headless / Letta / Codebase Memory 核心。
 
-下載名為 `Naos-Agent-Stack-v0.2.2-Complete-pre-release.zip` 的官方 Release 附件。請勿下載 GitHub 自動產生的 Source code ZIP（缺少大型的 Node/npm、Headless 和可選工具）。
+**發布後**下載官方 Release 附件 `Naos-Agent-Stack-v0.2.3-Complete-pre-release.zip` 及 SHA256 檔。若目前找不到這個附件，代表新版還不能下載安裝；不要改抓 GitHub 自動產生的 Source code ZIP（缺少大型 Node/npm、Headless 和可選工具）。
 
 | 元件 | 檔案已包含 | 預設安裝 |
 | --- | --- | --- |
@@ -30,7 +30,7 @@ v0.2.2 將**所有安裝檔打包在一份 Complete ZIP，執行 install 時再�
 從 [GitHub Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 下載完整 ZIP 和同名 `.sha256.txt`。以 Release 公布的 SHA256 為準，下載後執行：
 
 ```powershell
-$zip = Join-Path $HOME 'Downloads\Naos-Agent-Stack-v0.2.2-Complete-pre-release.zip'
+$zip = Join-Path $HOME 'Downloads\Naos-Agent-Stack-v0.2.3-Complete-pre-release.zip'
 $hashFile = [IO.Path]::ChangeExtension($zip, '.sha256.txt')
 if (-not (Test-Path -LiteralPath $zip -PathType Leaf) -or
     -not (Test-Path -LiteralPath $hashFile -PathType Leaf)) {
@@ -47,7 +47,7 @@ Write-Host '[PASS] 下載 ZIP 驗證成功'
 在 ZIP 上按滑鼠右鍵選擇「全部解壓縮」，放入**全新資料夾**。也可接續前面的 `$zip`：
 
 ```powershell
-$installDir = Join-Path $HOME 'Downloads\Naos-Agent-Stack-v0.2.2'
+$installDir = Join-Path $HOME 'Downloads\Naos-Agent-Stack-v0.2.3'
 if (Test-Path $installDir) { throw "資料夾已存在：$installDir，請改選新的資料夾。" }
 Expand-Archive -LiteralPath $zip -DestinationPath $installDir
 Set-Location -LiteralPath $installDir
@@ -74,7 +74,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\naos-agent-stack.ps1 p
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\naos-agent-stack.ps1 install
 ```
 
-完成選單後，v0.2.2 會先檢查**所有已選擇的元件**。必須看到類似以下訊息，才會詢問是否安裝：
+完成選單後，v0.2.3 會先檢查**所有已選擇的元件**。必須看到類似以下訊息，才會詢問是否安裝：
 
 ```text
 [PASS] SELECTED_PAYLOAD_PREFLIGHT_OK
@@ -110,11 +110,13 @@ Type INSTALL to apply the selected options:
 
 確認 Node.js、npm、OpenChatX Runtime、Headless、PM2、Letta config / WebSocket、MCP HTTP 的 PASS/WARN/FAIL。**沒有選 Git 時，Git 的 WARN 不代表一般 AI 使用者必須安裝 Git。**
 
+**已有 OpenChatX / Letta 的電腦：** v0.2.3 候選安裝器**不是就地升級工具**。Runtime 與 Headless 都存在時會保留既有核心並略過重裝，不能因此宣稱原環境已升級至新版；若只存在其中一項，會拒絕覆寫不完整安裝。請保留現有 Agent、Session、記憶與設定，不要先刪原目錄來強迫安裝，待安全遷移與回復程序完成驗證後再升級。
+
 ## 8. 常見問題
 
 | 錯誤 | 建議 |
 | --- | --- |
-| `INSTALL_PREFLIGHT_MISSING: payload/terminal/...` | 下載資料夾不完整或下載錯版本；**重新解壓 v0.2.2 Complete ZIP**。 |
+| `INSTALL_PREFLIGHT_MISSING: payload/terminal/...` | 下載資料夾不完整或下載錯版本；**重新解壓對應的 v0.2.3 Complete ZIP**。 |
 | `INSTALL_PREFLIGHT_MISSING: payload/prerequisites/...` | 缺少 Node/npm 或 MinGit 的已選檔案，重新下載 Complete ZIP。 |
 | `INSTALL_PREFLIGHT_SHA256_MISMATCH` / `TERMINAL_ADDON_SHA256_MISMATCH` | 安裝檔 SHA256 不符，停止安裝，不要略過檢查。 |
 | npm 套件安裝失敗 | 檢查網路、npm registry / 公司防火牆；完整 ZIP 仍不是完全離線。 |
@@ -123,4 +125,4 @@ Type INSTALL to apply the selected options:
 
 **雙電腦共享**需要另外登入 Tailscale、核對 SSH 主機指紋、設定公鑰與適當權限；分享的是 Letta Agent 記憶，不是 Git、密碼或檔案。
 
-**發行狀態**：v0.2.2 在完成 GitHub CI、整份 ZIP 完整性驗證及新 Windows 安裝測試前，維持 Pre-release；v0.2.1 舊版不會被覆蓋。問題請至 [GitHub Issues](https://github.com/Naos2w/Naos-Agent-Stack/issues) 回報，分享日誌前移除 Token、密碼與 SSH 私鑰。
+**發行狀態**：v0.2.3 仍是本機候選版本，尚未完成 GitHub CI、最終 Complete ZIP 驗證、全新 Windows x64 實機安裝及重開機恢復測試。不可將核心 ZIP 候選檔誤認為完整安裝包，也不可把隔離 Dry-run 當成實機驗收。[v0.2.2](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.2) 保留且不覆寫。問題請至 [GitHub Issues](https://github.com/Naos2w/Naos-Agent-Stack/issues) 回報；分享日誌前移除 Token、密碼、使用者路徑及 SSH 私鑰。

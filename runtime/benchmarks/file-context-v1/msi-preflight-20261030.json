@@ -1,0 +1,97 @@
+{
+  "observedAt": "2026-10-30T15:49:15.458Z",
+  "elapsedMs": 3822,
+  "project": "naos-agent-stack",
+  "preflight": {
+    "applicable": true,
+    "status": "verified",
+    "nodeCount": 684,
+    "indexedAt": "2026-10-28T13:50:40Z",
+    "scope": "project_root",
+    "indexedProjects": [
+      {
+        "name": "naos-agent-stack",
+        "root": "C:\\Naos\\02.Git\\personal\\Naos-Agent-Stack",
+        "indexedAt": "2026-10-28T13:50:40Z"
+      }
+    ],
+    "completeRootCoverage": false,
+    "reason": "INDEX_AVAILABLE",
+    "autoIndexExcluded": false,
+    "coverage": {
+      "partialFiles": 7,
+      "unusableFiles": 0,
+      "skippedFiles": 0,
+      "state": "partial",
+      "bestEffort": true,
+      "requestedFilesVerified": false
+    },
+    "freshness": "path_metadata_observed",
+    "pathChecks": {
+      "version": 1,
+      "state": "checked",
+      "requested": 3,
+      "checked": 3,
+      "bestEffort": true,
+      "observedAt": "2026-10-30T15:49:14.173Z",
+      "files": [
+        {
+          "path": "runtime/lean-runtime/runtime_contract.ts",
+          "index": "naos-agent-stack",
+          "state": "observed",
+          "coverage": "no_recorded_issue",
+          "freshness": "metadata_changed",
+          "indexedAt": "2026-10-28T13:50:40Z",
+          "requiresSourceRead": true
+        },
+        {
+          "path": "runtime/lean-runtime/source/agent_capabilities.ts",
+          "index": "naos-agent-stack",
+          "state": "observed",
+          "coverage": "no_recorded_issue",
+          "freshness": "not_tracked",
+          "indexedAt": "2026-10-28T13:50:40Z",
+          "requiresSourceRead": true
+        },
+        {
+          "path": "Build-Package.ps1",
+          "index": "naos-agent-stack",
+          "state": "observed",
+          "coverage": "partial",
+          "freshness": "metadata_changed",
+          "indexedAt": "2026-10-28T13:50:40Z",
+          "requiresSourceRead": true
+        }
+      ]
+    },
+    "detail": "index root verified; file coverage and freshness still require source inspection"
+  },
+  "invalidFiles": {
+    "version": 1,
+    "state": "unavailable",
+    "requested": 2,
+    "checked": 0,
+    "bestEffort": true,
+    "observedAt": "2026-10-30T15:49:15.457Z",
+    "files": [
+      {
+        "path": "runtime/lean-runtime",
+        "index": "naos-agent-stack",
+        "state": "unavailable",
+        "coverage": "unknown",
+        "freshness": "not_checked",
+        "reason": "CONTEXT_PATH_NOT_FILE",
+        "requiresSourceRead": true
+      },
+      {
+        "path": "runtime/lean-runtime/does-not-exist-20261030.ts",
+        "index": "naos-agent-stack",
+        "state": "unavailable",
+        "coverage": "unknown",
+        "freshness": "not_checked",
+        "reason": "CONTEXT_PATH_NOT_READABLE",
+        "requiresSourceRead": true
+      }
+    ]
+  }
+}

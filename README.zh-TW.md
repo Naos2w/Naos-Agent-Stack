@@ -8,7 +8,7 @@
 
 **這是發行版架構和安裝預檢的設計缺陷**，不是使用者選錯選項。
 
-因此 v0.2.2 改為 **Complete 單一 ZIP**。所有可選元件都打包進去，卻仍維持「**預設不安裝**」；選單決定使用哪些工具，而非下載時決定取得哪一種 ZIP。
+因此 v0.2.2 改為 **Complete 單一 ZIP**，而 v0.2.3 候選版延續這個設計，並更新 Headless、Letta、Codebase Memory 核心。所有可選元件都包含在安裝包中，但仍「**預設不安裝**」；選單決定使用哪些工具。
 
 | 元件 | Complete ZIP 內含 | 執行時選擇 |
 | --- | --- | --- |
@@ -21,7 +21,7 @@
 | Windows Terminal 設定檔 | 選配 | 預設 No，修改前備份 |
 | Tailscale / SSH 共享設定 | 選配 | 只在 Host 或 Client 模式要求 |
 
-**v0.2.2 Complete 以 Pre-release 發布，正式實機驗收仍需完成。** 現有的 [v0.2.1 Release](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1) 不會被覆蓋，仍是舊版分包設計。請先到 [Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 確認有 v0.2.2 **Complete ZIP** 附件再下載，不要下載 GitHub 自動產生的 Source code ZIP。
+**v0.2.3 Complete 目前只是開發候選版，尚未發布，也未完成新機實際驗收。** 已發布的 [v0.2.2 Complete Pre-release](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.2) 仍可使用且不受影響；[v0.2.1](https://github.com/Naos2w/Naos-Agent-Stack/releases/tag/v0.2.1) 是更早的分包版本。只有在 [Releases](https://github.com/Naos2w/Naos-Agent-Stack/releases) 出現經驗證的 v0.2.3 Complete ZIP 與 SHA256 檔後，才依此指南下載，切勿使用 GitHub 自動產生的 Source code ZIP。
 
 ## 操作
 
@@ -42,6 +42,6 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\naos-agent-stack.ps1 i
 
 一般單機安裝不用 Git、Tailscale 或 OpenSSH；雙電腦共享時必須另外登入 Tailscale 並完成 SSH 授權。
 
-**限制：** 本版支援 Windows x64，OpenChatX 首次執行 `npm ci` 仍可能需要網路；Windows Terminal GUI 本身沒有隨包附上。完整乾淨 Windows 的實際安裝及重開機恢復還沒有端到端驗收，因此新版本應維持 **Pre-release**。
+**限制：** 本版支援 Windows x64，OpenChatX 首次執行 `npm ci` 仍可能需要網路；Windows Terminal GUI 本身沒有隨包附上。完整乾淨 Windows 的實際安裝、單機／雙機模式及重開機恢復都還沒有端到端驗收；v0.2.3 候選版必須先通過驗證才能發布為 **Pre-release**。
 
 參考：[詳細安裝步驟](INSTALL.zh-TW.md) · [終端機設定](README.Terminal.zh-TW.md) · [提出問題](https://github.com/Naos2w/Naos-Agent-Stack/issues)

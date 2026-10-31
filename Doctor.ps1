@@ -140,6 +140,19 @@ try{
     else{AddCheck 'OpenChatX MCP HTTP' 'fail' ('HTTP '+$response.StatusCode)}
 }catch{AddCheck 'OpenChatX MCP HTTP' 'fail' '127.0.0.1:8001/healthz unreachable.' 'Check headless PM2 status/start-headless.ps1.'}
 
+$readinessAdapter=Join-Path $headless 'runtime-readiness.ps1'
+if(Test-Path -LiteralPath $readinessAdapter -PathType Leaf){
+    . $readinessAdapter
+    $readiness=Get-NaosRuntimeReadiness -HeadlessRoot $headless
+    $readinessStatus=if($readiness.ready){'pass'}else{'fail'}
+    AddCheck 'Agent Runtime readiness' $readinessStatus ($readiness.state+': '+$readiness.reason) 'Inspect maintenance/reconciliation evidence; do not delete locks or reset state.'
+    $retention=Get-NaosAuditRetention -HeadlessRoot $headless
+    $retentionStatus=if($retention.action -eq 'none'){'pass'}else{'warn'}
+    AddCheck 'Audit retention' $retentionStatus ($retention.action+'; archiveBytes='+$retention.archiveBytes) 'Review cold archives and investigation holds before any cleanup; replay evidence is protected.'
+}else{
+    AddCheck 'Agent Runtime readiness' 'fail' 'READINESS_HELPER_MISSING' 'Install the versioned runtime health adapter.'
+}
+
 $projectRegistry=SafeJson $registryPath
 $state=SafeJson $statePath
 if($projectRegistry -and $null -ne $projectRegistry.projects){

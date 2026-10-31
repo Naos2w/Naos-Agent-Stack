@@ -1,0 +1,10 @@
+{
+  "observedAt": "2026-10-30T17:03:20.6669864Z",
+  "core": "C:/Naos/02.Git/personal/Naos-Agent-Stack-core-evidence-20261031.2.zip",
+  "coreSha256": "0216DE8E79BA0B6FD74FDB346CB1FB75F3D82C940166C9773F34E8926E22D14B",
+  "coreOverlayMatches": 42,
+  "complete": "C:/Naos/02.Git/personal/Naos-Agent-Stack-v0.2.3-Complete-evidence-20261031.2-candidate.zip",
+  "completeSha256": "BCC73CB4AED5DEC7B7003EDF4BDD40A1CACB4A28A713D8525FFD1BCD6B04C0BA",
+  "completeBytes": 285685009,
+  "criticalEntryMatches": 4
+}

@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "before": {
+    "agent": {
+      "id": "agent-local-31166c4b-56a4-4e39-9bdb-04a2ed91e41c",
+      "agent_id": null,
+      "model": "openai-codex/gpt-6.1-sol",
+      "settings": {
+        "provider_type": "chatgpt_oauth",
+        "context_window_limit": 272000,
+        "max_tokens": 128000,
+        "parallel_tool_calls": true,
+        "reasoning": {
+          "reasoning_effort": "high"
+        },
+        "reasoning_effort": "high"
+      }
+    },
+    "current": {
+      "id": "local-conv-84",
+      "agent_id": "agent-local-31166c4b-56a4-4e39-9bdb-04a2ed91e41c",
+      "model": "openai-codex/gpt-6-astra",
+      "settings": {
+        "provider_type": "chatgpt_oauth",
+        "context_window_limit": 272000,
+        "max_tokens": 128000,
+        "parallel_tool_calls": true,
+        "reasoning": {
+          "reasoning_effort": "high"
+        },
+        "reasoning_effort": "high"
+      }
+    },
+    "sibling": {
+      "id": "local-conv-6",
+      "agent_id": "agent-local-31166c4b-56a4-4e39-9bdb-04a2ed91e41c",
+      "model": null,
+      "settings": null
+    }
+  },
+  "after": {
+    "agent": {
+      "id": "agent-local-31166c4b-56a4-4e39-9bdb-04a2ed91e41c",
+      "agent_id": null,
+      "model": "openai-codex/gpt-6.1-sol",
+      "settings": {
+        "provider_type": "chatgpt_oauth",
+        "context_window_limit": 272000,
+        "max_tokens": 128000,
+        "parallel_tool_calls": true,
+        "reasoning": {
+          "reasoning_effort": "high"
+        },
+        "reasoning_effort": "high"
+      }
+    },
+    "current": {
+      "id": "local-conv-84",
+      "agent_id": "agent-local-31166c4b-56a4-4e39-9bdb-04a2ed91e41c",
+      "model": "openai-codex/gpt-6.1-sol",
+      "settings": {
+        "provider_type": "chatgpt_oauth",
+        "context_window_limit": 272000,
+        "max_tokens": 128000,
+        "parallel_tool_calls": true,
+        "reasoning": {
+          "reasoning_effort": "high"
+        },
+        "reasoning_effort": "high"
+      }
+    },
+    "sibling": {
+      "id": "local-conv-6",
+      "agent_id": "agent-local-31166c4b-56a4-4e39-9bdb-04a2ed91e41c",
+      "model": null,
+      "settings": null
+    }
+  },
+  "verified": true
+}

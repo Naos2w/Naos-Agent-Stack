@@ -1,0 +1,16 @@
+{
+  "phase": "2",
+  "observedAt": "2026-10-30T16:56:19.706Z",
+  "hashes": {
+    "TASK.md": "ec79b5ba2bcbaec93d919366e44d5e27bf6b9cd3920a4b3ce0d87bd51e31f3d8",
+    "UNCHANGED.txt": "999be00564c899d12c53555b496689714bd12fce757974419fd9214635dd6055",
+    "src/invoice.mjs": "8f58a586c0e476f482c64e8c401ca36a225ed75f438f02e473e4fb242b3afbf9",
+    "src/pricing.mjs": "0a45482a8853df090507ad6c8602450420a2020f36cca4f33055bf5662b785db",
+    "tests/invoice.test.mjs": "28e2eb862e194f7ad60b35b12d77e0e39bdd22f7ab5296bef132c1a975bb07a5",
+    "tests/pricing.test.mjs": "08363beb5c799210dcbd267ebf36ae57f74438cd318297e84bd568c2e941ffe8"
+  },
+  "result": {
+    "exitCode": 0,
+    "output": "TAP version 13\n# Subtest: apply basis points to the aggregate subtotal\nok 1 - apply basis points to the aggregate subtotal\n  ---\n  duration_ms: 0.528\n  type: 'test'\n  ...\n# Subtest: round once after aggregation, never per line\nok 2 - round once after aggregation, never per line\n  ---\n  duration_ms: 0.0698\n  type: 'test'\n  ...\n# Subtest: invalid discounts and invalid lines remain rejected\nok 3 - invalid discounts and invalid lines remain rejected\n  ---\n  duration_ms: 0.674\n  type: 'test'\n  ...\n# Subtest: exact positive quantities including zero-price items\nok 4 - exact positive quantities including zero-price items\n  ---\n  duration_ms: 0.4839\n  type: 'test'\n  ...\n# Subtest: reject invalid line inputs\nok 5 - reject invalid line inputs\n  ---\n  duration_ms: 0.2635\n  type: 'test'\n  ...\n1..5\n# tests 5\n# suites 0\n# pass 5\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 240.4217\n"
+  }
+}

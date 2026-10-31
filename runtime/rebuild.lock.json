@@ -1,0 +1,219 @@
+{
+  "schema": 1,
+  "runtimeVersion": "1.0.0-beta.2",
+  "runtimePolicy": "2026-10-28.3",
+  "baseAsset": "Naos-Agent-Stack-core-base-20261028.zip",
+  "baseSha256": "196883AAC82E09136547D2D0B3E04604333E3D742A522EE84E4BBE9B362B7F04",
+  "overlays": [
+    {
+      "source": "runtime/core-maintenance/baseline/project-executor.js",
+      "target": "runtime/dist/projects/project-executor.js",
+      "sha256": "093162427F3B92B465151467FD59A296DBAD01F408FF676B38B5D98A294909D8"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/audit-log.js",
+      "target": "runtime/dist/server/audit/audit-log.js",
+      "sha256": "E451B27310099258CCB253C213FF68ACA9BC1F7DD30913671ACB52003E27596D"
+    },
+    {
+      "source": "runtime/lean-runtime/source/agent_runtime.ts",
+      "target": "toolboxes/agent-runtime/tools/agent_runtime.ts",
+      "sha256": "26B9649CECD84C612926AFE3F3E09AA04B8FF2A09C2E4909C84F4149521CE00A"
+    },
+    {
+      "source": "runtime/lean-runtime/source/letta_worker.ts",
+      "target": "toolboxes/agent-runtime/tools/letta_worker.ts",
+      "sha256": "F753F328AF7A173B47C78BD8AD127B973557429EE5C55ECD0862B66D420E294F"
+    },
+    {
+      "source": "runtime/lean-runtime/CURRENT_RUNTIME.md",
+      "target": "toolboxes/agent-runtime/README.md",
+      "sha256": "22DAE7115966188230A4093F4EFAA2C3E9079F5A45437F1398191C74E5203792"
+    },
+    {
+      "source": "runtime/lean-runtime/policy/shared-development-preflight.mdc",
+      "target": "toolboxes/agent-runtime/rules/shared-development-preflight.mdc",
+      "sha256": "F22D8BDA344931EBEF263D25749AB73F3E3E9BB65588F20FC593A27EC65147E7"
+    },
+    {
+      "source": "runtime/lean-runtime/policy/agent-runtime-usage.md",
+      "target": "toolboxes/agent-runtime/skills/agent-runtime-usage/SKILL.md",
+      "sha256": "B3A3984FA60C538611E2CD2A2F3715D40BEC51BD8C0897F35C1A9E496BAD959E"
+    },
+    {
+      "source": "payload/bootstrap/naos-agent-stack.ps1",
+      "target": "naos-agent-stack.ps1",
+      "sha256": "088D810241F02DA4F458FD02A97C53D44CB5038B39CF2FEF6960E5D74A37D6A4"
+    },
+    {
+      "source": "runtime/lean-runtime/runtime_contract.ts",
+      "target": "toolboxes/agent-runtime/tools/runtime_contract.ts",
+      "sha256": "31FE9CB137A9D68D27BB7F8F1B61965993827259DFA6FDE474D977D9E0B09B59"
+    },
+    {
+      "source": "runtime/lean-runtime/runtime_maintenance.mjs",
+      "target": "toolboxes/agent-runtime/tools/runtime_maintenance.mjs",
+      "sha256": "D4CF70708E9C6263DCF26CFAA5883FA995B75FC68BB312FD6F340AD2139D236C"
+    },
+    {
+      "source": "runtime/lean-runtime/runtime_readiness.mjs",
+      "target": "toolboxes/agent-runtime/tools/runtime_readiness.mjs",
+      "sha256": "70F2A3300812C421E95BC9A2C6D96FFDAE1C13728CFDB2FB9E102AF2C50E4F0C"
+    },
+    {
+      "source": "runtime/lean-runtime/operation_reconciliation.mjs",
+      "target": "toolboxes/agent-runtime/tools/operation_reconciliation.mjs",
+      "sha256": "082C66E714F84DA199F8B5313A28B9921F93031A885465E875D320317AB588A2"
+    },
+    {
+      "source": "runtime/headless/Watch-OpenChatXHealth.ps1",
+      "target": "headless/Watch-OpenChatXHealth.ps1",
+      "sha256": "5115BFB3CA8413A284B035D18344950675493411F7C006A8AE0761559651D248"
+    },
+    {
+      "source": "runtime/headless/status-headless.ps1",
+      "target": "headless/status-headless.ps1",
+      "sha256": "9964612062BC4A1092B3F3B225D8A8579296977BB13B3CB6949CA75186675B30"
+    },
+    {
+      "source": "runtime/headless/runtime-readiness.ps1",
+      "target": "headless/runtime-readiness.ps1",
+      "sha256": "B512ECFB6309D0B92F21766D6EF5EB7C47A7B3E3E6FAC03F40B4CB324C5F4515"
+    },
+    {
+      "source": "runtime/headless/audit-retention.mjs",
+      "target": "headless/audit-retention.mjs",
+      "sha256": "B2CE153CD4ACA83C0E366448BEC022BB115ADF5963612BA0608AC4E149F6600A"
+    },
+    {
+      "source": "runtime/headless/audit-retention-policy.json",
+      "target": "headless/audit-retention-policy.json",
+      "sha256": "F2707F26B645AA804F98FF0FD6E6AD5242230F8E69AF203EB4A1A3DE63959007"
+    },
+    {
+      "source": "runtime/core-maintenance/manifest.json",
+      "target": "headless/core-maintenance/manifest.json",
+      "sha256": "4C9775E679CEA6695ECD94E830E521FB891ED06160EE478B312B174E378A5EDD"
+    },
+    {
+      "source": "runtime/core-maintenance/verify-core.mjs",
+      "target": "headless/core-maintenance/verify-core.mjs",
+      "sha256": "DF532116AC1920F1CF021F755F3050A846F96F865E02FCCAACECCFCDD2E6356E"
+    },
+    {
+      "source": "runtime/core-maintenance/Test-OpenChatXCorePatch.ps1",
+      "target": "headless/core-maintenance/Test-OpenChatXCorePatch.ps1",
+      "sha256": "2B2A5DF242A9DAB7F6EF34D8C969462A133C3F2D098A80150813B2DD17A958EE"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/project-executor.js",
+      "target": "headless/core-maintenance/baseline/project-executor.js",
+      "sha256": "093162427F3B92B465151467FD59A296DBAD01F408FF676B38B5D98A294909D8"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/audit-log.js",
+      "target": "headless/core-maintenance/baseline/audit-log.js",
+      "sha256": "E451B27310099258CCB253C213FF68ACA9BC1F7DD30913671ACB52003E27596D"
+    },
+    {
+      "source": "runtime/core-maintenance/README.md",
+      "target": "headless/core-maintenance/README.md",
+      "sha256": "8DE878945A09DF5BA453F56F5F9C87401E4E901E9F0AF4AB3447C9F1BEFC3117"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/audit-format.js",
+      "target": "runtime/dist/server/audit/audit-format.js",
+      "sha256": "CC1B0A203D6BD8CA3D2ADD43768B359C707DBE2CC3DBAF9415BBC274BC6C65F8"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/audit-format.js",
+      "target": "headless/core-maintenance/baseline/audit-format.js",
+      "sha256": "CC1B0A203D6BD8CA3D2ADD43768B359C707DBE2CC3DBAF9415BBC274BC6C65F8"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/audit-request.js",
+      "target": "runtime/dist/server/audit/audit-request.js",
+      "sha256": "368032374F8097CA68A9FE6503A3CFAE1D62950040D2D12240BDCBF764EFA62E"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/audit-request.js",
+      "target": "headless/core-maintenance/baseline/audit-request.js",
+      "sha256": "368032374F8097CA68A9FE6503A3CFAE1D62950040D2D12240BDCBF764EFA62E"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/audit-response.js",
+      "target": "runtime/dist/server/audit/audit-response.js",
+      "sha256": "66C5436AE2986F6FF2486FB579088485E77E4D925AA25E9C285EDADE87EED400"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/audit-response.js",
+      "target": "headless/core-maintenance/baseline/audit-response.js",
+      "sha256": "66C5436AE2986F6FF2486FB579088485E77E4D925AA25E9C285EDADE87EED400"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/http-server.js",
+      "target": "runtime/dist/server/http-server.js",
+      "sha256": "C498259D6F67572E05E53AC469294A4632CCF5D3FE71580619258F241B451C7B"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/http-server.js",
+      "target": "headless/core-maintenance/baseline/http-server.js",
+      "sha256": "C498259D6F67572E05E53AC469294A4632CCF5D3FE71580619258F241B451C7B"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/tool-schema-presentation.js",
+      "target": "runtime/dist/mcp/tool-schema-presentation.js",
+      "sha256": "9912066663276A165A90D2D7CAD27D5A2B879D2CB928231C83C517A92A4CBBC9"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/tool-schema-presentation.js",
+      "target": "headless/core-maintenance/baseline/tool-schema-presentation.js",
+      "sha256": "9912066663276A165A90D2D7CAD27D5A2B879D2CB928231C83C517A92A4CBBC9"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/summary-registry.js",
+      "target": "runtime/dist/summaries/summary-registry.js",
+      "sha256": "A8D36C29D79A8B8D3B6C2FF204C4B1B4C60D72AF2AE230E586478903F269C2B9"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/summary-registry.js",
+      "target": "headless/core-maintenance/baseline/summary-registry.js",
+      "sha256": "A8D36C29D79A8B8D3B6C2FF204C4B1B4C60D72AF2AE230E586478903F269C2B9"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/summarize-tool.js",
+      "target": "runtime/dist/tools/summarize/summarize-tool.js",
+      "sha256": "54347149B98A48DD8AFB1C694E75EFA2D260554EB16FB0D60C66EEBA56FAEE26"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/summarize-tool.js",
+      "target": "headless/core-maintenance/baseline/summarize-tool.js",
+      "sha256": "54347149B98A48DD8AFB1C694E75EFA2D260554EB16FB0D60C66EEBA56FAEE26"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/config.js",
+      "target": "runtime/dist/config.js",
+      "sha256": "3F06B67859465C044A74DB8496970CAE1511097B8A6DD07B1CD2DCFB0ED96873"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/config.js",
+      "target": "headless/core-maintenance/baseline/config.js",
+      "sha256": "3F06B67859465C044A74DB8496970CAE1511097B8A6DD07B1CD2DCFB0ED96873"
+    },
+    {
+      "source": "runtime/lean-runtime/model_routing.mjs",
+      "target": "toolboxes/agent-runtime/tools/model_routing.mjs",
+      "sha256": "234F51248B9467CB14AC422655DD0EE8C5CAEBBF26FA3E46575584078B1E3465"
+    },
+    {
+      "source": "runtime/lean-runtime/source/agent_capabilities.ts",
+      "target": "toolboxes/agent-runtime/tools/agent_capabilities.ts",
+      "sha256": "449D1A75102EA1879227018AC340BE5617736F1E2839BE67D5758C0C15AFBDC0"
+    },
+    {
+      "source": "runtime/lean-runtime/tool_evidence.mjs",
+      "target": "toolboxes/agent-runtime/tools/tool_evidence.mjs",
+      "sha256": "284E63C8C83DB2503B41E7EAB0B043F098D947C7298F28896F6653E95B6D0515"
+    }
+  ]
+}

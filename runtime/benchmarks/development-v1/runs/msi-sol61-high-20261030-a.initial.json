@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "runId": "msi-sol61-high-20261030-a",
+  "root": "C:\\Naos\\02.Git\\personal\\Letta-POC\\tests\\agent-development-benchmark-v1\\msi-sol61-high-20261030-a",
+  "preparedAt": "2026-10-30T13:39:16.597Z",
+  "initial": {
+    "cache/acceptance.test.mjs": "d7b08ec66818b95116959a910ff54c206b228026a63d483c369a8c7631387ee9",
+    "cache/src/cache.mjs": "638f5829c30060d4c61a293de4f84ef7a97b8dc9aa5a46c409b7bab59d128d96",
+    "invoice/acceptance.test.mjs": "20163a7677759071e55a7bdd3e187104534f6278ed85c57aac7e7d653e0501b3",
+    "invoice/src/normalize.mjs": "c34469be87becb4375626eaac8b215e8914e4e992f78566a61c17831e42a5f27",
+    "invoice/src/total.mjs": "2b35e1cc05d87f6579baa857a925cdb25ec395c2ba2f2be2f3ad2e524803483e",
+    "range/acceptance.test.mjs": "59580d812a78186e62ccd6a6d13124172727de36bf4d27d912e67b5aa2ca3a1e",
+    "range/src/range.mjs": "327bbdb1ca141fbd74f963ef7736e090f6cb8389dda81077cdab0cdcc690668b",
+    "TASK.md": "fd45bb13d5020c7875b302c8d007763601e97e7a37305074d6931c953e226d88"
+  },
+  "cases": [
+    {
+      "id": "range",
+      "editable": [
+        "src/range.mjs"
+      ],
+      "requirement": "sumInclusive must sum both inclusive integer endpoints, including negative values and a single point. Throw RangeError for non-integer, non-finite or reversed bounds."
+    },
+    {
+      "id": "cache",
+      "editable": [
+        "src/cache.mjs"
+      ],
+      "requirement": "Concurrent same-key callers must share one load; successful values stay cached, including zero. A synchronous or asynchronous loader failure must reject the callers and allow a later retry for that key. Keep other cached keys intact."
+    },
+    {
+      "id": "invoice",
+      "editable": [
+        "src/total.mjs"
+      ],
+      "requirement": "Repair invoiceTotal using the existing normalizeInvoice public contract. Sum unitCents times quantity, subtract discountCents, floor the total at zero and preserve the input. The normalized contract must remain unchanged."
+    }
+  ],
+  "baseline": {
+    "range": {
+      "exitCode": 1,
+      "elapsedMs": 280,
+      "error": null,
+      "output": "TAP version 13\n# Subtest: both integer endpoints are included\nnot ok 1 - both integer endpoints are included\n  ---\n  duration_ms: 1.0796\n  type: 'test'\n  location: 'C:\\\\Naos\\\\02.Git\\\\personal\\\\Letta-POC\\\\tests\\\\agent-development-benchmark-v1\\\\msi-sol61-high-20261030-a\\\\range\\\\acceptance.test.mjs:4:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    5 !== 9\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 9\n  actual: 5\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///C:/Naos/02.Git/personal/Letta-POC/tests/agent-development-benchmark-v1/msi-sol61-high-20261030-a/range/acceptance.test.mjs:5:10)\n    Test.runInAsyncScope (node:async_hooks:214:14)\n    Test.run (node:internal/test_runner/test:1047:25)\n    Test.start (node:internal/test_runner/test:944:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)\n  ...\n# Subtest: invalid or reversed bounds throw RangeError\nnot ok 2 - invalid or reversed bounds throw RangeError\n  ---\n  duration_ms: 0.2256\n  type: 'test'\n  location: 'C:\\\\Naos\\\\02.Git\\\\personal\\\\Letta-POC\\\\tests\\\\agent-development-benchmark-v1\\\\msi-sol61-high-20261030-a\\\\range\\\\acceptance.test.mjs:10:1'\n  failureType: 'testCodeFailure'\n  error: 'Missing expected exception (RangeError).'\n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  stack: |-\n    TestContext.<anonymous> (file:///C:/Naos/02.Git/personal/Letta-POC/tests/agent-development-benchmark-v1/msi-sol61-high-20261030-a/range/acceptance.test.mjs:12:12)\n    Test.runInAsyncScope (node:async_hooks:214:14)\n    Test.run (node:internal/test_runner/test:1047:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:744:18)\n    Test.postRun (node:internal/test_runner/test:1173:19)\n    Test.run (node:internal/test_runner/test:1101:12)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 0\n# fail 2\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 128.0591\n"
+    },
+    "cache": {
+      "exitCode": 1,
+      "elapsedMs": 208,
+      "error": null,
+      "output": "TAP version 13\n# Subtest: concurrent requests and successful results share the cached work\nok 1 - concurrent requests and successful results share the cached work\n  ---\n  duration_ms: 4.0254\n  type: 'test'\n  ...\n# Subtest: asynchronous failure is retryable without removing other keys\nnot ok 2 - asynchronous failure is retryable without removing other keys\n  ---\n  duration_ms: 0.3883\n  type: 'test'\n  location: 'C:\\\\Naos\\\\02.Git\\\\personal\\\\Letta-POC\\\\tests\\\\agent-development-benchmark-v1\\\\msi-sol61-high-20261030-a\\\\cache\\\\acceptance.test.mjs:15:1'\n  failureType: 'testCodeFailure'\n  error: 'temporary'\n  code: 'ERR_TEST_FAILURE'\n  stack: |-\n    file:///C:/Naos/02.Git/personal/Letta-POC/tests/agent-development-benchmark-v1/msi-sol61-high-20261030-a/cache/acceptance.test.mjs:19:53\n    file:///C:/Naos/02.Git/personal/Letta-POC/tests/agent-development-benchmark-v1/msi-sol61-high-20261030-a/cache/src/cache.mjs:4:74\n    async waitForActual (node:assert:644:5)\n    async Function.rejects (node:assert:767:25)\n    async TestContext.<anonymous> (file:///C:/Naos/02.Git/personal/Letta-POC/tests/agent-development-benchmark-v1/msi-sol61-high-20261030-a/cache/acceptance.test.mjs:23:3)\n    async Test.run (node:internal/test_runner/test:1054:7)\n    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)\n  ...\n# Subtest: synchronous loader failure rejects and is retryable\nnot ok 3 - synchronous loader failure rejects and is retryable\n  ---\n  duration_ms: 0.1366\n  type: 'test'\n  location: 'C:\\\\Naos\\\\02.Git\\\\personal\\\\Letta-POC\\\\tests\\\\agent-development-benchmark-v1\\\\msi-sol61-high-20261030-a\\\\cache\\\\acceptance.test.mjs:30:1'\n  failureType: 'testCodeFailure'\n  error: 'sync'\n  code: 'ERR_TEST_FAILURE'\n  stack: |-\n    file:///C:/Naos/02.Git/personal/Letta-POC/tests/agent-development-benchmark-v1/msi-sol61-high-20261030-a/cache/acceptance.test.mjs:32:68\n    file:///C:/Naos/02.Git/personal/Letta-POC/tests/agent-development-benchmark-v1/msi-sol61-high-20261030-a/cache/src/cache.mjs:4:74\n    async waitForActual (node:assert:644:5)\n    async Function.rejects (node:assert:767:25)\n    async TestContext.<anonymous> (file:///C:/Naos/02.Git/personal/Letta-POC/tests/agent-development-benchmark-v1/msi-sol61-high-20261030-a/cache/acceptance.test.mjs:33:3)\n    async Test.run (node:internal/test_runner/test:1054:7)\n    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)\n  ...\n1..3\n# tests 3\n# suites 0\n# pass 1\n# fail 2\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 136.2402\n"
+    },
+    "invoice": {
+      "exitCode": 1,
+      "elapsedMs": 261,
+      "error": null,
+      "output": "TAP version 13\n# Subtest: normalized public contract is retained\nok 1 - normalized public contract is retained\n  ---\n  duration_ms: 1.1129\n  type: 'test'\n  ...\n# Subtest: total uses integer cents, quantities and discount without mutating input\nnot ok 2 - total uses integer cents, quantities and discount without mutating input\n  ---\n  duration_ms: 2.8499\n  type: 'test'\n  location: 'C:\\\\Naos\\\\02.Git\\\\personal\\\\Letta-POC\\\\tests\\\\agent-development-benchmark-v1\\\\msi-sol61-high-20261030-a\\\\invoice\\\\acceptance.test.mjs:10:1'\n  failureType: 'testCodeFailure'\n  error: \"Cannot read properties of undefined (reading 'reduce')\"\n  code: 'ERR_TEST_FAILURE'\n  name: 'TypeError'\n  stack: |-\n    invoiceTotal (file:///C:/Naos/02.Git/personal/Letta-POC/tests/agent-development-benchmark-v1/msi-sol61-high-20261030-a/invoice/src/total.mjs:4:24)\n    TestContext.<anonymous> (file:///C:/Naos/02.Git/personal/Letta-POC/tests/agent-development-benchmark-v1/msi-sol61-high-20261030-a/invoice/acceptance.test.mjs:13:16)\n    Test.runInAsyncScope (node:async_hooks:214:14)\n    Test.run (node:internal/test_runner/test:1047:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:744:18)\n    Test.postRun (node:internal/test_runner/test:1173:19)\n    Test.run (node:internal/test_runner/test:1101:12)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)\n  ...\n# Subtest: empty and over-discounted invoices cannot have negative totals\nnot ok 3 - empty and over-discounted invoices cannot have negative totals\n  ---\n  duration_ms: 0.0847\n  type: 'test'\n  location: 'C:\\\\Naos\\\\02.Git\\\\personal\\\\Letta-POC\\\\tests\\\\agent-development-benchmark-v1\\\\msi-sol61-high-20261030-a\\\\invoice\\\\acceptance.test.mjs:16:1'\n  failureType: 'testCodeFailure'\n  error: \"Cannot read properties of undefined (reading 'reduce')\"\n  code: 'ERR_TEST_FAILURE'\n  name: 'TypeError'\n  stack: |-\n    invoiceTotal (file:///C:/Naos/02.Git/personal/Letta-POC/tests/agent-development-benchmark-v1/msi-sol61-high-20261030-a/invoice/src/total.mjs:4:24)\n    TestContext.<anonymous> (file:///C:/Naos/02.Git/personal/Letta-POC/tests/agent-development-benchmark-v1/msi-sol61-high-20261030-a/invoice/acceptance.test.mjs:17:16)\n    Test.runInAsyncScope (node:async_hooks:214:14)\n    Test.run (node:internal/test_runner/test:1047:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:744:18)\n    Test.postRun (node:internal/test_runner/test:1173:19)\n    Test.run (node:internal/test_runner/test:1101:12)\n    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)\n  ...\n1..3\n# tests 3\n# suites 0\n# pass 1\n# fail 2\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 143.6753\n"
+    }
+  }
+}

@@ -1,0 +1,308 @@
+{
+  "schema": 1,
+  "purpose": "Routing integration only; not a model quality or speed comparison.",
+  "records": [
+    {
+      "operationId": "op_40d4484dce504c8a",
+      "state": "completed",
+      "exitCode": 0,
+      "sessionId": "local-conv-84",
+      "modelSelection": {
+        "version": 1,
+        "mode": "auto",
+        "taskComplexity": "simple",
+        "selectedModel": "openai-codex/gpt-6-luna",
+        "reasoningEffort": "medium",
+        "reason": "TASK_SIMPLE",
+        "effortSource": "policy",
+        "scope": "conversation",
+        "state": "applied"
+      },
+      "modelConfiguration": {
+        "version": 1,
+        "effectiveModel": "openai-codex/gpt-6-luna",
+        "reasoningEffort": "medium",
+        "reasoningState": "observed",
+        "reasoningSource": "model_settings.reasoning",
+        "contextWindow": 272000,
+        "source": "letta.conversation_retrieve",
+        "observedAt": "2026-10-30T14:39:20.053Z",
+        "scope": "before_turn"
+      },
+      "usage": null,
+      "assistantText": "`tests/agent-development-benchmark-v1/msi-sol61-high-20261030-a/TASKS.md` is absent.",
+      "changed_files": [],
+      "validation": {
+        "stop_reason": "end_turn",
+        "approval_decision_count": 1,
+        "external_tool_call_count": 0,
+        "tools_used": [],
+        "denied_requests": [
+          {
+            "tool": "openchatx_read_file",
+            "reason": "ENOENT: no such file or directory, realpath 'C:\\Naos\\02.Git\\personal\\Letta-POC\\tests\\agent-development-benchmark-v1\\msi-sol61-high-20261030-a\\TASKS.md'"
+          }
+        ],
+        "idempotency": [],
+        "project_executor_api_version": 1,
+        "shell_policy_version": 2,
+        "capability_evidence": {
+          "codebase": {
+            "applicable": false,
+            "status": "not_applicable"
+          },
+          "design": {
+            "applicable": false,
+            "status": "not_applicable",
+            "loadedSkills": []
+          }
+        },
+        "development_preflight_receipt_id": null,
+        "capability_agent_tool_calls": {
+          "codebase": false,
+          "ui_skills": false
+        }
+      },
+      "blockers": [
+        "openchatx_read_file: ENOENT: no such file or directory, realpath 'C:\\Naos\\02.Git\\personal\\Letta-POC\\tests\\agent-development-benchmark-v1\\msi-sol61-high-20261030-a\\TASKS.md'"
+      ],
+      "reconciliation": {
+        "schema": 1,
+        "source": "recorded_execution_evidence",
+        "remoteState": "completed",
+        "requiresReconciliation": false,
+        "automaticRetryAllowed": false,
+        "reason": "COMPLETED_RESULT",
+        "clientMessageId": "openchatx-op_40d4484dce504c8a",
+        "conversationId": "local-conv-84",
+        "runId": null,
+        "externalRequests": null,
+        "externalCompleted": null,
+        "idempotency": []
+      }
+    },
+    {
+      "operationId": "op_5f99a9c5ab174ac5",
+      "state": "completed",
+      "exitCode": 0,
+      "sessionId": "local-conv-84",
+      "modelSelection": {
+        "version": 1,
+        "mode": "auto",
+        "taskComplexity": "simple",
+        "selectedModel": "openai-codex/gpt-6-luna",
+        "reasoningEffort": "medium",
+        "reason": "TASK_SIMPLE",
+        "effortSource": "policy",
+        "scope": "conversation",
+        "state": "applied"
+      },
+      "modelConfiguration": {
+        "version": 1,
+        "effectiveModel": "openai-codex/gpt-6-luna",
+        "reasoningEffort": "medium",
+        "reasoningState": "observed",
+        "reasoningSource": "model_settings.reasoning",
+        "contextWindow": 272000,
+        "source": "letta.conversation_retrieve",
+        "observedAt": "2026-10-30T14:40:20.451Z",
+        "scope": "before_turn"
+      },
+      "usage": null,
+      "assistantText": "The three task names are **range**, **cache**, and **invoice**.",
+      "changed_files": [],
+      "validation": {
+        "stop_reason": "end_turn",
+        "approval_decision_count": 1,
+        "external_tool_call_count": 1,
+        "tools_used": [
+          "openchatx_read_file"
+        ],
+        "denied_requests": [],
+        "idempotency": [],
+        "project_executor_api_version": 1,
+        "shell_policy_version": 2,
+        "capability_evidence": {
+          "codebase": {
+            "applicable": false,
+            "status": "not_applicable"
+          },
+          "design": {
+            "applicable": false,
+            "status": "not_applicable",
+            "loadedSkills": []
+          }
+        },
+        "development_preflight_receipt_id": null,
+        "capability_agent_tool_calls": {
+          "codebase": false,
+          "ui_skills": false
+        }
+      },
+      "blockers": [],
+      "reconciliation": {
+        "schema": 1,
+        "source": "recorded_execution_evidence",
+        "remoteState": "completed",
+        "requiresReconciliation": false,
+        "automaticRetryAllowed": false,
+        "reason": "COMPLETED_RESULT",
+        "clientMessageId": "openchatx-op_5f99a9c5ab174ac5",
+        "conversationId": "local-conv-84",
+        "runId": null,
+        "externalRequests": null,
+        "externalCompleted": null,
+        "idempotency": []
+      }
+    },
+    {
+      "operationId": "op_9fa6284269cf4ed8",
+      "state": "completed",
+      "exitCode": 0,
+      "sessionId": "local-conv-84",
+      "modelSelection": {
+        "version": 1,
+        "mode": "auto",
+        "taskComplexity": "complex",
+        "selectedModel": "openai-codex/gpt-6-astra",
+        "reasoningEffort": "high",
+        "reason": "TASK_COMPLEX",
+        "effortSource": "policy",
+        "scope": "conversation",
+        "state": "applied"
+      },
+      "modelConfiguration": {
+        "version": 1,
+        "effectiveModel": "openai-codex/gpt-6-astra",
+        "reasoningEffort": "high",
+        "reasoningState": "observed",
+        "reasoningSource": "model_settings.reasoning",
+        "contextWindow": 272000,
+        "source": "letta.conversation_retrieve",
+        "observedAt": "2026-10-30T14:41:19.018Z",
+        "scope": "before_turn"
+      },
+      "usage": null,
+      "assistantText": "With the index unavailable, direct file inspection confirms that rejected loads delete their cached promise and rethrow the error, allowing later calls to retry. Simultaneous same-key callers share work because the promise is stored before loading begins and subsequent callers receive that same promise.",
+      "changed_files": [],
+      "validation": {
+        "stop_reason": "end_turn",
+        "approval_decision_count": 1,
+        "external_tool_call_count": 1,
+        "tools_used": [
+          "openchatx_read_file"
+        ],
+        "denied_requests": [],
+        "idempotency": [],
+        "project_executor_api_version": 1,
+        "shell_policy_version": 2,
+        "capability_evidence": {
+          "codebase": {
+            "applicable": true,
+            "status": "missing",
+            "detail": "CODEBASE_INDEX_QUERY_FAILED: letta-poc"
+          },
+          "design": {
+            "applicable": false,
+            "status": "not_applicable",
+            "loadedSkills": []
+          }
+        },
+        "development_preflight_receipt_id": null,
+        "capability_agent_tool_calls": {
+          "codebase": false,
+          "ui_skills": false
+        }
+      },
+      "blockers": [],
+      "reconciliation": {
+        "schema": 1,
+        "source": "recorded_execution_evidence",
+        "remoteState": "completed",
+        "requiresReconciliation": false,
+        "automaticRetryAllowed": false,
+        "reason": "COMPLETED_RESULT",
+        "clientMessageId": "openchatx-op_9fa6284269cf4ed8",
+        "conversationId": "local-conv-84",
+        "runId": null,
+        "externalRequests": null,
+        "externalCompleted": null,
+        "idempotency": []
+      }
+    },
+    {
+      "operationId": "op_6740b25a7b224781",
+      "state": "completed",
+      "exitCode": 0,
+      "sessionId": "local-conv-84",
+      "modelSelection": {
+        "version": 1,
+        "mode": "explicit",
+        "taskComplexity": "simple",
+        "selectedModel": "openai-codex/gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "reason": "USER_SELECTED_MODEL",
+        "effortSource": "user",
+        "scope": "conversation",
+        "state": "applied"
+      },
+      "modelConfiguration": {
+        "version": 1,
+        "effectiveModel": "openai-codex/gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "reasoningState": "observed",
+        "reasoningSource": "model_settings.reasoning",
+        "contextWindow": 272000,
+        "source": "letta.conversation_retrieve",
+        "observedAt": "2026-10-30T14:43:13.267Z",
+        "scope": "before_turn"
+      },
+      "usage": null,
+      "assistantText": "The public function `sumInclusive(start, end)` includes both endpoints.",
+      "changed_files": [],
+      "validation": {
+        "stop_reason": "end_turn",
+        "approval_decision_count": 1,
+        "external_tool_call_count": 1,
+        "tools_used": [
+          "openchatx_read_file"
+        ],
+        "denied_requests": [],
+        "idempotency": [],
+        "project_executor_api_version": 1,
+        "shell_policy_version": 2,
+        "capability_evidence": {
+          "codebase": {
+            "applicable": false,
+            "status": "not_applicable"
+          },
+          "design": {
+            "applicable": false,
+            "status": "not_applicable",
+            "loadedSkills": []
+          }
+        },
+        "development_preflight_receipt_id": null,
+        "capability_agent_tool_calls": {
+          "codebase": false,
+          "ui_skills": false
+        }
+      },
+      "blockers": [],
+      "reconciliation": {
+        "schema": 1,
+        "source": "recorded_execution_evidence",
+        "remoteState": "completed",
+        "requiresReconciliation": false,
+        "automaticRetryAllowed": false,
+        "reason": "COMPLETED_RESULT",
+        "clientMessageId": "openchatx-op_6740b25a7b224781",
+        "conversationId": "local-conv-84",
+        "runId": null,
+        "externalRequests": null,
+        "externalCompleted": null,
+        "idempotency": []
+      }
+    }
+  ]
+}

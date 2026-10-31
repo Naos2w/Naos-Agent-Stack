@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "runId": "msi-sol61-high-20261030-a",
+  "gradedAt": "2026-10-30T13:42:57.162Z",
+  "immutableChanges": [],
+  "additions": [],
+  "completed": true,
+  "results": {
+    "range": {
+      "exitCode": 0,
+      "elapsedMs": 223,
+      "error": null,
+      "output": "TAP version 13\n# Subtest: both integer endpoints are included\nok 1 - both integer endpoints are included\n  ---\n  duration_ms: 0.5348\n  type: 'test'\n  ...\n# Subtest: invalid or reversed bounds throw RangeError\nok 2 - invalid or reversed bounds throw RangeError\n  ---\n  duration_ms: 0.3177\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 115.4347\n"
+    },
+    "cache": {
+      "exitCode": 0,
+      "elapsedMs": 198,
+      "error": null,
+      "output": "TAP version 13\n# Subtest: concurrent requests and successful results share the cached work\nok 1 - concurrent requests and successful results share the cached work\n  ---\n  duration_ms: 1.3027\n  type: 'test'\n  ...\n# Subtest: asynchronous failure is retryable without removing other keys\nok 2 - asynchronous failure is retryable without removing other keys\n  ---\n  duration_ms: 0.7931\n  type: 'test'\n  ...\n# Subtest: synchronous loader failure rejects and is retryable\nok 3 - synchronous loader failure rejects and is retryable\n  ---\n  duration_ms: 0.131\n  type: 'test'\n  ...\n1..3\n# tests 3\n# suites 0\n# pass 3\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 121.1161\n"
+    },
+    "invoice": {
+      "exitCode": 0,
+      "elapsedMs": 247,
+      "error": null,
+      "output": "TAP version 13\n# Subtest: normalized public contract is retained\nok 1 - normalized public contract is retained\n  ---\n  duration_ms: 1.2203\n  type: 'test'\n  ...\n# Subtest: total uses integer cents, quantities and discount without mutating input\nok 2 - total uses integer cents, quantities and discount without mutating input\n  ---\n  duration_ms: 0.6628\n  type: 'test'\n  ...\n# Subtest: empty and over-discounted invoices cannot have negative totals\nok 3 - empty and over-discounted invoices cannot have negative totals\n  ---\n  duration_ms: 0.0902\n  type: 'test'\n  ...\n1..3\n# tests 3\n# suites 0\n# pass 3\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 130.9746\n"
+    }
+  }
+}

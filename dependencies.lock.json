@@ -8,8 +8,8 @@
   "core": {
     "package": "naos-headless-stack-bundle.zip",
     "version": "OpenChatX Headless 1.0.0-beta.2",
-    "sha256": "776b4169bb406f79b06a661e43711ea38c882e48f2b297266540e539e102c178",
-    "note": "Freshly exported 2026-10-24 v0.2.3 candidate from MSI Headless (2960 source files); per-file SHA256 and core manifest validated. Not yet a published Complete ZIP or clean-machine E2E approval."
+    "sha256": "0216DE8E79BA0B6FD74FDB346CB1FB75F3D82C940166C9773F34E8926E22D14B",
+    "note": "Rebuilt 2026-10-30 v0.2.3 candidate from the SHA-pinned base and 41 repository overlays in runtime/rebuild.lock.json; Runtime 2026-10-28.3 with conversation model routing v1, observed-model metadata, and accurate codebase context diagnostics; core revision 2026-10-30.handoff.2. Local MSI candidate only; clean-machine and full-platform upgrade acceptance remain separate."
   },
   "node": {
     "package": "node-v22.23.3-win-x64.zip",
