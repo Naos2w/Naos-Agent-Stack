@@ -8,6 +8,7 @@ import { promisify } from 'node:util';
 import { acquireRuntimeMaintenance, RECOVERY_FILE } from './runtime_maintenance.mjs';
 import { patchModelWorker, patchModelRuntime } from './model-observation-patch.mjs';
 import { patchRoutingWorker, patchRoutingRuntime, patchRoutingGuidance } from './model-routing-patch.mjs';
+import { patchStoppedReconciliation } from './stopped-reconciliation-patch.mjs';
 import { patchContextWorker, patchContextRuntime, patchContextGuidance } from './context-paths-patch.mjs';
 import { patchToolEvidenceWorker, patchEvidenceGuidance } from './tool-evidence-patch.mjs';
 
@@ -146,7 +147,7 @@ function patchRuntimeBase(original) {
 }
 
 export function patchWorker(original) { return patchToolEvidenceWorker(patchContextWorker(patchRoutingWorker(patchModelWorker(patchWorkerBase(original))))); }
-export function patchRuntime(original) { return patchContextRuntime(patchRoutingRuntime(patchModelRuntime(patchRuntimeBase(original)))); }
+export function patchRuntime(original) { return patchStoppedReconciliation(patchContextRuntime(patchRoutingRuntime(patchModelRuntime(patchRuntimeBase(original))))); }
 
 export function patchCapabilities(original, candidate) {
   if (normalize(original) === normalize(candidate)) return candidate;

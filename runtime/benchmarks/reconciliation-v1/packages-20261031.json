@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "core": {
+    "sha256": "31DF38DE96F1D2D492951DBB02DCD5F5473D07FAD1A5E52FE8BC67C873BF8AF4",
+    "path": "C:/Naos/02.Git/personal/Naos-Agent-Stack-core-reconciliation-20261031.zip"
+  },
+  "complete": {
+    "bytes": 285686144,
+    "sha256": "EEF95AC7DBEB352AA4B1C5F3C2D524AA764A9A928ED663D9A3C415B3C4A82D23",
+    "path": "C:/Naos/02.Git/personal/Naos-Agent-Stack-v0.2.3-Complete-reconciliation-20261031-candidate.zip"
+  },
+  "verifiedCoreOverlays": 42,
+  "verifiedCompleteEntries": [
+    "Build-Package.ps1",
+    "Doctor.ps1",
+    "dependencies.lock.json",
+    "payload/bootstrap/naos-agent-stack.ps1",
+    "payload/naos-headless-stack-bundle.zip"
+  ],
+  "freshInstallAccepted": false,
+  "pc2Synced": false
+}

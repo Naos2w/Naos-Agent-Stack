@@ -32,6 +32,16 @@ test('stale poll cannot direct or retry a newer operation', () => {
   assert.equal(result.next_move.action, 'inspect_current_operation');
   assert.equal(result.delivery.acceptanceVerified, false);
 });
+
+test('settled failed work asks for failure inspection without repeating reconciliation or granting retry', () => {
+  const input = {state:'failed',reconciliation:{remoteState:'settled',requiresReconciliation:false}};
+  const result=describeOperationOutcome(input);
+  assert.equal(result.next_move.action,'inspect_failure_before_retry');
+  assert.equal(result.next_move.automaticRetryAllowed,false);
+  assert.equal(result.delivery.acceptanceVerified,false);
+  assert.equal(describeOperationOutcome({...input,idempotency:[{status:'uncertain'}]}).next_move.action,'reconcile_before_retry');
+  assert.equal(describeOperationOutcome({...input,reconciliation:{remoteState:'settled',requiresReconciliation:true}}).next_move.action,'reconcile_before_retry');
+});
 test('old callers and completed replays remain compatible without creating a task', () => {
   const result = describeOperationOutcome({ state: 'completed', idempotency: [{ status: 'replayed' }] });
   assert.equal(result.delivery.taskRef, null);

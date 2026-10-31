@@ -1,3 +1,26 @@
+// Apply an explicit, identity-bound remote settlement without erasing effects.
+export function applyRemoteSettlement(operation, summary) {
+  const receipt = operation.remoteSettlement;
+  if (receipt?.schema !== 1 || receipt.source !== 'explicit_cancel'
+      || receipt.operationId !== operation.id || receipt.projectId !== operation.projectId
+      || receipt.conversationId !== operation.sessionId
+      || receipt.clientMessageId !== `openchatx-${operation.id}`
+      || receipt.clientMessageId !== summary.clientMessageId
+      || !['cancelled', 'already_idle'].includes(receipt.status)
+      || !Number.isFinite(Date.parse(receipt.observedAt))) return summary;
+  const countsKnown = [summary.externalRequests, summary.externalCompleted]
+    .every(value => Number.isSafeInteger(value) && value >= 0);
+  const inFlight = countsKnown && summary.externalRequests !== summary.externalCompleted;
+  const uncertainEffects = !Array.isArray(summary.idempotency)
+    || summary.idempotency.some(item => !['executed', 'replayed'].includes(item.status));
+  return { ...summary, remoteState: 'settled',
+    requiresReconciliation: !countsKnown || inFlight || uncertainEffects,
+    automaticRetryAllowed: false,
+    reason: !countsKnown ? 'EXECUTION_EVIDENCE_INCOMPLETE' : inFlight ? 'EXTERNAL_TOOL_IN_FLIGHT'
+      : uncertainEffects ? 'SIDE_EFFECT_UNCERTAIN' : 'REMOTE_SETTLED_EFFECTS_NOT_ROLLED_BACK',
+    settlement: receipt };
+}
+
 // Summarize existing execution evidence. This does not contact Letta, retry a
 // tool, declare side effects absent, or authorize removal of replay records.
 export function summarizeReconciliation(operation, result = {}, stderr = '') {
@@ -23,7 +46,7 @@ export function summarizeReconciliation(operation, result = {}, stderr = '') {
   const externalInFlight = timeout && Number.isInteger(timeout.external_requests)
     && Number.isInteger(timeout.external_completed) && timeout.external_requests !== timeout.external_completed;
   const requiresReconciliation = Boolean(sideEffectUncertain || externalInFlight || (!completed && !settled));
-  return {
+  return applyRemoteSettlement(operation, {
     schema: 1,
     source: 'recorded_execution_evidence',
     remoteState: completed ? 'completed' : settled ? 'settled' : 'uncertain',
@@ -38,7 +61,7 @@ export function summarizeReconciliation(operation, result = {}, stderr = '') {
     externalRequests: Number.isInteger(timeout?.external_requests) ? timeout.external_requests : null,
     externalCompleted: Number.isInteger(timeout?.external_completed) ? timeout.external_completed : null,
     idempotency,
-  };
+  });
 }
 
 export function retainUnresolvedOperation(operation, result, stderr) {

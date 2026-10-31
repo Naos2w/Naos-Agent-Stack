@@ -18,7 +18,7 @@
     {
       "source": "runtime/lean-runtime/source/agent_runtime.ts",
       "target": "toolboxes/agent-runtime/tools/agent_runtime.ts",
-      "sha256": "26B9649CECD84C612926AFE3F3E09AA04B8FF2A09C2E4909C84F4149521CE00A"
+      "sha256": "1F0AF75E10BB06C7DEDFF683B6D154FF7A6128D892A55A5A73F6D1BF403FE782"
     },
     {
       "source": "runtime/lean-runtime/source/letta_worker.ts",
@@ -28,7 +28,7 @@
     {
       "source": "runtime/lean-runtime/CURRENT_RUNTIME.md",
       "target": "toolboxes/agent-runtime/README.md",
-      "sha256": "22DAE7115966188230A4093F4EFAA2C3E9079F5A45437F1398191C74E5203792"
+      "sha256": "F611C003B11385F8456E02C43590138CDF3EA33090F427FC4ACD6E7395851573"
     },
     {
       "source": "runtime/lean-runtime/policy/shared-development-preflight.mdc",
@@ -48,7 +48,7 @@
     {
       "source": "runtime/lean-runtime/runtime_contract.ts",
       "target": "toolboxes/agent-runtime/tools/runtime_contract.ts",
-      "sha256": "31FE9CB137A9D68D27BB7F8F1B61965993827259DFA6FDE474D977D9E0B09B59"
+      "sha256": "D4CD6AFF23C72DAE80DC22D19B944B847FB191F9B01C02F94DA228746708D3D3"
     },
     {
       "source": "runtime/lean-runtime/runtime_maintenance.mjs",
@@ -63,7 +63,7 @@
     {
       "source": "runtime/lean-runtime/operation_reconciliation.mjs",
       "target": "toolboxes/agent-runtime/tools/operation_reconciliation.mjs",
-      "sha256": "082C66E714F84DA199F8B5313A28B9921F93031A885465E875D320317AB588A2"
+      "sha256": "B476902E63FCEEE5C1D58117CD1C0F436F12D61F125CF2B04CB23C24D94D3668"
     },
     {
       "source": "runtime/headless/Watch-OpenChatXHealth.ps1",

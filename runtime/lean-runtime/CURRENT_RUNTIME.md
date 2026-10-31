@@ -22,6 +22,15 @@ retry. Unresolved operations retain their inputs and logs beyond ordinary count
 limits. Letta interruption recovery remains bounded by its protocol; a remote
 idle state is not proof that a side effect did not occur.
 
+For an already-polled failed operation whose Worker has stopped, an explicitly
+authorized `cancel` also rechecks remote settlement using that operation's
+retained project, Agent, conversation and client-message identity. It records a
+durable settlement receipt without changing `failed` into task success. Later
+polls preserve that receipt, including a poll that raced the cancellation.
+In-flight tools, uncertain writes and missing execution evidence remain
+unresolved even when the remote conversation is idle. No automatic retry or
+resumption of interrupted tool approval is implied.
+
 - The existing project task/TODO owns the goal, acceptance criteria and next
   approved action. Keep using that record; do not create a second task ledger.
 - `agent_runtime` owns operation/session lifecycle, permissions, cancellation,

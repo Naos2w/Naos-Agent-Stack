@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "operationId": "op_ee8d98ebbd1f403c",
+  "scenario": "Existing test Agent and conversation, one-second read-only turn timeout, no external tool requests; explicit cancellation after Worker exit; repeated polling",
+  "before": {
+    "operationId": "op_ee8d98ebbd1f403c",
+    "state": "failed",
+    "error": "LETTA_TURN_TIMEOUT_REMOTE_UNCERTAIN",
+    "reconciliation": {
+      "schema": 1,
+      "source": "recorded_execution_evidence",
+      "remoteState": "uncertain",
+      "requiresReconciliation": true,
+      "automaticRetryAllowed": false,
+      "reason": "LETTA_TURN_TIMEOUT_REMOTE_UNCERTAIN",
+      "clientMessageId": "openchatx-op_ee8d98ebbd1f403c",
+      "conversationId": "local-conv-84",
+      "runId": null,
+      "externalRequests": 0,
+      "externalCompleted": 0,
+      "idempotency": []
+    },
+    "next_move": {
+      "action": "reconcile_before_retry",
+      "taskRef": "msi-readonly-timeout-acceptance-20261031",
+      "automaticRetryAllowed": false
+    },
+    "changed_files": []
+  },
+  "cancel": {
+    "ok": true,
+    "operationId": "op_ee8d98ebbd1f403c",
+    "state": "failed",
+    "alreadyStopped": true,
+    "remoteStatus": "already_idle",
+    "reconciliation": {
+      "schema": 1,
+      "source": "recorded_execution_evidence",
+      "remoteState": "settled",
+      "requiresReconciliation": false,
+      "automaticRetryAllowed": false,
+      "reason": "REMOTE_SETTLED_EFFECTS_NOT_ROLLED_BACK",
+      "clientMessageId": "openchatx-op_ee8d98ebbd1f403c",
+      "conversationId": "local-conv-84",
+      "runId": null,
+      "externalRequests": 0,
+      "externalCompleted": 0,
+      "idempotency": [],
+      "settlement": {
+        "schema": 1,
+        "source": "explicit_cancel",
+        "operationId": "op_ee8d98ebbd1f403c",
+        "projectId": "letta-poc",
+        "conversationId": "local-conv-84",
+        "clientMessageId": "openchatx-op_ee8d98ebbd1f403c",
+        "status": "already_idle",
+        "runId": null,
+        "observedAt": "2026-10-31T04:26:48.010Z"
+      }
+    }
+  },
+  "after": {
+    "operationId": "op_ee8d98ebbd1f403c",
+    "state": "failed",
+    "error": "LETTA_TURN_TIMEOUT_REMOTE_UNCERTAIN",
+    "reconciliation": {
+      "schema": 1,
+      "source": "recorded_execution_evidence",
+      "remoteState": "settled",
+      "requiresReconciliation": false,
+      "automaticRetryAllowed": false,
+      "reason": "REMOTE_SETTLED_EFFECTS_NOT_ROLLED_BACK",
+      "clientMessageId": "openchatx-op_ee8d98ebbd1f403c",
+      "conversationId": "local-conv-84",
+      "runId": null,
+      "externalRequests": 0,
+      "externalCompleted": 0,
+      "idempotency": [],
+      "settlement": {
+        "schema": 1,
+        "source": "explicit_cancel",
+        "operationId": "op_ee8d98ebbd1f403c",
+        "projectId": "letta-poc",
+        "conversationId": "local-conv-84",
+        "clientMessageId": "openchatx-op_ee8d98ebbd1f403c",
+        "status": "already_idle",
+        "runId": null,
+        "observedAt": "2026-10-31T04:26:48.010Z"
+      }
+    },
+    "next_move": {
+      "action": "inspect_failure_before_retry",
+      "taskRef": "msi-readonly-timeout-acceptance-20261031",
+      "automaticRetryAllowed": false
+    },
+    "changed_files": []
+  },
+  "limits": [
+    "Does not demonstrate recovery of interrupted tool approvals or exactly-once remote execution",
+    "Original failure and stderr remain preserved; no prompt retry or new Agent",
+    "Remote idle does not clear in-flight tools, uncertain effects, or missing execution evidence"
+  ]
+}

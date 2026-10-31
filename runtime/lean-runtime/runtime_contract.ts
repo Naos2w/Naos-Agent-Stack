@@ -91,6 +91,7 @@ export function describeOperationOutcome(input: {
   blockers?: unknown,
   idempotency?: unknown,
   stalePoll?: boolean,
+  reconciliation?: { remoteState?: string, requiresReconciliation?: boolean },
 }) {
   const taskRef = normalizeTaskRef(input.taskRef)
   const blockers = Array.isArray(input.blockers) ? input.blockers : []
@@ -99,6 +100,9 @@ export function describeOperationOutcome(input: {
   )
   const action = input.stalePoll ? "inspect_current_operation"
     : input.state === "running" ? "poll_existing_operation"
+    : !uncertain && input.reconciliation?.remoteState === "settled" &&
+      input.reconciliation.requiresReconciliation === false &&
+      (input.state === "failed" || input.state === "cancelled") ? "inspect_failure_before_retry"
     : uncertain || input.state === "failed" || input.state === "cancelled" ? "reconcile_before_retry"
     : blockers.length ? "resolve_affected_operation"
     : "check_existing_task_acceptance"
