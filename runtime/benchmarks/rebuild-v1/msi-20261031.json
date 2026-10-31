@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "baselineCommit": "1e3d3aa",
+  "baseSha256": "196883AAC82E09136547D2D0B3E04604333E3D742A522EE84E4BBE9B362B7F04",
+  "baseline": {
+    "label": "baseline-ps51",
+    "sourceRoot": "C:/Users/Naos/Documents/Codex/2026-10-30/codex/msi-source-check-20261031-a",
+    "scriptSha256": "DF269694CAC66B57ED8F6090282D814ED7FE0CA612BD903FDE52669F41C62C92",
+    "wallMs": 183174,
+    "sampledCpuMs": 173203.125,
+    "peakProcessWorkingSetBytes": 179322880,
+    "exitCode": 0,
+    "output": "C:\\Users\\Naos\\Documents\\Codex\\2026-10-30\\codex\\core-rebuild-baseline-ps51.zip",
+    "stdout": "C:\\Users\\Naos\\Documents\\Codex\\2026-10-30\\codex\\core-rebuild-baseline-ps51.stdout.log",
+    "stderr": "C:\\Users\\Naos\\Documents\\Codex\\2026-10-30\\codex\\core-rebuild-baseline-ps51.stderr.log",
+    "memoryScope": "PowerShell rebuild process only; sampled every 200 ms; no child process aggregation",
+    "timestampUtc": "2026-10-31T04:17:15.0632299Z",
+    "outputSha256": "22E8C5D504AA76F7E96DBCABE1B9B56B1B17FC7101B8C11362512DE49E3194A5",
+    "outputBytes": 81317200
+  },
+  "indexed": {
+    "label": "indexed-ps51",
+    "sourceRoot": "C:/Naos/02.Git/personal/Naos-Agent-Stack",
+    "scriptSha256": "2DE0A617AD9E2F16C2EFEBF10DDB526927695CE1F3C11BF1082D4565BFE3B052",
+    "wallMs": 20500,
+    "sampledCpuMs": 18953.125,
+    "peakProcessWorkingSetBytes": 179732480,
+    "exitCode": 0,
+    "output": "C:\\Users\\Naos\\Documents\\Codex\\2026-10-30\\codex\\core-rebuild-indexed-ps51.zip",
+    "stdout": "C:\\Users\\Naos\\Documents\\Codex\\2026-10-30\\codex\\core-rebuild-indexed-ps51.stdout.log",
+    "stderr": "C:\\Users\\Naos\\Documents\\Codex\\2026-10-30\\codex\\core-rebuild-indexed-ps51.stderr.log",
+    "memoryScope": "PowerShell rebuild process only; sampled every 200 ms; no child process aggregation",
+    "timestampUtc": "2026-10-31T04:17:48.8229428Z",
+    "outputSha256": "5D70ADE15D10EB645058602573040EDA8AA19D647A04D88161EC08A33033F0C4",
+    "outputBytes": 81317200
+  },
+  "contentComparison": {
+    "schema": 1,
+    "checkedPayloadFiles": 2970,
+    "allPayloadSha256Equal": true,
+    "manifestEqualExcept": "createdUtc"
+  },
+  "wallTimeReductionPercent": 88.81,
+  "scope": "One sequential local pair, PowerShell 5.1, core package rebuild only; neither model performance nor general development speed",
+  "checks": [
+    "134 Node tests passed: 127 full-list plus 7 dependency-enabled handoff tests",
+    "Committed checkout: 42 pinned overlays match",
+    "PowerShell 5.1 source and packaging validation passed including three rebuild scenarios"
+  ]
+}

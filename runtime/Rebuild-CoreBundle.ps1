@@ -45,6 +45,13 @@ try {
         $reader=[IO.StreamReader]::new($inputZip.GetEntry('manifest.json').Open())
         try{$manifest=$reader.ReadToEnd()|ConvertFrom-Json}finally{$reader.Dispose()}
         if($manifest.version -ne $lock.runtimeVersion -or $manifest.format -ne 2 -or $manifest.arch -ne 'AMD64'){throw 'REBUILD_BASE_VERSION_MISMATCH'}
+        # Keep exact-case matching while avoiding a full manifest scan per ZIP entry.
+        $manifestEntries=[Collections.Generic.Dictionary[string,object]]::new([StringComparer]::Ordinal)
+        foreach($row in $manifest.files){
+            $path=[string]$row.path
+            if($manifestEntries.ContainsKey($path)){throw ('REBUILD_DUPLICATE_BASE_ENTRY: '+$path)}
+            $manifestEntries.Add($path,$row)
+        }
         $outputZip=[IO.Compression.ZipFile]::Open($staged,[IO.Compression.ZipArchiveMode]::Create)
         try {
             $rows=New-Object System.Collections.ArrayList
@@ -54,9 +61,8 @@ try {
                 $copy=$outputZip.CreateEntry($key,[IO.Compression.CompressionLevel]::Optimal)
                 $from=$entry.Open();$to=$copy.Open()
                 try{$from.CopyTo($to)}finally{$from.Dispose();$to.Dispose()}
-                $original=@($manifest.files|Where-Object {$_.path -ceq $key})
-                if($original.Count -ne 1){throw ('REBUILD_UNDECLARED_BASE_ENTRY: '+$key)}
-                [void]$rows.Add($original[0])
+                if(-not $manifestEntries.ContainsKey($key)){throw ('REBUILD_UNDECLARED_BASE_ENTRY: '+$key)}
+                [void]$rows.Add($manifestEntries[$key])
             }
             foreach($key in @($overlays.Keys|Sort-Object)){[void]$rows.Add((AddBundleZipEntry $outputZip $overlays[$key]))}
             $rebuilt=[ordered]@{format=2;arch='AMD64';version=$lock.runtimeVersion;createdUtc=[DateTime]::UtcNow.ToString('o');files=@($rows.ToArray());excluded=$manifest.excluded;rebuildBaseSha256=$lock.baseSha256;runtimePolicy=$lock.runtimePolicy}

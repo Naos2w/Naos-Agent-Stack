@@ -16,6 +16,7 @@ $names = @(
     'Launch-NaosPowerShell.ps1',
     'tests\validate-unified.ps1',
     'tests\validate-package-builder.ps1',
+    'tests\validate-core-rebuild.ps1',
     'tests\validate-bootstrap.ps1',
     'tests\validate-wizard.ps1',
     'tests\validate-terminal.ps1',
@@ -71,6 +72,11 @@ if($LASTEXITCODE -ne 0 -or -not($builderOutput -match 'PACKAGE_BUILDER_VALIDATIO
     throw 'Synthetic release ZIP integrity and failed-publication rollback tests failed.'
 }
 Write-Output '[PASS] Synthetic release archive hashes, force replacement, and failed-publication rollback'
+$rebuildOutput=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'validate-core-rebuild.ps1'))
+if($LASTEXITCODE -ne 0 -or -not($rebuildOutput -match 'CORE_REBUILD_VALIDATION_PASSED')){
+    throw 'Core rebuild manifest lookup or failed-publication preservation tests failed.'
+}
+Write-Output '[PASS] Core rebuild exact paths, duplicate rejection, and failed-publication preservation'
 $bootstrapOutput=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'validate-bootstrap.ps1'))
 if($LASTEXITCODE -ne 0 -or -not($bootstrapOutput -match 'BOOTSTRAP_VALIDATION_PASSED')){
     throw 'Core bootstrap export, index service, or bundle verification tests failed.'
