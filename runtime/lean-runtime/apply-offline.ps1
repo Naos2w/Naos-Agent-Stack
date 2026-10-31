@@ -1,3 +1,4 @@
+#Requires -Version 5.1
 param(
     [Parameter(Mandatory = $true)][string]$Node
 )
@@ -13,12 +14,16 @@ $ownsMutex = $false
 $createdPause = $false
 $stopped = $false
 $restored = $false
+function Get-ManagedMcpApps {
+    $output = & $Node $pm2Cli jlist
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect managed MCP.' }
+    return ($output | Out-String) | ConvertFrom-Json
+}
 try {
     try { $ownsMutex = $watchMutex.WaitOne(0) }
     catch [System.Threading.AbandonedMutexException] { $ownsMutex = $true }
     if (-not $ownsMutex) { throw 'Health watcher is active; retry when it has finished.' }
-    $initialApps = (& $Node $pm2Cli jlist | Out-String) | ConvertFrom-Json -AsHashtable
-    if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect managed MCP.' }
+    $initialApps = @(Get-ManagedMcpApps)
     $initialMcp = @($initialApps | Where-Object name -eq 'openchatx-mcp')
     if ($initialMcp.Count -ne 1 -or $initialMcp[0].pm2_env.status -ne 'online') {
         throw 'Expected exactly one online managed MCP; preserve existing stopped state.'
@@ -47,7 +52,7 @@ try {
         if ($stopped -and -not (Test-Path -LiteralPath (Join-Path $toolboxRoot '.runtime-update-pending.json'))) {
             & $Node $pm2Cli restart openchatx-mcp | Out-Null
             if ($LASTEXITCODE -ne 0) { throw 'MCP restart failed; health watcher remains paused.' }
-            $apps = (& $Node $pm2Cli jlist | Out-String) | ConvertFrom-Json -AsHashtable
+            $apps = @(Get-ManagedMcpApps)
             $mcp = @($apps | Where-Object name -eq 'openchatx-mcp')
             if ($LASTEXITCODE -ne 0 -or $mcp.Count -ne 1 -or $mcp[0].pm2_env.status -ne 'online' -or $mcp[0].pid -le 0) {
                 throw 'MCP restart not confirmed; health watcher remains paused.'

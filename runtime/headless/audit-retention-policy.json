@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "mode": "report_only",
+  "archiveMaxAgeDays": 90,
+  "archiveMaxBytes": 2147483648,
+  "minimumArchiveCount": 3,
+  "protected": ["active logs", "raw archives", "compression temporary files", "unresolved operation evidence", "QA references", "side-effect replay ledger"],
+  "cleanup": "No automatic deletion. Review the exact cold-archive inventory and unresolved investigation holds before authorizing cleanup. Replay ledger lifetime must cover the remote replay window."
+}

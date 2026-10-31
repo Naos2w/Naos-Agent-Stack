@@ -1,6 +1,6 @@
 # Current OpenChatX Agent Runtime
 
-Policy version: **2026-10-28.2**. Active execution uses **Letta only**.
+Policy version: **2026-10-28.3**. Active execution uses **Letta only**.
 OpenCode and the standalone Phase 2 toolbox are retired. Their records and
 POC results are historical evidence, not current operating instructions.
 
@@ -10,6 +10,17 @@ Project permissions and applicable repository release requirements retain
 their existing precedence. This document does not grant permission to publish.
 
 ## Responsibilities
+
+The read-only `runtime_readiness.mjs` helper distinguishes transport liveness
+from Runtime readiness. Maintenance, pending recovery, stale workers, invalid
+registries and unresolved operations must not be reported as healthy. A normal
+brief admission mutex is informational; no observer deletes locks or repairs state.
+
+Polling records `reconciliation` evidence for the same operation. It reports
+remote settlement separately from external tool results and never authorizes a
+retry. Unresolved operations retain their inputs and logs beyond ordinary count
+limits. Letta interruption recovery remains bounded by its protocol; a remote
+idle state is not proof that a side effect did not occur.
 
 - The existing project task/TODO owns the goal, acceptance criteria and next
   approved action. Keep using that record; do not create a second task ledger.
@@ -46,6 +57,126 @@ new task nor merge/deploy authorization.
 - A stale poll cannot direct work for a newer operation. It asks the caller to
   inspect the current operation instead.
 - `runtimePolicy` identifies this contract and the current rules entrypoint.
+- Successful run results and the latest polled session expose `modelConfiguration`
+  version 1: the effective conversation model, reasoning setting and context limit observed before
+  that turn. This is a configuration snapshot, not proof of provider-side execution
+  or a live context-usage meter. Unknown values remain null; a prior session
+  observation includes its timestamp and must not be treated as a fresh lookup.
+- Polling returns allowlisted token `usage` when reported by Letta. Missing usage
+  remains null and cannot be converted into a claimed cost or token saving.
+
+## Tool execution evidence (version 1)
+
+`validation.tool_outcomes` distinguishes successful, failed and unknown tool
+responses. It preserves bounded error codes/exit codes without copying tool
+content, commands or stderr. Failure counts remain visible after a later
+identical executed request succeeds; `later_identical_success` describes only
+that tool attempt, not delivery acceptance or permission to retry. Unresolved
+failures/unknown replies are review items in `blockers`, not an assertion that
+the entire project is unusable. Existing uncertain-side-effect reconciliation
+still takes precedence. Calls rejected before reaching this Worker are outside
+this evidence scope; historical records without outcomes remain unverified.
+
+`changed_files` now includes only successful direct write calls with observed
+before/after byte changes. Observation uses existing ProjectExecutor approvals,
+reads at most 1 MiB per snapshot, and never grants read access to a write-only
+project. An unchanged write, replay or unavailable observation cannot assert a
+new change. `validation.file_effects` also exposes observed partial changes
+around failed writes for inspection. This is point-in-time evidence, not proof
+against concurrent editors. Shell and external-editor changes are not covered;
+use actual source/diff and acceptance checks for delivery.
+
+## Task continuity
+
+For multi-step work, retain the current goal, approved constraints, completed
+changes, real test evidence, unresolved issues and next action in the existing
+project TODO when writing it is authorized. Read-only work reports this context
+without a new file. On resumption/compaction, reread that task record and relevant
+current source. `task_ref` stays an opaque identifier, not a path-read grant;
+known files can be passed in `context_paths`. No second task database, automatic
+checkpoint writer or additional Agent is introduced. The existing compaction
+trigger remains unchanged; continuity must be checked by actual resumed work.
+
+## Task-based model selection (version 1)
+
+On `run`, an explicit `model` wins over `task_complexity`; explicit
+`reasoning_effort` wins over the profile. Otherwise the supervising conversation
+classifies the approved task: `simple` selects `openai-codex/gpt-6-luna` / medium,
+`standard` selects `openai-codex/gpt-6.1-sol` / high, and `complex` selects
+`openai-codex/gpt-6-astra` / high. Omission or uncertainty uses standard.
+The runtime applies this deterministic policy; it does not make a second model
+call or guess complexity from prompt keywords. The current user choice takes
+precedence over these defaults.
+
+`model=auto` uses the same profiles. `gpt-*` aliases are normalized to
+`openai-codex/*`. The compatibility value `letta/agent-config` preserves the
+current conversation configuration and cannot be combined with selection fields.
+Model selection is run-only; compact/session creation retain their existing contract.
+
+`modelSelection` version 1 records mode, complexity, selected model, reasoning,
+reason, effort source and conversation scope. Acceptance reports `state=planned`;
+only verified readback reports `state=applied`. `modelConfiguration.source` is
+`letta.conversation_retrieve` for routed turns and can still be
+`letta.agent_retrieve` for historical observations. A configuration snapshot
+does not prove which model the provider actually executed.
+
+Selection reuses the existing Agent and named conversation. It verifies the
+catalog, effort, current ChatGPT OAuth provider, conversation ownership and remote
+idle state, then updates only that conversation and reads back the result before
+sending input. Shared Agent defaults and other conversations remain unchanged.
+Runtime operations are serialized by existing guards; external clients must not
+mutate this conversation concurrently because Letta does not offer an atomic
+idle-check/update transaction across clients.
+
+A selection failure stops the operation without automatic fallback or inference
+replay. A successfully applied conversation override persists even if a later
+turn fails; reconcile that operation before further work. Catalog availability
+is checked but does not guarantee provider access. Lifecycle policy remains
+2026-10-28.3; model routing is an additive, separately versioned contract.
+
+## Codebase context evidence
+
+Codebase status separates a missing project index (`PROJECT_NOT_INDEXED`) from
+a failed query. Nonzero CLI exits with a structured missing-index response are
+interpreted before generic process failure. Timeout, unavailable binary, local
+process permissions, output limits, invalid replies and root mismatch retain
+distinct bounded codes; raw stderr and other indexed project names are not
+forwarded to the Agent.
+
+`autoIndexExcluded` explains the existing synchronization configuration. It does
+not prohibit reading a manually created index, authorize indexing, or imply a
+service outage. Missing indexes use authorized source inspection without
+automatic retries or rebuilds. Query failures report `codebase.status=error`;
+they do not establish that the project lacks permissions or an index.
+
+`status=verified` means an index-status query and root check succeeded. Coverage
+counts preserve partial/unusable/skipped files; zero counts are not proof of
+completeness. `completeRootCoverage` is false, `requestedFilesVerified` is false
+and freshness remains `not_checked` when no exact-file observations are available.
+The existing source reads remain authoritative before edits. These diagnostics
+do not change model selection, operation guards or project access boundaries.
+
+`run.context_paths` optionally supplies up to 16 known project-relative exact
+files (512 characters each). The facade normalizes and deduplicates these hints,
+and the worker passes them to the existing read-only context inspection. They
+are not a write allowlist or acceptance criteria. Omit them until paths are
+known; the Agent can later call `openchatx_codebase_context` with
+`action=coverage` and `paths` for newly discovered files.
+
+Only matching index scopes are queried, with the most specific scope owning each
+file. Existing ProjectExecutor read approval, including realpath boundaries, and
+an actual file check precede coverage queries. A shared 20-second CLI budget,
+at most two concurrent scope processes and 12-second individual timeouts bound
+the queries. There is no automatic reindex, retry or directory coverage scan.
+
+`pathChecks` version 1 records requested/observed counts, observation time and
+per-file coverage/freshness or a bounded unavailability reason. Its `checked`
+state means the metadata response matched all requested files and the observed
+index generation; it does not certify current contents or complete parsing.
+`freshness=path_metadata_observed` has the same limited meaning. Missing indexes,
+unreadable paths, directories, truncated replies, changed generations and query
+failures cannot become successful file observations. `metadata_changed` alone
+does not prove content changed; `no_recorded_issue` is not a completeness claim.
 
 ## Permissions and recovery
 

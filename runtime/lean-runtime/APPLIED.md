@@ -1,5 +1,11 @@
 # Local application record
 
+For the 2026-10-30 MSI model-observation, handoff and development-benchmark
+acceptance, see [the current MSI record](../MSI_OPTIMIZATION_20261030.md).
+
+Historical .2 record. The installed version is now .3; see
+[current reliability validation](RELIABILITY_VALIDATION.md).
+
 Policy version `2026-10-28.2` was applied on MSI on 2026-10-28 at 17:18
 Asia/Taipei. It supersedes the `2026-10-28.1` local update from 16:38.
 
@@ -64,9 +70,11 @@ session, external-tool approval/execution and public polling:
   `2B26A570B95BD74782B758E3787C171BC611038DBBBBE1779B85B079B1370C55`.
 - No activity lease remained after the worker and poll completed.
 
-This validates the read-only model/tool execution chain. It is not product
-feature acceptance or a performance benchmark. No installer release was built
-or published. No product repository feature was changed.
+This initial check validates the read-only model/tool execution chain. It is not
+product feature acceptance or a performance benchmark. At that point no installer
+release had been built or published. The subsequent local candidate, Stock
+compatibility and real write/test/fix check are recorded in
+[delivery validation](DELIVERY_VALIDATION.md). No product feature was changed.
 
 ## Recovery
 

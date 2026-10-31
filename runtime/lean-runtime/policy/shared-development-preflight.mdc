@@ -1,0 +1,43 @@
+---
+description: "MSI 最短路徑個人開發：單 Developer、既有工作狀態、非強制 QA、尊重實際授權與精確故障"
+alwaysApply: true
+---
+
+# MSI 個人開發：最短路徑（不強制 QA / Reviewer）
+
+- 每個 ChatGPT 對話的 `start_here` 只需初始化一次；每個工程任務選擇正確已註冊 Project（或真正機器維運的 null）。沿用既有 Letta Agent、named session、Conversation、operationId 與既有 TODO，不因失敗重開。
+- **預設單一 Developer**：確認已有需求與進度 → 讀現有程式／真實錯誤 → 最小正確 Diff → 相關 Test / Build / Lint（UI 才驗畫面）→ 依原授權 Git 操作。簡單任務由 ChatGPT 直接使用 OpenChatX 工具，不強制啟用 Letta／多 Agent／新流程。
+- 日常開發**不強制** Analyzer、QA、獨立 Reviewer、review receipt 或 `development_gate`；`development_receipt`、`qa_review_bundle_plan`、`qa_review_precheck`、`qa_reviewer_directory` 在公開 Toolbox 已停用，不可擅自重新啟用。Letta 一般 run 僅做唯讀開發情境檢查，不自動建立稽核 receipt；既有歷史 receipt 不是 QA 派工、發布許可或日常新待辦。
+- Skills / Codebase Memory 按需使用；索引未連線或 Skill 不適用，不妨礙以現有 Project 的檔案／搜尋進行獲准開發。不要每輪建立第二套任務清單、重構既定架構、重新做完成的功能、重讀整份歷史 QA 設計。
+- 原有 Project read/write/shell、真實平台安全拒絕、GitHub CI、分支保護與部署授權仍然有效。**明確遭拒只限制該受拒操作**，不得換工具、主機、身分、參數或包裝手法重試；也不得擴張成「整個專案安全阻礙」。歷史拒絕的細節僅保留在對應專案與稽核紀錄，不作為其他專案例行開發的阻塞條件；不得重新執行先前受拒的相同操作，也不得偽造任何核准或驗收。
+- 任何真實失敗依 `runtime-anti-loop-triage` 保留 error code、限制相同重試並找到根因。對使用者只回報：**完成什麼、證據/Exit Code、仍未完成的具體項目**；不要重複講歷史阻礙或請使用者批准例行除錯。
+
+## Current runtime contract — 2026-10-28.3
+
+- Existing task/TODO records own acceptance and the next approved action. Use optional `task_ref` to identify the same work item.
+- `state=completed` means this operation ended. `delivery.state=not_evaluated` is not product acceptance; check actual evidence and update the existing task.
+- Follow `next_move` for polling or reconciliation. It never authorizes retries, creates a new task, or replaces repository release gates.
+- Current runtime README and this rule supersede older POC engine/QA descriptions; preserve historical evidence without promoting it into current policy.
+
+## Task-based model selection — version 1
+
+- When delegating a run, honor the user's current explicit model and reasoning choice first via model and reasoning_effort. Do not overwrite that choice with a task profile.
+- Otherwise the supervising conversation classifies the approved task with task_complexity: simple for bounded, unambiguous edits or checks; standard for normal development; complex for ambiguous root causes or substantial design reasoning. Choose standard when uncertain. Classification is part of normal supervision, not another Agent or model call.
+- Automatic profiles: simple = openai-codex/gpt-6-luna / medium; standard = openai-codex/gpt-6.1-sol / high; complex = openai-codex/gpt-6-astra / high. Omitted classification uses standard. model=auto enables the same policy; explicit reasoning_effort still wins.
+- Reuse the same project Agent and named conversation. Selection applies at the next idle run boundary only to that conversation. Do not change Agent defaults or another session, spawn extra reviewers, or switch providers.
+- model=letta/agent-config preserves the conversation's current effective setting for compatibility; do not combine it with task_complexity or reasoning_effort. Selection fields apply only to run.
+- Distinguish planned modelSelection from applied selection and the observed modelConfiguration. Report the selection reason and actual observed setting; unknown usage is not zero.
+- If catalog availability, idle state, update scope or readback cannot be verified, stop that operation and retain its error and operation ID. Never silently fall back to another model, replay work after a failure, or treat routing as permission to bypass a denial.
+
+## Exact-file context — version 1
+
+- On run, pass context_paths for up to 16 known relevant files relative to the Project root. Use observed paths, not guessed names; omit when unknown. These hints never grant write access or create acceptance requirements.
+- Runtime checks only these files against the matching index scopes. Coverage is best-effort metadata at observation time, not proof of complete or current code. Always read actual source before editing; metadata_changed is a warning, not proof the contents changed.
+- For files discovered later, use openchatx_codebase_context with action=coverage and paths. Do not request directories or rescan/reindex the entire project. Query errors, missing files and absent indexes require honest diagnostics and authorized source inspection, not automatic retries or an extra Agent.
+
+## Tool outcomes and task continuity — version 1
+
+- Operation completion is separate from tool success. Inspect validation.tool_outcomes, file_effects and blockers. A later identical successful request is only observed tool recovery, never permission for an automatic retry or product acceptance.
+- changed_files includes only successful direct writes whose bounded before/after observations prove a byte change. Replays, unchanged writes and unverified effects are excluded. Shell and external-editor changes are not covered; inspect the actual diff for delivery.
+- For multi-step work, keep the current goal, approved constraints, completed changes, actual test evidence, unresolved issues and next action in the existing project TODO when writing it is authorized. Do not create a second task database or automatic receipt. Read-only work reports this information without writing a checkpoint.
+- After compaction or interruption, reread the existing task record and relevant current source before continuing. Use task_ref as an identifier, not a file permission; pass known task/source files in context_paths. Summaries and earlier tool successes do not override current files, permissions or release gates.

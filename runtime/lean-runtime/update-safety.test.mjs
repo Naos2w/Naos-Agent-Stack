@@ -70,9 +70,9 @@ test('rollback preserves a concurrent edit and reports the exact conflict', asyn
   const f = await fixture();
   try {
     await assert.rejects(apply(f.root, f.stage, { verifyInstalled: async () => {
-      await writeFile(join(f.root, targets[2]), 'external-edit'); throw Error('verify failure');
+      await writeFile(join(f.root, 'tools/letta_worker.ts'), 'external-edit'); throw Error('verify failure');
     } }), /tools\/letta_worker.ts: concurrent change preserved/);
-    assert.equal(await readFile(join(f.root, targets[2]), 'utf8'), 'external-edit');
+    assert.equal(await readFile(join(f.root, 'tools/letta_worker.ts'), 'utf8'), 'external-edit');
     await assert.rejects(recover(f.root), /RECOVERY_INCOMPLETE/);
   } finally { await rm(f.base, { recursive: true, force: true }); }
 });

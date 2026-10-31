@@ -51,7 +51,7 @@ test('write-enabled runs inspect context once without creating audit records', a
     calls.push(args);
     return { prompt: args[1], evidence: { project: 'checked' } };
   }, 'tasks/todo.md#current');
-  assert.deepEqual(calls, [[project, 'implement approved task']]);
+  assert.deepEqual(calls, [[project, 'implement approved task', []]]);
   assert.deepEqual(result.evidence, { project: 'checked' });
   assert.equal(result.id, undefined);
   assert.match(result.prompt, /Operation completion does not mean delivery acceptance/);

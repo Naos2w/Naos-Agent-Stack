@@ -6,15 +6,20 @@ import { fileURLToPath } from 'node:url';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { acquireRuntimeMaintenance, RECOVERY_FILE } from './runtime_maintenance.mjs';
+import { patchModelWorker, patchModelRuntime } from './model-observation-patch.mjs';
+import { patchRoutingWorker, patchRoutingRuntime, patchRoutingGuidance } from './model-routing-patch.mjs';
+import { patchContextWorker, patchContextRuntime, patchContextGuidance } from './context-paths-patch.mjs';
+import { patchToolEvidenceWorker, patchEvidenceGuidance } from './tool-evidence-patch.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const targets = [
   'tools/runtime_maintenance.mjs',
-  'tools/runtime_contract.ts', 'tools/letta_worker.ts', 'tools/agent_runtime.ts',
+  'tools/runtime_readiness.mjs', 'tools/operation_reconciliation.mjs',
+  'tools/runtime_contract.ts', 'tools/model_routing.mjs', 'tools/tool_evidence.mjs', 'tools/letta_worker.ts', 'tools/agent_runtime.ts', 'tools/agent_capabilities.ts',
   'docs/history/runtime-before-20261028.md', 'README.md',
   'rules/shared-development-preflight.mdc', 'skills/agent-runtime-usage/SKILL.md',
 ];
-export const POLICY_VERSION = '2026-10-28.2';
+export const POLICY_VERSION = '2026-10-28.3';
 const sha = data => createHash('sha256').update(data).digest('hex');
 const normalize = text => text.replaceAll('\r\n', '\n');
 
@@ -78,20 +83,29 @@ function patchLegacyRuntime(original) {
   return text;
 }
 
-export function patchWorker(original) {
+function patchWorkerBase(original) {
   let text = normalize(original);
   if (!text.includes('prepareWorkerRunContext')) text = patchLegacyWorker(text);
-  if (text.includes('withRuntimeActivity')) return text;
-  text = replaceOnce(text, 'import { join, resolve } from "node:path"', 'import { dirname, join, resolve } from "node:path"');
-  text = 'import { withRuntimeActivity } from "./runtime_maintenance.mjs"\n' + text;
-  return replaceOnce(text, '  void workerMain().catch((error) => {',
-    '  void withRuntimeActivity(dirname(dirname(modulePath)), workerMain).catch((error) => {');
+  if (!text.includes('withRuntimeActivity')) {
+    text = replaceOnce(text, 'import { join, resolve } from "node:path"', 'import { dirname, join, resolve } from "node:path"');
+    text = 'import { withRuntimeActivity } from "./runtime_maintenance.mjs"\n' + text;
+    text = replaceOnce(text, '  void workerMain().catch((error) => {',
+      '  void withRuntimeActivity(dirname(dirname(modulePath)), workerMain).catch((error) => {');
+  }
+  if (text.includes('client_message_id: clientMessageId,\n          idempotency: summarizeRunTrace')) return text;
+  text = replaceOnce(text, '          kind: "LETTA_TURN_TIMEOUT_DIAGNOSTIC",',
+    '          kind: "LETTA_TURN_TIMEOUT_DIAGNOSTIC",\n' +
+    '          client_message_id: clientMessageId,\n' +
+    '          idempotency: summarizeRunTrace({ external_tool_calls: externalCalls }).validation.idempotency,');
+  return replaceOnce(text, '          kind: "LETTA_TIMEOUT_RECOVERY",',
+    '          kind: "LETTA_TIMEOUT_RECOVERY",\n' +
+    '          clientMessageId,\n          conversationId: conversation.conversationId,');
 }
 
-export function patchRuntime(original) {
+function patchRuntimeBase(original) {
   let text = normalize(original);
   if (!text.includes('normalizeTaskRef')) text = patchLegacyRuntime(text);
-  if (text.includes('withRuntimeActivity')) return text;
+  if (!text.includes('withRuntimeActivity')) {
   text = replaceOnce(text, 'const execFileAsync = promisify(execFile)',
     'const maintenanceUrl = new URL("./runtime_maintenance.mjs", import.meta.url)\n' +
     'maintenanceUrl.searchParams.set("source_mtime", String((await fs.stat(fileURLToPath(maintenanceUrl))).mtimeMs))\n' +
@@ -99,8 +113,46 @@ export function patchRuntime(original) {
     'const execFileAsync = promisify(execFile)');
   text = replaceOnce(text, '  }) {\n    const config = await ensureConfig()',
     '  }) {\n    return withRuntimeActivity(TOOLBOX_ROOT, async () => {\n    const config = await ensureConfig()');
-  return replaceOnce(text, '    throw new Error(`UNSUPPORTED_ACTION: ${action}`)\n  },',
+  text = replaceOnce(text, '    throw new Error(`UNSUPPORTED_ACTION: ${action}`)\n  },',
     '    throw new Error(`UNSUPPORTED_ACTION: ${action}`)\n    })\n  },');
+  }
+  if (text.includes('summarizeReconciliation')) return text;
+  text = replaceOnce(text, 'const execFileAsync = promisify(execFile)',
+    'const reconciliationUrl = new URL("./operation_reconciliation.mjs", import.meta.url)\n' +
+    'reconciliationUrl.searchParams.set("source_mtime", String((await fs.stat(fileURLToPath(reconciliationUrl))).mtimeMs))\n' +
+    'const { summarizeReconciliation, retainUnresolvedOperation } = await import(reconciliationUrl.href)\n\n' +
+    'const execFileAsync = promisify(execFile)');
+  text = replaceOnce(text, '  taskRef?: string | null\n\n  state: OperationState',
+    '  taskRef?: string | null\n  reconciliation?: Record<string, any>\n\n  state: OperationState');
+  text = replaceOnce(text, '    if (operation.projectId === "openchatx-qa-reviewer") {',
+    '    if (operation.engine === "letta") {\n' +
+    '      try {\n' +
+    '        const output = await readText(operation.stdoutPath)\n' +
+    '        const parsed = output.trim() ? parseLettaWorkerOutput(output) : {}\n' +
+    '        if (retainUnresolvedOperation(operation, parsed, await readText(operation.stderrPath))) continue\n' +
+    '      } catch { continue } // Missing/invalid evidence must not be pruned.\n' +
+    '    }\n' +
+    '    if (operation.projectId === "openchatx-qa-reviewer") {');
+  text = replaceOnce(text, '    if (Object.keys(operationPatch).length > 0) {',
+    '    operationPatch.reconciliation = summarizeReconciliation(\n' +
+    '      { ...operation, ...operationPatch }, parsed, stderr,\n' +
+    '    )\n' +
+    '    if (Object.keys(operationPatch).length > 0) {');
+  text = replaceOnce(text, '    if (operation.inputPath) {\n      await fs.rm(operation.inputPath, { force: true })\n    }',
+    '    if (operation.inputPath && !operation.reconciliation?.requiresReconciliation) {\n' +
+    '      await fs.rm(operation.inputPath, { force: true })\n    }');
+  return replaceOnce(text, '      stalePoll: !sessionUpdate.current,',
+    '      stalePoll: !sessionUpdate.current,\n      reconciliation: operation.reconciliation,');
+}
+
+export function patchWorker(original) { return patchToolEvidenceWorker(patchContextWorker(patchRoutingWorker(patchModelWorker(patchWorkerBase(original))))); }
+export function patchRuntime(original) { return patchContextRuntime(patchRoutingRuntime(patchModelRuntime(patchRuntimeBase(original)))); }
+
+export function patchCapabilities(original, candidate) {
+  if (normalize(original) === normalize(candidate)) return candidate;
+  if (!['19cf235bbaec0e5767b78a83f93acfd851fa0b5480746abc563f61b0e217933d', 'b0c33d5282afb2963190fdbd5c903c1dae88b7b55d351fb6624f1eb1709da96c'].includes(sha(original)))
+    throw Error('CAPABILITY_SOURCE_CHANGED: inspect the installed source before preparing this update');
+  return candidate;
 }
 
 async function bytesOrNull(path) {
@@ -132,19 +184,26 @@ export async function prepare(root, stage) {
     '- `state=completed` means this operation ended. `delivery.state=not_evaluated` is not product acceptance; check actual evidence and update the existing task.\n' +
     '- Follow `next_move` for polling or reconciliation. It never authorizes retries, creates a new task, or replaces repository release gates.\n' +
     '- Current runtime README and this rule supersede older POC engine/QA descriptions; preserve historical evidence without promoting it into current policy.\n';
-  newRule = newRule.replaceAll('2026-10-28.1', POLICY_VERSION);
+  newRule = newRule.replace(/2026-10-28\.[12]/g, POLICY_VERSION);
   let newSkill = normalize(skill);
   if (!newSkill.includes('## Current policy and delivery contract')) newSkill += '\n## Current policy and delivery contract\n\n' +
     'Policy `2026-10-28.1`: read the installed `rules/shared-development-preflight.mdc` and current runtime README. Older Phase 2/3/4 descriptions are historical.\n\n' +
     'Normal runs inspect context without creating audit receipts. Pass optional `task_ref` for the existing task; poll the accepted operation, distinguish operation completion from unevaluated delivery, then check actual acceptance and continue the same authorized task. `next_move` is guidance, never retry/deploy permission.\n';
-  newSkill = newSkill.replaceAll('2026-10-28.1', POLICY_VERSION)
+  newSkill = newSkill.replace(/2026-10-28\.[12]/g, POLICY_VERSION)
     .replaceAll('shell_policy_version=1', 'shell_policy_version=2')
     .replaceAll('shell policy v1', 'shell policy v2');
+  newRule = patchEvidenceGuidance(patchContextGuidance(patchRoutingGuidance(newRule)));
+  newSkill = patchEvidenceGuidance(patchContextGuidance(patchRoutingGuidance(newSkill)));
   const history = await bytesOrNull(join(root, 'docs/history/runtime-before-20261028.md'));
   const contents = new Map([
     ['tools/runtime_maintenance.mjs', await readFile(join(here, 'runtime_maintenance.mjs'), 'utf8')],
+    ['tools/runtime_readiness.mjs', await readFile(join(here, 'runtime_readiness.mjs'), 'utf8')],
+    ['tools/operation_reconciliation.mjs', await readFile(join(here, 'operation_reconciliation.mjs'), 'utf8')],
     ['tools/runtime_contract.ts', await readFile(join(here, 'runtime_contract.ts'), 'utf8')],
+    ['tools/model_routing.mjs', await readFile(join(here, 'model_routing.mjs'), 'utf8')],
+    ['tools/tool_evidence.mjs', await readFile(join(here, 'tool_evidence.mjs'), 'utf8')],
     ['tools/letta_worker.ts', patchWorker(worker)], ['tools/agent_runtime.ts', patchRuntime(runtime)],
+    ['tools/agent_capabilities.ts', patchCapabilities(await readFile(join(root, 'tools/agent_capabilities.ts'), 'utf8'), await readFile(join(here, 'source/agent_capabilities.ts'), 'utf8'))],
     ['docs/history/runtime-before-20261028.md', history ?? '# Historical runtime notes — superseded 2026-10-28\n\nFor current behavior read ../../README.md and ../../rules/shared-development-preflight.mdc.\nThese dated notes do not establish current permissions or blockers.\n\n' + readme],
     ['README.md', await readFile(join(here, 'CURRENT_RUNTIME.md'), 'utf8')],
     ['rules/shared-development-preflight.mdc', newRule], ['skills/agent-runtime-usage/SKILL.md', newSkill],
