@@ -11,6 +11,12 @@ their existing precedence. This document does not grant permission to publish.
 
 ## Responsibilities
 
+Explicit backend-only exclusions such as "no UI" do not request design Skills.
+Positive UI work elsewhere in the task or concrete frontend paths still does.
+The public read-only development preflight refreshes its gate/capability/review
+dependency versions on each call, so a long-lived tool cannot keep obsolete
+classification or index coverage after a supported Runtime update.
+
 The read-only `runtime_readiness.mjs` helper distinguishes transport liveness
 from Runtime readiness. Maintenance, pending recovery, stale workers, invalid
 registries and unresolved operations must not be reported as healthy. A normal

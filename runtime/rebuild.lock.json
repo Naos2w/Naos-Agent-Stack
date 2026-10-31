@@ -28,7 +28,7 @@
     {
       "source": "runtime/lean-runtime/CURRENT_RUNTIME.md",
       "target": "toolboxes/agent-runtime/README.md",
-      "sha256": "94750EF209CDB778C6EADEFA5CC4D58C989CB9CA9C2D209F21A3292F643088D4"
+      "sha256": "896528108B4DEA801BDB1AB3E06371FA8031B03821F53E1870CB30B88ED6EDBC"
     },
     {
       "source": "runtime/lean-runtime/policy/shared-development-preflight.mdc",
@@ -43,7 +43,7 @@
     {
       "source": "payload/bootstrap/naos-agent-stack.ps1",
       "target": "naos-agent-stack.ps1",
-      "sha256": "B7BDE2F9CA9927721327D10CD7BBF856F3A269190FB10E1AC87B7DCF860C0700"
+      "sha256": "3AD3705CDDFC07B7804B2198B101303DF6929B3B107A47450E6C61F1D7F26AD4"
     },
     {
       "source": "runtime/lean-runtime/runtime_contract.ts",
@@ -208,7 +208,7 @@
     {
       "source": "runtime/lean-runtime/source/agent_capabilities.ts",
       "target": "toolboxes/agent-runtime/tools/agent_capabilities.ts",
-      "sha256": "449D1A75102EA1879227018AC340BE5617736F1E2839BE67D5758C0C15AFBDC0"
+      "sha256": "024911023D96A0DFBF47EF86DF40EE1EB4F39657BA858070C6DB49182FFE3E6D"
     },
     {
       "source": "runtime/lean-runtime/tool_evidence.mjs",
@@ -219,6 +219,11 @@
       "source": "runtime/lean-runtime/source/external_tool_idempotency.ts",
       "target": "toolboxes/agent-runtime/tools/external_tool_idempotency.ts",
       "sha256": "BD592492F9EA7332ECDB49FADE8A80D9915BE8AB9D4498C9CE4E38FC23C95C35"
+    },
+    {
+      "source": "runtime/lean-runtime/source/development_preflight.ts",
+      "target": "toolboxes/agent-runtime/tools/development_preflight.ts",
+      "sha256": "D938B0AF5928FED6E491797FA48E4AF4E936CD78EFDC0ED44917EF56837A8296"
     }
   ]
 }

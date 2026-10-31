@@ -71,6 +71,10 @@ The earlier `inflight-20261031` candidates are superseded by `.2`.
 
 ## Remaining boundaries
 
+Later owner scope update: fresh Windows and whole-stack acceptance were removed
+from this round. See [the current context-efficiency record](MSI_CONTEXT_EFFICIENCY_20261031.md)
+for that decision, subsequent measurements and confirmed provider limits.
+
 These results do not establish full resumption of interrupted remote tool
 approvals, automatic resolution of partial side effects, or recovery after every
 power-loss scenario. Unknown claims remain protected. No new Agent, replacement

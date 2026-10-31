@@ -156,6 +156,25 @@ test('known non-code files still request context without classifying them as UI'
   assert.deepEqual(classifyCapabilityTask('Read the selected setting',['settings.json']),
     {codebase:true,ui:false,motion:false,marketing:false,shadcn:false});
 });
+
+test('explicit UI exclusions do not load design skills for backend work',()=>{
+  for(const task of ['Backend-only, no UI, fix the worker timeout',
+    'Fix the API; no UI/UX changes.', 'Non-UI runtime maintenance',
+    '修正後端，不涉及 UI，保留原有功能', '純後端修正，不修改畫面',
+    '修復逾時，無前端變更']) {
+    assert.equal(classifyCapabilityTask(task,['tools/worker.ts']).ui,false,task);
+  }
+});
+
+test('UI exclusions never suppress explicit frontend paths or separate positive UI work',()=>{
+  for(const [task,paths] of [
+    ['Backend-only, no UI',['src/App.tsx']],
+    ['No UI animation; fix the UI layout',['server.ts']],
+    ['不修改畫面動畫，但修正前端表單',['server.ts']],
+    ['Not only UI: repair the API too',['server.ts']],
+    ['Fix frontend validation',['server.ts']],
+  ]) assert.equal(classifyCapabilityTask(task,paths).ui,true,task);
+});
 test('failed coverage retains verified root and marks the requested file as unverified without retry',async()=>{
   const f=preflight({coverageFailure:{killed:true,stderr:'private'}}),r=await f.run(['src/main.ts']);
   assert.equal(r.evidence.codebase.status,'verified');

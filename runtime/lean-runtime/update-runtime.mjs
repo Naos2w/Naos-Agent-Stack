@@ -19,6 +19,7 @@ export const targets = [
   'tools/runtime_maintenance.mjs',
   'tools/runtime_readiness.mjs', 'tools/operation_reconciliation.mjs',
   'tools/external_tool_idempotency.ts',
+  'tools/development_preflight.ts',
   'tools/runtime_contract.ts', 'tools/model_routing.mjs', 'tools/tool_evidence.mjs', 'tools/letta_worker.ts', 'tools/agent_runtime.ts', 'tools/agent_capabilities.ts',
   'docs/history/runtime-before-20261028.md', 'README.md',
   'rules/shared-development-preflight.mdc', 'skills/agent-runtime-usage/SKILL.md',
@@ -154,8 +155,15 @@ export function patchRuntime(original) { return patchBackendOrphanRuntime(patchS
 
 export function patchCapabilities(original, candidate) {
   if (normalize(original) === normalize(candidate)) return candidate;
-  if (!['19cf235bbaec0e5767b78a83f93acfd851fa0b5480746abc563f61b0e217933d', 'b0c33d5282afb2963190fdbd5c903c1dae88b7b55d351fb6624f1eb1709da96c'].includes(sha(original)))
+  if (!['19cf235bbaec0e5767b78a83f93acfd851fa0b5480746abc563f61b0e217933d', 'b0c33d5282afb2963190fdbd5c903c1dae88b7b55d351fb6624f1eb1709da96c', '449d1a75102ea1879227018ac340be5617736f1e2839be67d5758c0c15afbdc0'].includes(sha(original)))
     throw Error('CAPABILITY_SOURCE_CHANGED: inspect the installed source before preparing this update');
+  return candidate;
+}
+
+export function patchPreflight(original, candidate) {
+  if (normalize(original) === normalize(candidate)) return candidate;
+  if (sha(original) !== '161bafad4a438e89e93cc2f53c740f68a5a022a98315c5fa83aaacd7a35578db')
+    throw Error('PREFLIGHT_SOURCE_CHANGED: inspect the installed entrypoint before updating');
   return candidate;
 }
 
@@ -179,6 +187,8 @@ export async function prepare(root, stage) {
   const readme = await readFile(join(root, 'README.md'), 'utf8');
   const rule = await readFile(join(root, 'rules/shared-development-preflight.mdc'), 'utf8');
   const skill = await readFile(join(root, 'skills/agent-runtime-usage/SKILL.md'), 'utf8');
+  const preflight = patchPreflight(await readFile(join(root, 'tools/development_preflight.ts'), 'utf8'),
+    await readFile(join(here, 'source/development_preflight.ts'), 'utf8'));
   const idempotency = normalize(await readFile(join(here, 'source/external_tool_idempotency.ts'), 'utf8'));
   if (normalize(await readFile(join(root, 'tools/external_tool_idempotency.ts'), 'utf8')) !== idempotency)
     throw Error('IDEMPOTENCY_SOURCE_CHANGED: preserve the installed change and review it before updating');
@@ -207,6 +217,7 @@ export async function prepare(root, stage) {
     ['tools/runtime_readiness.mjs', await readFile(join(here, 'runtime_readiness.mjs'), 'utf8')],
     ['tools/operation_reconciliation.mjs', await readFile(join(here, 'operation_reconciliation.mjs'), 'utf8')],
     ['tools/external_tool_idempotency.ts', idempotency],
+    ['tools/development_preflight.ts', preflight],
     ['tools/runtime_contract.ts', await readFile(join(here, 'runtime_contract.ts'), 'utf8')],
     ['tools/model_routing.mjs', await readFile(join(here, 'model_routing.mjs'), 'utf8')],
     ['tools/tool_evidence.mjs', await readFile(join(here, 'tool_evidence.mjs'), 'utf8')],

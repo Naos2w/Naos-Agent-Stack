@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "providerVersion": "0.34.1",
+  "sourceSha256": "66ab57ebc4de1da90cf51bf95c505bd0d725e2f8ef2d30bc326f86972dc660ef",
+  "cases": [
+    {
+      "resumeInterruptedTurn": false,
+      "decision": "deny_stale_approval",
+      "originalToolCallIdPreserved": true
+    },
+    {
+      "resumeInterruptedTurn": true,
+      "decision": "deny_stale_approval",
+      "originalToolCallIdPreserved": true
+    }
+  ],
+  "passed": 2,
+  "failed": 0,
+  "scope": "Installed recovery function; synthetic backend and idle runtime. No real model or interrupted approval end-to-end test.",
+  "implication": "resume_interrupted_turn is not transparent reapproval or replay of the original tool. Runtime must preserve uncertain-effect reconciliation and must not force a new tool identity.",
+  "timestampUtc": "2026-10-31T06:55:20.028Z"
+}

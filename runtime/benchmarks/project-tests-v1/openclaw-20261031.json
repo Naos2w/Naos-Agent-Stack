@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "project": "openclaw",
+  "source": "scripts/finance-brief-pipeline.mjs",
+  "sourceSha256": "B0ADB60D340770C5906496CB26CC06F0FFFA7C20FBC0E5FF8B3EA2C4422A2EC6",
+  "configSha256": {
+    "us-trading-calendar.json": "D7888D394275F779C8F4E2BCD8A928B587B41DF969CDF80BDC1F713A7A0ECD3B",
+    "catalyst-signal-policy.json": "A0DABE1E343D51E1E49B49BE50DECBDE4575B30E90CE7DCB56875F2D68E6BD53",
+    "stock-context.json": "C851EF0189849088A4DFB7B715A890AED2C9E9B5D1E72FE6A6B9FCE4EFFE2066",
+    "us-market-map.json": "B10A67DB016CB2CD5F976543B467488CF0770536782D4A2A570AD93EC85BB44D",
+    "watchlist-from-stock.json": "109F33BDC74678FD7EE5916BF7EB789111D5C6D244B1FB0E4B7888D01C809E21",
+    "tw-ticker-registry.json": "53255B15422125E880E3801F195D79A96721376598612E3FA22DFD2964C7256B",
+    "tw-trading-calendar.json": "02A8CE8C6B8A3078669565F513B7B4AE28A439847159757BDEB90EBA3CD71FEB",
+    "fallback-watchlist.json": "B0E05A120FDEE08DE2A4D648C2041E7F1C9628D57E8AA94202F981F95A47653D",
+    "official-sources.json": "127804A4E473DDE01E5F5E5E81AAFC8BC8885E77AB033342818E4E4BB5DA3F9A",
+    "us-company-sources.json": "E09D8C325CBEDDF977A4839A810A72CE5C3646E1557BD0C96678EA5614D85726",
+    "cross-market-map.json": "B3726E3B7A2FD8304572413A15888E47AE4C878A4493E7CCE0D633F6BEE69AA9",
+    "authoritative-source-domains.json": "22959DE27A3C067214FAE935CD4F200F37B66058A772EC669EC13962ABA39B33",
+    "tw-pricing-transmission-map.json": "618618FA66D862DD18CC1BB74C27F2A0E862FF5A5EF10C26D992D183256F4067"
+  },
+  "command": "node --max-old-space-size=256 scripts/finance-brief-pipeline.mjs --market tw --dry-run --self-test-industry-mapping",
+  "runs": [
+    {
+      "wallMs": 2331,
+      "sampledCpuMs": 2281.25,
+      "peakProcessWorkingSetBytes": 84717568,
+      "exitCode": 0,
+      "cases": 76,
+      "failed": []
+    },
+    {
+      "wallMs": 2104,
+      "sampledCpuMs": 2187.5,
+      "peakProcessWorkingSetBytes": 86458368,
+      "exitCode": 0,
+      "cases": 76,
+      "failed": []
+    },
+    {
+      "wallMs": 2111,
+      "sampledCpuMs": 2234.375,
+      "peakProcessWorkingSetBytes": 86351872,
+      "exitCode": 0,
+      "cases": 76,
+      "failed": []
+    }
+  ],
+  "memoryScope": "One Node process; OS peak working set sampled every 20 ms, excludes subprocesses and other services",
+  "scope": "Existing offline synthetic industry-mapping self-test only; not full regression or natural delivery",
+  "timestampUtc": "2026-10-31T06:54:26.5431334Z"
+}

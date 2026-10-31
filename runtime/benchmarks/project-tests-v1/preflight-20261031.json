@@ -1,0 +1,380 @@
+{
+  "schema": 1,
+  "baselineCommit": "d20d3b9",
+  "request": {
+    "action": "prepare",
+    "project_id": "naos-agent-stack",
+    "task": "Measure existing MSI development stages and validate interrupted tool approval behavior. Backend-only, no UI, no installation/reboot/PC2; user excluded fresh full-stack tests.",
+    "paths": [
+      "runtime/lean-runtime/source/letta_worker.ts",
+      "runtime/lean-runtime/operation_reconciliation.mjs"
+    ]
+  },
+  "before": [
+    {
+      "wallMs": 4577,
+      "classification": {
+        "codebase": true,
+        "ui": true,
+        "motion": false,
+        "marketing": false,
+        "shadcn": false
+      },
+      "guidanceCharacters": 17000,
+      "design": {
+        "applicable": true,
+        "status": "loaded",
+        "loadedSkills": [
+          "ui-design.design-director",
+          "ui-design.ui-ux-pro-max"
+        ]
+      },
+      "codebase": {
+        "status": "verified",
+        "completeRootCoverage": true,
+        "pathChecks": null
+      }
+    },
+    {
+      "wallMs": 4428,
+      "classification": {
+        "codebase": true,
+        "ui": true,
+        "motion": false,
+        "marketing": false,
+        "shadcn": false
+      },
+      "guidanceCharacters": 17000,
+      "design": {
+        "applicable": true,
+        "status": "loaded",
+        "loadedSkills": [
+          "ui-design.design-director",
+          "ui-design.ui-ux-pro-max"
+        ]
+      },
+      "codebase": {
+        "status": "verified",
+        "completeRootCoverage": true,
+        "pathChecks": null
+      }
+    },
+    {
+      "wallMs": 7779,
+      "classification": {
+        "codebase": true,
+        "ui": true,
+        "motion": false,
+        "marketing": false,
+        "shadcn": false
+      },
+      "guidanceCharacters": 17000,
+      "design": {
+        "applicable": true,
+        "status": "loaded",
+        "loadedSkills": [
+          "ui-design.design-director",
+          "ui-design.ui-ux-pro-max"
+        ]
+      },
+      "codebase": {
+        "status": "verified",
+        "completeRootCoverage": true,
+        "pathChecks": null
+      }
+    }
+  ],
+  "after": [
+    {
+      "wallMs": 5763,
+      "classification": {
+        "codebase": true,
+        "ui": false,
+        "motion": false,
+        "marketing": false,
+        "shadcn": false
+      },
+      "guidanceCharacters": 1251,
+      "design": {
+        "applicable": false,
+        "status": "not_applicable",
+        "loadedSkills": []
+      },
+      "codebase": {
+        "status": "verified",
+        "completeRootCoverage": false,
+        "pathChecks": {
+          "version": 1,
+          "state": "checked",
+          "requested": 2,
+          "checked": 2,
+          "bestEffort": true,
+          "observedAt": "2026-10-31T06:49:09.633Z",
+          "files": [
+            {
+              "path": "runtime/lean-runtime/source/letta_worker.ts",
+              "index": "naos-agent-stack",
+              "state": "observed",
+              "coverage": "no_recorded_issue",
+              "freshness": "metadata_changed",
+              "indexedAt": "2026-10-31T06:32:21Z",
+              "requiresSourceRead": true
+            },
+            {
+              "path": "runtime/lean-runtime/operation_reconciliation.mjs",
+              "index": "naos-agent-stack",
+              "state": "observed",
+              "coverage": "no_recorded_issue",
+              "freshness": "metadata_changed",
+              "indexedAt": "2026-10-31T06:32:21Z",
+              "requiresSourceRead": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "wallMs": 5724,
+      "classification": {
+        "codebase": true,
+        "ui": false,
+        "motion": false,
+        "marketing": false,
+        "shadcn": false
+      },
+      "guidanceCharacters": 1251,
+      "design": {
+        "applicable": false,
+        "status": "not_applicable",
+        "loadedSkills": []
+      },
+      "codebase": {
+        "status": "verified",
+        "completeRootCoverage": false,
+        "pathChecks": {
+          "version": 1,
+          "state": "checked",
+          "requested": 2,
+          "checked": 2,
+          "bestEffort": true,
+          "observedAt": "2026-10-31T06:49:15.392Z",
+          "files": [
+            {
+              "path": "runtime/lean-runtime/source/letta_worker.ts",
+              "index": "naos-agent-stack",
+              "state": "observed",
+              "coverage": "no_recorded_issue",
+              "freshness": "metadata_changed",
+              "indexedAt": "2026-10-31T06:32:21Z",
+              "requiresSourceRead": true
+            },
+            {
+              "path": "runtime/lean-runtime/operation_reconciliation.mjs",
+              "index": "naos-agent-stack",
+              "state": "observed",
+              "coverage": "no_recorded_issue",
+              "freshness": "metadata_changed",
+              "indexedAt": "2026-10-31T06:32:21Z",
+              "requiresSourceRead": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "wallMs": 5821,
+      "classification": {
+        "codebase": true,
+        "ui": false,
+        "motion": false,
+        "marketing": false,
+        "shadcn": false
+      },
+      "guidanceCharacters": 1251,
+      "design": {
+        "applicable": false,
+        "status": "not_applicable",
+        "loadedSkills": []
+      },
+      "codebase": {
+        "status": "verified",
+        "completeRootCoverage": false,
+        "pathChecks": {
+          "version": 1,
+          "state": "checked",
+          "requested": 2,
+          "checked": 2,
+          "bestEffort": true,
+          "observedAt": "2026-10-31T06:49:21.237Z",
+          "files": [
+            {
+              "path": "runtime/lean-runtime/source/letta_worker.ts",
+              "index": "naos-agent-stack",
+              "state": "observed",
+              "coverage": "no_recorded_issue",
+              "freshness": "metadata_changed",
+              "indexedAt": "2026-10-31T06:32:21Z",
+              "requiresSourceRead": true
+            },
+            {
+              "path": "runtime/lean-runtime/operation_reconciliation.mjs",
+              "index": "naos-agent-stack",
+              "state": "observed",
+              "coverage": "no_recorded_issue",
+              "freshness": "metadata_changed",
+              "indexedAt": "2026-10-31T06:32:21Z",
+              "requiresSourceRead": true
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "summary": {
+    "guidanceCharactersBefore": 17000,
+    "guidanceCharactersAfter": 1251,
+    "guidanceReductionPercent": 92.64117647058823,
+    "latencyImprovementEstablished": false,
+    "notes": "Three sequential live connector calls per version. The corrected version additionally performs exact-file coverage checks. These timings include connector/host overhead and do not establish model or development speed."
+  },
+  "openclaw": {
+    "before": {
+      "codebase": {
+        "applicable": true,
+        "status": "missing",
+        "nodeCount": null,
+        "indexedAt": null,
+        "scope": "project_root",
+        "indexedProjects": [
+          {
+            "name": "openclaw",
+            "root": "C:\\Naos\\02.Git\\personal\\OpenClaw",
+            "indexedAt": null
+          }
+        ],
+        "completeRootCoverage": false,
+        "reason": "PROJECT_NOT_INDEXED",
+        "autoIndexExcluded": false,
+        "coverage": {
+          "partialFiles": null,
+          "unusableFiles": null,
+          "skippedFiles": null,
+          "state": "unknown",
+          "bestEffort": true,
+          "requestedFilesVerified": false
+        },
+        "freshness": "not_checked",
+        "pathChecks": {
+          "version": 1,
+          "state": "unavailable",
+          "requested": 2,
+          "checked": 0,
+          "bestEffort": true,
+          "observedAt": "2026-10-31T06:50:48.279Z",
+          "files": [
+            {
+              "path": "tests/test_news_mapping_historical_regression.py",
+              "index": "openclaw",
+              "state": "unavailable",
+              "coverage": "unknown",
+              "freshness": "not_checked",
+              "reason": "PROJECT_INDEX_NOT_READY",
+              "requiresSourceRead": true
+            },
+            {
+              "path": "scripts/finance-brief-pipeline.mjs",
+              "index": "openclaw",
+              "state": "unavailable",
+              "coverage": "unknown",
+              "freshness": "not_checked",
+              "reason": "PROJECT_INDEX_NOT_READY",
+              "requiresSourceRead": true
+            }
+          ]
+        },
+        "detail": "project has no index"
+      },
+      "design": {
+        "applicable": false,
+        "status": "not_applicable",
+        "loadedSkills": []
+      }
+    },
+    "after": {
+      "codebase": {
+        "applicable": true,
+        "status": "verified",
+        "nodeCount": 22807,
+        "indexedAt": "2026-10-29T04:54:22Z",
+        "scope": "configured_source_subtrees",
+        "indexedProjects": [
+          {
+            "name": "OpenClaw",
+            "root": "C:\\Naos\\02.Git\\personal\\OpenClaw",
+            "indexedAt": "2026-10-29T04:54:38Z"
+          },
+          {
+            "name": "OpenClaw-scripts",
+            "root": "C:\\Naos\\02.Git\\personal\\OpenClaw\\scripts",
+            "indexedAt": "2026-10-29T04:54:22Z"
+          }
+        ],
+        "completeRootCoverage": false,
+        "reason": "INDEX_AVAILABLE",
+        "autoIndexExcluded": false,
+        "coverage": {
+          "partialFiles": 8,
+          "unusableFiles": 0,
+          "skippedFiles": 0,
+          "state": "partial",
+          "bestEffort": true,
+          "requestedFilesVerified": false
+        },
+        "freshness": "path_metadata_observed",
+        "pathChecks": {
+          "version": 1,
+          "state": "checked",
+          "requested": 2,
+          "checked": 2,
+          "bestEffort": true,
+          "observedAt": "2026-10-31T06:52:48.165Z",
+          "files": [
+            {
+              "path": "tests/test_news_mapping_historical_regression.py",
+              "index": "OpenClaw",
+              "state": "observed",
+              "coverage": "no_recorded_issue",
+              "freshness": "metadata_changed",
+              "indexedAt": "2026-10-29T04:54:38Z",
+              "requiresSourceRead": true
+            },
+            {
+              "path": "scripts/finance-brief-pipeline.mjs",
+              "index": "OpenClaw-scripts",
+              "state": "observed",
+              "coverage": "no_recorded_issue",
+              "freshness": "metadata_changed",
+              "indexedAt": "2026-10-29T04:54:22Z",
+              "requiresSourceRead": true
+            }
+          ]
+        },
+        "detail": "index root verified; file coverage and freshness still require source inspection"
+      },
+      "design": {
+        "applicable": false,
+        "status": "not_applicable",
+        "loadedSkills": []
+      }
+    },
+    "configBeforeSha256": "FFFBA0B5328032C863CB11654E837B376DC09DEC9F3475936794A4B0D165FC12",
+    "configAfterSha256": "BEBB2A06518D182C89A8DF357331FE54762AE419342639F1C1F70256C58F6AFB",
+    "configBackup": "C:/Users/Naos/.openchatx-mcp/headless/config/codebase-index.json.before-openclaw-scopes-20261031",
+    "reindexed": false
+  },
+  "scope": {
+    "freshWindowsAndWholeStackAcceptance": "excluded_by_user",
+    "pc2Synced": false,
+    "modelCalls": 0
+  }
+}

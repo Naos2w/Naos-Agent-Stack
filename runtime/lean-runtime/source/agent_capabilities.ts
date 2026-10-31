@@ -395,14 +395,19 @@ export function isCapabilityTool(name: string) {
 }
 
 export function classifyCapabilityTask(prompt: string, filePaths: string[] = []) {
+  // Remove only explicit exclusions, not an entire sentence or a positive
+  // requirement elsewhere. Concrete frontend paths always remain applicable.
+  const applicablePrompt = prompt
+    .replace(/\b(?:no\s+|non[-\s]+)(?:UI(?:\s*\/\s*UX)?|UIUX|UX|frontend)\b/gi, "")
+    .replace(/(?:不涉及|不修改|不變更|不变更|不改動|不改动|無|无|沒有|没有)\s*(?:UI(?:\s*\/\s*UX)?|UIUX|UX|前端|使用者介面|畫面|界面|視覺|動畫|动画|動效)/gi, "")
   const paths = filePaths.filter((value) => typeof value === "string")
   const codeFiles = paths.some((file) => /\.(?:ts|tsx|js|jsx|mjs|cjs|css|scss|vue|svelte|html|mdx|py|rs|go|java|kt|swift|cs|cpp|c|h|ps1)$/i.test(file))
   const frontendFiles = paths.some((file) => /\.(?:tsx|jsx|css|scss|vue|svelte|html|mdx)$/i.test(file))
   const development = codeFiles || /修復|開發|程式|改版|修改|架構|優化|新增功能|測試|修正|重構|專案|implement|refactor|coding|codebase|fix\s+bug|pull request|\bPR\b|\bcommit\b|\.tsx?\b|\.jsx?\b/i.test(prompt)
-  const ui = frontendFiles || /UI\/UX|UIUX|\bUI\b|\bUX\b|前端|使用者介面|介面設計|畫面|視覺|配色|排版|動畫|回彈|動效|互動設計|網頁|頁面|拖曳|縮放|家具選取|材質編輯|導覽列|導航列|帳戶卡片|\bfrontend\b|\bdesign system\b|\bresponsive\b|\bcomponent\b|\bRoomCanvas\b|\bStudioClient\b|\.tsx\b|\.jsx\b|\.css\b/i.test(prompt)
-  const motion = /動畫|回彈|動效|微互動|拖曳|手勢|\bmotion\b|\banimation\b|transition|easing/i.test(prompt)
-  const marketing = /landing\s*page|品牌形象|行銷網站|marketing\s*page/i.test(prompt)
-  const shadcn = /shadcn/i.test(prompt)
+  const ui = frontendFiles || /UI\/UX|UIUX|\bUI\b|\bUX\b|前端|使用者介面|介面設計|畫面|視覺|配色|排版|動畫|回彈|動效|互動設計|網頁|頁面|拖曳|縮放|家具選取|材質編輯|導覽列|導航列|帳戶卡片|\bfrontend\b|\bdesign system\b|\bresponsive\b|\bcomponent\b|\bRoomCanvas\b|\bStudioClient\b|\.tsx\b|\.jsx\b|\.css\b/i.test(applicablePrompt)
+  const motion = /動畫|回彈|動效|微互動|拖曳|手勢|\bmotion\b|\banimation\b|transition|easing/i.test(applicablePrompt)
+  const marketing = /landing\s*page|品牌形象|行銷網站|marketing\s*page/i.test(applicablePrompt)
+  const shadcn = /shadcn/i.test(applicablePrompt)
   return { codebase: paths.length > 0 || development || ui, ui, motion, marketing, shadcn }
 }
 
