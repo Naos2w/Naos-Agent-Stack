@@ -702,6 +702,10 @@ async function pruneOperations() {
       ...(operation.inputPath
         ? [fs.rm(operation.inputPath, { force: true })]
         : []),
+      ...((operation as any).recoveryHistory ?? []).flatMap((attempt: Record<string, string>) =>
+        [attempt.inputPath, attempt.stdoutPath, attempt.stderrPath]
+          .filter(path => typeof path === "string" && dirname(path) === OPS_DIR && path.slice(OPS_DIR.length + 1).startsWith(`${operation.id}.`))
+          .map(path => fs.rm(path, {force: true}))),
     ])
   }
 
@@ -1229,13 +1233,13 @@ async function dispatchLettaRun(args: {
     child.on("error", async () => {
       stdoutStream.end()
       stderrStream.end()
-      await updateOperation(operationId, { state: "failed" })
+      await finishLettaWorker(operationId, child.pid ?? -1, { state: "failed" })
     })
 
     child.on("close", async (code) => {
       stdoutStream.end()
       stderrStream.end()
-      await updateOperation(operationId, {
+      await finishLettaWorker(operationId, child.pid ?? -1, {
         state: code === 0 ? "completed" : "failed",
         exitCode: code,
       })
@@ -1387,12 +1391,15 @@ async function pollOperation(
     const parsed = stdout.trim()
       ? parseLettaWorkerOutput(stdout)
       : ({} as Record<string, any>)
+    const persistedInput = operation.inputPath ? await readJsonFile<Record<string, any>>(operation.inputPath, {}) : {}
+    const binding = persistedInput.projectId === project.id && persistedInput.clientMessageId === `openchatx-${operation.id}`
+      ? persistedInput : {}
     const sessionId =
       typeof parsed.sessionId === "string"
         ? parsed.sessionId
         : typeof parsed.conversationId === "string"
           ? parsed.conversationId
-          : operation.sessionId
+          : operation.sessionId ?? binding.conversationId
 
     const operationPatch: Partial<RuntimeOperation> = {}
     if (sessionId && sessionId !== operation.sessionId) {
@@ -1423,7 +1430,7 @@ async function pollOperation(
       const current = isCurrentSessionOperation(latestSession, operation.id)
       if (current) {
         if (sessionId) latestSession.sessionId = sessionId
-        if (typeof parsed.agentId === "string") latestProject.lettaAgentId = parsed.agentId
+        if (typeof (parsed.agentId ?? binding.agentId) === "string") latestProject.lettaAgentId = parsed.agentId ?? binding.agentId
         const firstPoll = latestSession.lastPolledOperationId !== operation.id
         latestSession.model = operation.model || DEFAULT_LETTA_MODEL
         latestSession.modelConfiguration = publicModelConfiguration(parsed.modelConfiguration)
@@ -1439,7 +1446,7 @@ async function pollOperation(
       }
       return { current, agentId: latestProject.lettaAgentId ?? null }
     })
-    if (operation.inputPath && !operation.reconciliation?.requiresReconciliation) {
+    if (operation.inputPath && operation.state === "completed" && !operation.reconciliation?.requiresReconciliation) {
       await fs.rm(operation.inputPath, { force: true })
     }
 
@@ -1457,6 +1464,10 @@ async function pollOperation(
       agentId: sessionUpdate.agentId,
       stalePoll: !sessionUpdate.current,
       reconciliation: operation.reconciliation,
+      recovery: operation.state === "failed" && sessionUpdate.current && operation.inputPath ? {
+        action: "recover", operation_id: operation.id,
+        scope: "original_operation", requiresVerifiedToolResults: true, replaysOriginalPrompt: false,
+      } : undefined,
       modelConfiguration: publicModelConfiguration(parsed.modelConfiguration),
       modelSelection: publicModelSelection(parsed.modelSelection ?? operation.modelSelection),
       usage: publicTokenUsage(parsed.usage),
@@ -1569,6 +1580,65 @@ async function reconcileStoppedLettaOperation(project: ProjectRecord, before: Ru
     await saveOperations(operations)
     return { ok: true, operationId: current.id, state: current.state, alreadyStopped: true,
       remoteStatus: remote.status, reconciliation: current.reconciliation }
+  })
+}
+
+async function finishLettaWorker(operationId: string, pid: number, patch: Partial<RuntimeOperation>) {
+  return withOperationsLock(async () => {
+    const operations = await readOperations()
+    const operation = operations[operationId]
+    if (!operation || operation.pid !== pid || operation.state !== "running") return
+    operations[operationId] = {...operation, ...patch, updatedAt: now()}
+    await saveOperations(operations)
+  })
+}
+
+async function recoverOperation(project: ProjectRecord, operationId: string, config: RuntimeConfig) {
+  await pollOperation(project, operationId)
+  await ensureLettaService(config)
+  return withOperationsLock(async () => {
+    const operations = await readOperations()
+    const operation = operations[operationId]
+    if (!operation || operation.projectId !== project.id) throw new Error("OPERATION_NOT_FOUND")
+    if (operation.engine !== "letta" || !operation.inputPath || operation.state === "completed" || operation.state === "cancelled")
+      throw new Error("OPERATION_NOT_RECOVERABLE")
+    if (isProcessRunning(operation.pid)) throw new Error("RECOVERY_WORKER_STILL_RUNNING")
+    const state = await ensureState()
+    const projectState = state.projects[project.id]
+    const session = projectState?.sessions[operation.sessionName]
+    if (session?.lastOperationId !== operation.id || session.sessionId !== operation.sessionId)
+      throw new Error("RECOVERY_SESSION_MOVED")
+    const input = await readJsonFile<Record<string, any>>(operation.inputPath, {})
+    if (input.projectId !== project.id || input.conversationId !== operation.sessionId ||
+        input.agentId !== projectState.lettaAgentId || input.clientMessageId !== `openchatx-${operation.id}`)
+      throw new Error("RECOVERY_INPUT_SCOPE_MISMATCH")
+    if (Object.values(operations).some(item => item.id !== operation.id && item.sessionId === operation.sessionId &&
+      item.state === "running" && isProcessRunning(item.pid))) throw new Error("RECOVERY_CONVERSATION_BUSY")
+    const attempt = randomUUID().slice(0, 8)
+    const inputPath = join(OPS_DIR, `${operation.id}.recover-${attempt}.input.json`)
+    const stdoutPath = join(OPS_DIR, `${operation.id}.recover-${attempt}.stdout.log`)
+    const stderrPath = join(OPS_DIR, `${operation.id}.recover-${attempt}.stderr.log`)
+    await writeJsonFile(inputPath, {...input, action: "recover", modelSelection: planModelSelection({model: "letta/agent-config"})})
+    const stdoutStream = createWriteStream(stdoutPath, { flags: "wx" })
+    const stderrStream = createWriteStream(stderrPath, { flags: "wx" })
+    const child = spawn(lettaNodeBinary(config), [LETTA_WORKER_PATH, inputPath], {
+      cwd: TOOLBOX_ROOT, env: lettaWorkerEnv(config), windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
+    })
+    child.stdout?.pipe(stdoutStream)
+    child.stderr?.pipe(stderrStream)
+    // Preserve every failed attempt's evidence; the operation identity is stable.
+    const history = (operation as any).recoveryHistory ?? []
+    Object.assign(operation, {pid: child.pid ?? -1, state: "running", exitCode: null,
+      recoveryHistory: [...history, {inputPath: operation.inputPath, stdoutPath: operation.stdoutPath, stderrPath: operation.stderrPath}],
+      inputPath, stdoutPath, stderrPath, updatedAt: now()})
+    child.on("error", async () => { stdoutStream.end(); stderrStream.end(); await finishLettaWorker(operation.id, child.pid ?? -1, {state: "failed"}) })
+    child.on("close", async code => {
+      stdoutStream.end(); stderrStream.end()
+      await finishLettaWorker(operation.id, child.pid ?? -1, {state: code === 0 ? "completed" : "failed", exitCode: code})
+    })
+    try { await saveOperations(operations) }
+    catch (error) { await terminateManagedProcess(child.pid ?? -1); throw error }
+    return {ok: true, operationId: operation.id, projectId: project.id, state: "running", recovery: true}
   })
 }
 
@@ -1854,7 +1924,7 @@ function publicSession(session: RuntimeSession, active: boolean) {
 export default defineTool({
   name: "agent_runtime",
   description:
-    "Manage persistent project-scoped Letta sessions behind OpenChatX, including run, poll, cancel, compact, switch, archive, and historical read-only session inspection. Retired OpenCode engine cannot run.",
+    "Manage persistent project-scoped Letta sessions behind OpenChatX, including run, poll, recover interrupted original Operations, cancel, compact, switch, archive, and historical read-only session inspection. Retired OpenCode engine cannot run.",
   inputSchema: z.object({
     action: z.enum([
       "probe",
@@ -1863,6 +1933,7 @@ export default defineTool({
       "run",
       "poll",
       "cancel",
+      "recover",
       "compact",
       "session_new",
       "session_switch",
@@ -2301,6 +2372,11 @@ export default defineTool({
       return textResult(
         await pollOperation(project, operation_id, detail || "compact"),
       )
+    }
+
+    if (action === "recover") {
+      if (!operation_id) throw new Error("OPERATION_ID_REQUIRED")
+      return textResult(await recoverOperation(project, operation_id, config))
     }
 
     if (action === "cancel") {

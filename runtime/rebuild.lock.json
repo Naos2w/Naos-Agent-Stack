@@ -18,17 +18,17 @@
     {
       "source": "runtime/lean-runtime/source/agent_runtime.ts",
       "target": "toolboxes/agent-runtime/tools/agent_runtime.ts",
-      "sha256": "A04524FC14CE8B653B19CC612B8467B289E58525BE5B8F2A6D4AD75D335690C4"
+      "sha256": "5051E4653303B4309416388E9B9D71ED71EC188B1C982EC467644D5595DC3D10"
     },
     {
       "source": "runtime/lean-runtime/source/letta_worker.ts",
       "target": "toolboxes/agent-runtime/tools/letta_worker.ts",
-      "sha256": "B6BC5213A6302D43DAE80C36ACC9B7E9C1E805DB77F10E04DB5BCDAC2CDC9775"
+      "sha256": "834AA12F99824E70BAF327CFE260F59EA48C38416ED7BC062E134BEAC042F932"
     },
     {
       "source": "runtime/lean-runtime/CURRENT_RUNTIME.md",
       "target": "toolboxes/agent-runtime/README.md",
-      "sha256": "A9093D580EDA141F11C153AE9A8B098B3C34BF91FE91DFE2C1F76EBCBA709A56"
+      "sha256": "2BA9374D45B1DF0D04049DA88C67F6CE625E70D01383463462FEC0D1C5FECF97"
     },
     {
       "source": "runtime/lean-runtime/policy/shared-development-preflight.mdc",
@@ -38,7 +38,7 @@
     {
       "source": "runtime/lean-runtime/policy/agent-runtime-usage.md",
       "target": "toolboxes/agent-runtime/skills/agent-runtime-usage/SKILL.md",
-      "sha256": "B3A3984FA60C538611E2CD2A2F3715D40BEC51BD8C0897F35C1A9E496BAD959E"
+      "sha256": "CA41ED1F5CF9DCBAC5D78E5035863C45B819183B83BA98688ACEE28758823915"
     },
     {
       "source": "payload/bootstrap/naos-agent-stack.ps1",
@@ -218,12 +218,27 @@
     {
       "source": "runtime/lean-runtime/source/external_tool_idempotency.ts",
       "target": "toolboxes/agent-runtime/tools/external_tool_idempotency.ts",
-      "sha256": "BD592492F9EA7332ECDB49FADE8A80D9915BE8AB9D4498C9CE4E38FC23C95C35"
+      "sha256": "C35A024BF4E0AF757500BCA5AC6544C4B7F253781705D4157AED8FF3347F357B"
     },
     {
       "source": "runtime/lean-runtime/source/development_preflight.ts",
       "target": "toolboxes/agent-runtime/tools/development_preflight.ts",
       "sha256": "D938B0AF5928FED6E491797FA48E4AF4E936CD78EFDC0ED44917EF56837A8296"
+    },
+    {
+      "source": "runtime/lean-runtime/letta-postinstall.mjs",
+      "target": "letta-poc/scripts/postinstall-patches.mjs",
+      "sha256": "AAAAB0C6F7A028CDB96F5F30D2595E4F2C421478FEC9FB6E352773FC44B2EF4A"
+    },
+    {
+      "source": "runtime/lean-runtime/letta-recovery-provider-patch.mjs",
+      "target": "letta-poc/scripts/letta-recovery-provider-patch.mjs",
+      "sha256": "59FBA7AE56B2AA86D386F4AC2E9F41C5462013B59ED3A0EEE9364B689AE50CE8"
+    },
+    {
+      "source": "runtime/lean-runtime/source/letta_recovery.mjs",
+      "target": "letta-poc/scripts/source/letta_recovery.mjs",
+      "sha256": "19AD0225F15B7350D608479A09B55DC57B067C08118FCD7FFDC26F9F4C8D7AB7"
     }
   ]
 }

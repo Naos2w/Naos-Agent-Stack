@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "status": "passed",
+  "outcome": "uncertain_effect_blocked",
+  "phase": "uncertain",
+  "providerVersion": "0.34.1",
+  "agentId": "agent-local-31166c4b-56a4-4e39-9bdb-04a2ed91e41c",
+  "conversationId": "local-conv-1",
+  "clientMessageId": "openchatx-cold-85e78426be0e5896",
+  "providerRestarts": 0,
+  "workerRestarts": 1,
+  "executionCount": 1,
+  "originalPromptSubmissions": 1,
+  "recoveryPromptSubmissions": 0,
+  "recoveredOriginalToolIds": [],
+  "workerSourceSha256": "eae8f508baf4a6a3fee8f24a4841375c70ce07e969a3ff4d5de89dc435a354af",
+  "timestamp": "2026-10-31T15:23:18.174Z",
+  "scope": "Isolated real Letta backend and model; hard process termination; source Worker and fixed append fixture. Shared MSI/PC2 service untouched."
+}

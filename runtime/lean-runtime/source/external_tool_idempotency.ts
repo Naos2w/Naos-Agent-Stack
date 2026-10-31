@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto"
+import { createHash, randomUUID } from "node:crypto"
 import { promises as fs } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -103,6 +103,33 @@ export function isSideEffectingExternalTool(toolName: string) {
   return SIDE_EFFECTING_EXTERNAL_TOOLS.has(toolName)
 }
 
+async function persistRecord(path: string, record: LedgerRecord) {
+  const temporary = `${path}.${randomUUID()}.tmp`
+  try {
+    await fs.writeFile(temporary, `${JSON.stringify(record, null, 2)}\n`, { encoding: "utf8", flag: "wx", flush: true })
+    await fs.rename(temporary, path)
+  } finally { await fs.rm(temporary, { force: true }) }
+}
+
+export async function readCompletedToolResult(args: {
+  projectId: string; conversationId: string; toolCallId: string; toolName: string;
+  input: Record<string, unknown>; ledgerDir?: string
+}): Promise<ExternalToolResult | null> {
+  let record: LedgerRecord
+  try {
+    record = JSON.parse(await fs.readFile(recordPath(args.ledgerDir ?? DEFAULT_LEDGER_DIR,
+      args.projectId, args.conversationId, args.toolCallId), "utf8"))
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null
+    throw new Error("RECOVERY_LEDGER_UNREADABLE")
+  }
+  if (!validateReplay(record, { ...args, inputFingerprint: inputFingerprint(args.input) }))
+    throw new Error("RECOVERY_LEDGER_MISMATCH")
+  if (record.state !== "completed" || !record.result)
+    throw new Error("RECOVERY_EFFECT_UNCERTAIN: inspect the original side effect before resuming")
+  return record.result
+}
+
 export async function executeSideEffectOnce(args: {
   projectId: string
   conversationId: string
@@ -139,6 +166,7 @@ export async function executeSideEffectOnce(args: {
     await fs.writeFile(path, `${JSON.stringify(claim, null, 2)}\n`, {
       encoding: "utf8",
       flag: "wx",
+      flush: true,
     })
   } catch (error) {
     const code = (error as NodeJS.ErrnoException).code
@@ -200,7 +228,7 @@ export async function executeSideEffectOnce(args: {
       updatedAt: new Date().toISOString(),
       result,
     }
-    await fs.writeFile(path, `${JSON.stringify(completed, null, 2)}\n`, "utf8")
+    await persistRecord(path, completed)
     return {
       result,
       replayed: false,
@@ -214,7 +242,7 @@ export async function executeSideEffectOnce(args: {
       error: error instanceof Error ? error.message : String(error),
     }
     try {
-      await fs.writeFile(path, `${JSON.stringify(uncertain, null, 2)}\n`, "utf8")
+      await persistRecord(path, uncertain)
     } catch {
       // The original claim remains, which safely blocks automatic re-execution.
     }

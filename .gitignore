@@ -46,6 +46,7 @@ id_ed25519*
 **/coverage/
 **/bin/
 **/obj/
+runtime/lean-runtime/.candidate*/
 *.tmp
 *.bak
 *.backup*

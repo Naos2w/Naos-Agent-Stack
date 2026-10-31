@@ -8,6 +8,7 @@ import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import {
   executeSideEffectOnce,
+  readCompletedToolResult,
   isSideEffectingExternalTool,
 } from "./external_tool_idempotency.ts"
 import {
@@ -944,6 +945,7 @@ async function runTurn(
   timeoutMs: number,
   requestMessageId?: string,
   modelSelection = planModelSelection({ model: "letta/agent-config" }),
+  recovery = false,
 ) {
   return withClient(async (client) => withClient(async (standby) => {
     const externalCalls: Array<Record<string, unknown>> = []
@@ -964,7 +966,7 @@ async function runTurn(
         project,
         binding.agentId,
         conversation.conversationId,
-      ), external_tools: []},
+      ), external_tools: [], recover_approvals: false},
       "runtime_start_response",
       timeoutMs,
     )
@@ -1093,7 +1095,47 @@ async function runTurn(
     )
 
     try {
-      const accepted = await client.request(
+      let accepted: Record<string, any>
+      if (recovery) {
+        const snapshot = await client.request({type: "openchatx_recovery", action: "inspect",
+          request_id: client.nextRequestId("recovery-inspect"), runtime, client_message_id: clientMessageId},
+          "openchatx_recovery_response", timeoutMs)
+        requireSuccess(snapshot, "LETTA_RECOVERY_INSPECT_FAILED")
+        if (snapshot.settled === true) {
+          turnFinished = true
+          terminalAbortController.abort()
+          await finishedOutcome
+          const text = truncate(latestAssistantText(snapshot.messages))
+          return {status: "completed", summary: text.text, output_truncated: text.truncated,
+            run_id: snapshot.runId, ...selectedModel, approval_decisions: [], external_tool_calls: [],
+            recovery: "remote_completion_verified"}
+        }
+        if (!Array.isArray(snapshot.calls) || snapshot.calls.length === 0) throw new Error("LETTA_RECOVERY_CALLS_MISSING")
+        const results = []
+        // Validate every claim before any fresh read or unstarted execution.
+        const cached = await Promise.all(snapshot.calls.map((call: any) => readCompletedToolResult({
+          projectId: project.id, conversationId: conversation.conversationId, ...call,
+        })))
+        for (let index = 0; index < snapshot.calls.length; index++) {
+          const call = snapshot.calls[index] as any
+          const decision = await decideExternalToolApproval(project, call.toolName, call.input)
+          if (decision.behavior !== "allow") throw new Error("LETTA_RECOVERY_APPROVAL_DENIED")
+          // Original call ID and exact arguments; never mint a retry identity.
+          const guarded = cached[index] ? {result: cached[index], status: "replayed", replayed: true}
+            : isSideEffectingExternalTool(call.toolName) ? await executeSideEffectOnce({
+              projectId: project.id, conversationId: conversation.conversationId, ...call,
+              execute: () => executeExternalTool(standby, project, binding.agentId, call.toolName, call.input),
+            }) : { result: await executeExternalTool(standby, project, binding.agentId, call.toolName, call.input), status: "not_applicable", replayed: false }
+          if (["uncertain", "mismatch"].includes(guarded.status)) throw new Error("LETTA_RECOVERY_EFFECT_UNCERTAIN")
+          results.push({...call, result: guarded.result})
+          externalCalls.push({...call, replayed: guarded.replayed, idempotencyStatus: guarded.status,
+            durationMs: 0, toolResult: describeToolResult(call.toolName, guarded.result)})
+        }
+        accepted = await client.request({type: "openchatx_recovery", action: "resume",
+          request_id: client.nextRequestId("recovery-resume"), runtime, client_message_id: clientMessageId,
+          revision: snapshot.revision, results}, "openchatx_recovery_response", timeoutMs)
+        requireSuccess(accepted, "LETTA_RECOVERY_RESUME_FAILED")
+      } else accepted = await client.request(
       {
         type: "input",
         request_id: client.nextRequestId("input"),
@@ -1309,7 +1351,7 @@ function summarizeRunTrace(result: Record<string, any>) {
 
 
 type WorkerInput = {
-  action: "probe" | "run" | "compact" | "inspect" | "cancel" | "recover-orphan"
+  action: "probe" | "run" | "recover" | "compact" | "inspect" | "cancel" | "recover-orphan"
   projectId?: string
   sessionName?: string
   agentId?: string
@@ -1592,7 +1634,9 @@ async function ensureWorkerAgent(
   })
 }
 
-async function workerRun(input: WorkerInput) {
+async function workerRun(input: WorkerInput, inputPath?: string) {
+  if (input.action === "recover" && (!input.agentId || !input.conversationId || !input.clientMessageId))
+    throw new Error("LETTA_RECOVERY_ORIGINAL_SCOPE_REQUIRED")
   if (!input.projectId) throw new Error("PROJECT_ID_REQUIRED")
   if (!input.prompt?.trim()) throw new Error("PROMPT_REQUIRED")
 
@@ -1625,6 +1669,16 @@ async function workerRun(input: WorkerInput) {
     conversation = await createConversation(project, binding, sessionName)
   }
 
+  // Persist a newly-created conversation before the first prompt is sent. A
+  // crash must not orphan its scope merely because stdout was never produced.
+  if (inputPath && input.action === "run") {
+    const temporary = `${inputPath}.binding-${process.pid}.tmp`
+    try {
+      await fs.writeFile(temporary, JSON.stringify({...input, agentId, conversationId: conversation.conversationId}),
+        {encoding: "utf8", flag: "wx", flush: true})
+      await fs.rename(temporary, inputPath)
+    } finally { await fs.rm(temporary, {force: true}) }
+  }
   const result = await runTurn(
     project,
     binding,
@@ -1633,6 +1687,7 @@ async function workerRun(input: WorkerInput) {
     input.timeoutMs ?? TURN_TIMEOUT_MS,
     input.clientMessageId,
     input.modelSelection ?? planModelSelection(),
+    input.action === "recover",
   )
   const traceSummary = summarizeRunTrace(
     result as unknown as Record<string, any>,
@@ -1818,8 +1873,8 @@ async function workerMain() {
     result = await workerCancel(input)
   } else if (input.action === "recover-orphan") {
     result = await workerRecoverOrphan(input)
-  } else if (input.action === "run") {
-    result = await workerRun(input)
+  } else if (input.action === "run" || input.action === "recover") {
+    result = await workerRun(input, inputPath)
   } else if (input.action === "compact") {
     result = await workerCompact(input)
   } else {

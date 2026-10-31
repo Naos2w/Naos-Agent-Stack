@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { stripTypeScriptTypes } from 'node:module';
 import { inspectRuntimeReadiness } from './runtime_readiness.mjs';
 import { acquireRuntimeMutex, acquireRuntimeMaintenance } from './runtime_maintenance.mjs';
 import { summarizeReconciliation, retainUnresolvedOperation } from './operation_reconciliation.mjs';
@@ -84,7 +85,7 @@ test('actual facade pruning retains already-polled uncertain operations beyond 2
   const rest=source.slice(start+1);
   const next=/\n(?:async )?function /.exec(rest);
   assert.ok(start>=0 && next,'pruning function must be present in the shipped source');
-  const body=source.slice(start,start+1+next.index);
+  const body=stripTypeScriptTypes(source.slice(start,start+1+next.index),{mode:'transform'});
   const operations={};
   for(let i=0;i<200;i++) operations['new'+i]={id:'new'+i,createdAt:'2026-10-28',state:'completed'};
   for(const id of ['uncertain','completed','unpolled']) operations[id]={id,engine:'letta',state:id==='uncertain'?'failed':'completed',createdAt:'2026-01-01',stdoutPath:id+'.out',stderrPath:id+'.err',inputPath:id+'.input'};

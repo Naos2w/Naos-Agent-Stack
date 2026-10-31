@@ -103,6 +103,34 @@ explicit investigation; the Runtime does not claim automatic resumption.
 
 ## Normal work
 
+### Interrupted Operation recovery
+
+For an interrupted Letta Operation, call `agent_runtime` with `action=recover`
+and its original `operation_id`, then poll that same ID. The original Worker
+must have exited and the Session must still point to that Operation. Recovery
+keeps the effective model, original task/input identity and prior attempt logs.
+New conversations are bound to the durable input before the first prompt.
+
+The Letta 0.34.1 provider adapter verifies the latest original user message,
+Agent/Conversation ownership, idle state and the exact pending tool batch.
+Completed ledger results are returned under the original tool call IDs. Calls
+with no execution claim are checked against current ProjectExecutor approval
+before execution. The original user prompt is never resubmitted. A confirmed
+completed backend run can also settle a lost final Worker response.
+
+Unfinished/corrupt claims remain `RECOVERY_EFFECT_UNCERTAIN` or a specific ledger
+error. A crash between a real side effect and durable completion cannot prove
+whether the operation succeeded; inspect the destination before deciding what
+to do. Recovery never deletes claims, invents success, or retries an unknown
+write. This is explicit recovery of accepted work, not an unattended restart
+watchdog or a promise of universal exactly-once external transactions.
+
+`letta-recovery-provider-patch.mjs` and `letta-postinstall.mjs` preserve the
+version-pinned provider correction, including tool-controller loss cancellation
+and connection ownership transfer. Provider updates require an idle maintenance
+window. Current source is in `Naos-Agent-Stack/runtime/lean-runtime`; the rebuild
+lock also includes these Letta postinstall files.
+
 1. Select the authorized Project and existing named Letta session.
 2. Read the current task and relevant source. Use one Developer by default.
 3. Run the next actionable item. Optional `task_ref` identifies the existing

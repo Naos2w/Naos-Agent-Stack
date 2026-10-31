@@ -150,3 +150,9 @@ Normal runs inspect context without creating audit receipts. Pass optional `task
 - changed_files includes only successful direct writes whose bounded before/after observations prove a byte change. Replays, unchanged writes and unverified effects are excluded. Shell and external-editor changes are not covered; inspect the actual diff for delivery.
 - For multi-step work, keep the current goal, approved constraints, completed changes, actual test evidence, unresolved issues and next action in the existing project TODO when writing it is authorized. Do not create a second task database or automatic receipt. Read-only work reports this information without writing a checkpoint.
 - After compaction or interruption, reread the existing task record and relevant current source before continuing. Use task_ref as an identifier, not a file permission; pass known task/source files in context_paths. Summaries and earlier tool successes do not override current files, permissions or release gates.
+
+## Interrupted Operation recovery — version 1
+
+- Use `agent_runtime(action=recover, operation_id=<original ID>)` for interrupted accepted work, then poll the same ID. The old Worker must have exited, the Session must still belong to this Operation, and Letta must verify the original input and pending tools. Recovery preserves current model settings and prior logs; it does not resubmit the original prompt.
+- Completed results reuse the original tool call IDs. Unstarted calls still require current project approval. An unfinished/corrupt ledger claim remains blocked for destination inspection; never delete it, invent a result or mint a new identity to force execution.
+- `RECOVERY_REMOTE_BUSY`, ownership mismatch and changed pending work are specific diagnostics, not evidence that the whole Project lacks permission. Inspect the affected Operation and current remote state.

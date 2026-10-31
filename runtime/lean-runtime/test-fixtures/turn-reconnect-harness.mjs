@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { stripTypeScriptTypes } from 'node:module';
 import * as evidence from '../tool_evidence.mjs';
-import { executeSideEffectOnce, isSideEffectingExternalTool } from '../source/external_tool_idempotency.ts';
+import { executeSideEffectOnce, isSideEffectingExternalTool, readCompletedToolResult } from '../source/external_tool_idempotency.ts';
 const source = await readFile(new URL('../source/letta_worker.ts', import.meta.url), 'utf8');
 function section(start, end) {
   const a = source.indexOf(start), b = source.indexOf(end, a);
@@ -16,7 +16,7 @@ const body = stripTypeScriptTypes(
 // project fixture, model selection and environment are supplied by the test.
 export function workerHarness(overrides = {}) {
   const dependencies = {
-    ...evidence, executeSideEffectOnce, isSideEffectingExternalTool,
+    ...evidence, executeSideEffectOnce, isSideEffectingExternalTool, readCompletedToolResult,
     SERVER_URL: 'ws://fixture', REQUEST_TIMEOUT_MS: 1000,
     externalToolDefinitions: () => [{name: 'openchatx_shell', description: 'Append the fixed fixture marker once.',
       parameters: {type: 'object', properties: {}, additionalProperties: false}, timeout_ms: 10000, auto_background: false}],

@@ -14,6 +14,7 @@ import { patchBackendOrphanWorker, patchBackendOrphanRuntime } from './backend-o
 import { patchContextWorker, patchContextRuntime, patchContextGuidance } from './context-paths-patch.mjs';
 import { patchToolEvidenceWorker, patchEvidenceGuidance } from './tool-evidence-patch.mjs';
 import { patchTurnReconnectWorker } from './turn-reconnect-patch.mjs';
+import { patchColdRecovery } from './cold-recovery-patch.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const targets = [
@@ -151,8 +152,8 @@ function patchRuntimeBase(original) {
     '      stalePoll: !sessionUpdate.current,\n      reconciliation: operation.reconciliation,');
 }
 
-export function patchWorker(original) { return patchTurnReconnectWorker(patchBackendOrphanWorker(patchInflightRecovery(patchToolEvidenceWorker(patchContextWorker(patchRoutingWorker(patchModelWorker(patchWorkerBase(original)))))))); }
-export function patchRuntime(original) { return patchDispatchReconciliation(patchBackendOrphanRuntime(patchStoppedReconciliation(patchContextRuntime(patchRoutingRuntime(patchModelRuntime(patchRuntimeBase(original))))))); }
+export function patchWorker(original) { return patchColdRecovery(original, 'letta_worker.ts'); }
+export function patchRuntime(original) { return patchColdRecovery(original, 'agent_runtime.ts'); }
 
 export function patchDispatchReconciliation(text) {
   if (text.includes('assertNoUnresolvedToolEffects')) return text;
@@ -210,8 +211,7 @@ export async function prepare(root, stage) {
   const preflight = patchPreflight(await readFile(join(root, 'tools/development_preflight.ts'), 'utf8'),
     await readFile(join(here, 'source/development_preflight.ts'), 'utf8'));
   const idempotency = normalize(await readFile(join(here, 'source/external_tool_idempotency.ts'), 'utf8'));
-  if (normalize(await readFile(join(root, 'tools/external_tool_idempotency.ts'), 'utf8')) !== idempotency)
-    throw Error('IDEMPOTENCY_SOURCE_CHANGED: preserve the installed change and review it before updating');
+  patchColdRecovery(await readFile(join(root, 'tools/external_tool_idempotency.ts'), 'utf8'), 'external_tool_idempotency.ts');
   let newRule = normalize(rule);
   if (!newRule.includes('## Current runtime contract')) newRule = replaceOnce(newRule,
     'Letta Runtime 對有寫入權的 Project 仍可能自動產生內部稽核 receipt；**這不是 QA 派工、發布許可或日常新待辦**。',
@@ -231,6 +231,10 @@ export async function prepare(root, stage) {
     .replaceAll('shell policy v1', 'shell policy v2');
   newRule = patchEvidenceGuidance(patchContextGuidance(patchRoutingGuidance(newRule)));
   newSkill = patchEvidenceGuidance(patchContextGuidance(patchRoutingGuidance(newSkill)));
+  if (!newSkill.includes('## Interrupted Operation recovery — version 1')) {
+    const guidance = await readFile(join(here, 'policy/agent-runtime-usage.md'), 'utf8');
+    newSkill += '\n' + guidance.slice(guidance.indexOf('## Interrupted Operation recovery — version 1'));
+  }
   const history = await bytesOrNull(join(root, 'docs/history/runtime-before-20261028.md'));
   const contents = new Map([
     ['tools/runtime_maintenance.mjs', await readFile(join(here, 'runtime_maintenance.mjs'), 'utf8')],

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "status": "passed",
+  "case": "installed_completed_conversation_after_provider_restart",
+  "timestamp": "2026-10-31T15:40:13.086Z",
+  "projectId": "letta-poc",
+  "conversationId": "local-conv-84",
+  "state": "completed",
+  "runId": null,
+  "modelConfiguration": {
+    "version": 1,
+    "effectiveModel": "openai-codex/gpt-6.1-sol",
+    "reasoningEffort": "high",
+    "reasoningState": "observed",
+    "reasoningSource": "model_settings.reasoning",
+    "contextWindow": 272000,
+    "source": "letta.conversation_retrieve",
+    "observedAt": "2026-10-31T15:35:42.969Z",
+    "scope": "before_turn"
+  },
+  "toolsUsed": [],
+  "scope": "Installed Worker, provider and original pre-restart conversation. Durable completion verified without prompt resubmission; unavailable historical Run ID retained as null."
+}
