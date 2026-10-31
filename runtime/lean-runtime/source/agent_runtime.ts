@@ -37,7 +37,7 @@ const { withRuntimeActivity } = await import(maintenanceUrl.href)
 
 const reconciliationUrl = new URL("./operation_reconciliation.mjs", import.meta.url)
 reconciliationUrl.searchParams.set("source_mtime", String((await fs.stat(fileURLToPath(reconciliationUrl))).mtimeMs))
-const { summarizeReconciliation, retainUnresolvedOperation, applyRemoteSettlement, describeReadOnlyBackendConflict } = await import(reconciliationUrl.href)
+const { summarizeReconciliation, retainUnresolvedOperation, applyRemoteSettlement, describeReadOnlyBackendConflict, assertNoUnresolvedToolEffects } = await import(reconciliationUrl.href)
 
 const execFileAsync = promisify(execFile)
 
@@ -1144,6 +1144,7 @@ async function dispatchLettaRun(args: {
   contextPaths?: string[]
 }) {
   const { project, projectState, session, prompt, config, timeoutMs, taskRef, modelSelection, contextPaths } = args
+  assertNoUnresolvedToolEffects(Object.values(await readOperations()), project.id, session.name, session.sessionId)
   await ensureLettaService(config)
 
   // This is a read-only server sync. A dead local worker does not prove the
@@ -1165,6 +1166,7 @@ async function dispatchLettaRun(args: {
   // caller must not pass the active-run check before the first worker is stored.
   return withOperationsLock(async () => {
     const operations = await readOperations()
+    assertNoUnresolvedToolEffects(Object.values(operations), project.id, session.name, session.sessionId)
     const latestState = await ensureState()
     const cursor = latestState.projects[project.id]?.sessions[session.name] ?? {}
     assertOperationDispatchReady(
@@ -1747,6 +1749,7 @@ async function compactSessionInPlace(args: {
   }
 
   const operations = await readOperations()
+  assertNoUnresolvedToolEffects(Object.values(operations), project.id, session.name, session.sessionId)
   const running = Object.values(operations).find(
     (item) =>
       item.projectId === project.id &&

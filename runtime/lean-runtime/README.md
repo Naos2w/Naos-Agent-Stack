@@ -66,6 +66,11 @@ real two-stage development task resumed after compaction in the same conversatio
 .3 version, tests, backups, local candidates and remaining acceptance work.
 [Local application record](APPLIED.md) preserves the earlier .2 application.
 
+[MSI unresolved-effect dispatch validation](../MSI_DISPATCH_RECONCILIATION_20261031.md)
+records same-conversation dispatch/compaction protection, the current installed
+revision and rebuilt candidates. Fresh Windows and whole-stack acceptance are
+excluded from the current MSI task by the owner.
+
 The existing Headless exporter includes the updated TypeScript sources. A future
 Complete installer still requires its own package/build/fresh-install acceptance;
 this local change makes no claim that such a release has been published.

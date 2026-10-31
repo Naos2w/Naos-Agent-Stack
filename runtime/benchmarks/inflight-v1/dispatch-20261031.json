@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "core": {
+    "sha256": "C5529684ED996667A6290CA2E326029C15570E8B5AA9CD61E3594C197B544FA8",
+    "path": "C:/Naos/02.Git/personal/Naos-Agent-Stack-core-dispatch-20261031.zip"
+  },
+  "complete": {
+    "path": "C:/Naos/02.Git/personal/Naos-Agent-Stack-v0.2.3-Complete-dispatch-20261031-candidate.zip",
+    "sha256": "382265ED1E244EF214EC2103FC34CD140E9D0BF98DD3241F1D5510DE34C8E260",
+    "bytes": 285690272
+  },
+  "verifiedCoreOverlays": 44,
+  "verifiedCompleteEntries": [
+    "Build-Package.ps1",
+    "Doctor.ps1",
+    "dependencies.lock.json",
+    "payload/bootstrap/naos-agent-stack.ps1",
+    "payload/naos-headless-stack-bundle.zip"
+  ],
+  "runtimeTests": {
+    "failed": 0,
+    "passed": 165,
+    "skipped": 0
+  },
+  "candidateWorkerTests": {
+    "failed": 0,
+    "passed": 7,
+    "skipped": 0
+  },
+  "installedTargetsVerified": 15,
+  "powerShell51SourceValidation": "passed",
+  "powerShell51RuntimeHealthValidation": "passed",
+  "installedChangedTargets": [
+    "tools/agent_runtime.ts",
+    "tools/operation_reconciliation.mjs",
+    "README.md"
+  ],
+  "backup": "C:/Users/Naos/.openchatx-mcp/headless/toolboxes/agent-runtime/backups/lean-runtime-2026-10-31T10-51-53-339Z-c7ec66d5-c60b-464e-838e-6bbd6c8411e5",
+  "readiness": {
+    "running": 0,
+    "ready": true,
+    "stale": 0,
+    "unresolved": 0
+  },
+  "publicStatus": {
+    "serviceState": "ready",
+    "lettaCodeVersion": "0.34.1",
+    "protocolCompatible": true,
+    "ok": true
+  },
+  "liveModelFaultInjectionPerformed": false,
+  "freshWindowsAndWholeStackAcceptance": "excluded_by_user",
+  "pc2Synced": false
+}

@@ -1,5 +1,9 @@
 # MSI context efficiency and project checks — 2026-10-31
 
+The later [unresolved-effect dispatch validation](MSI_DISPATCH_RECONCILIATION_20261031.md)
+supersedes this installed/package revision. The measurements and provider probe
+below remain the evidence for their stated scopes.
+
 ## Current owner scope
 
 The owner explicitly removed fresh Windows and whole-stack installation testing

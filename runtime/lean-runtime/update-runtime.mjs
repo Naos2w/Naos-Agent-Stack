@@ -151,7 +151,26 @@ function patchRuntimeBase(original) {
 }
 
 export function patchWorker(original) { return patchBackendOrphanWorker(patchInflightRecovery(patchToolEvidenceWorker(patchContextWorker(patchRoutingWorker(patchModelWorker(patchWorkerBase(original))))))); }
-export function patchRuntime(original) { return patchBackendOrphanRuntime(patchStoppedReconciliation(patchContextRuntime(patchRoutingRuntime(patchModelRuntime(patchRuntimeBase(original)))))); }
+export function patchRuntime(original) { return patchDispatchReconciliation(patchBackendOrphanRuntime(patchStoppedReconciliation(patchContextRuntime(patchRoutingRuntime(patchModelRuntime(patchRuntimeBase(original))))))); }
+
+export function patchDispatchReconciliation(text) {
+  if (text.includes('assertNoUnresolvedToolEffects')) return text;
+  text = replaceOnce(text, 'describeReadOnlyBackendConflict }',
+    'describeReadOnlyBackendConflict, assertNoUnresolvedToolEffects }');
+  text = replaceOnce(text,
+    '  const { project, projectState, session, prompt, config, timeoutMs, taskRef, modelSelection, contextPaths } = args\n',
+    '  const { project, projectState, session, prompt, config, timeoutMs, taskRef, modelSelection, contextPaths } = args\n' +
+    '  assertNoUnresolvedToolEffects(Object.values(await readOperations()), project.id, session.name, session.sessionId)\n');
+  text = replaceOnce(text,
+    '  // caller must not pass the active-run check before the first worker is stored.\n  return withOperationsLock(async () => {\n    const operations = await readOperations()\n',
+    '  // caller must not pass the active-run check before the first worker is stored.\n  return withOperationsLock(async () => {\n    const operations = await readOperations()\n' +
+    '    assertNoUnresolvedToolEffects(Object.values(operations), project.id, session.name, session.sessionId)\n');
+  return replaceOnce(text,
+    '  const operations = await readOperations()\n  const running = Object.values(operations).find(',
+    '  const operations = await readOperations()\n' +
+    '  assertNoUnresolvedToolEffects(Object.values(operations), project.id, session.name, session.sessionId)\n' +
+    '  const running = Object.values(operations).find(');
+}
 
 export function patchCapabilities(original, candidate) {
   if (normalize(original) === normalize(candidate)) return candidate;

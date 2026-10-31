@@ -57,6 +57,31 @@ function inspectExternalExecution(events, timeout) {
     started:started.size,completed,pending:started.size-completed,uncertain,deliveryFailures};
 }
 
+function inspectEffectEvidence(summary) {
+  const countsKnown = summary.externalExecution?.integrity !== 'invalid' && [summary.externalRequests, summary.externalCompleted]
+    .every(value => Number.isSafeInteger(value) && value >= 0);
+  const inFlight = countsKnown && summary.externalRequests !== summary.externalCompleted;
+  const uncertainEffects = summary.externalExecution?.uncertain > 0 || !Array.isArray(summary.idempotency)
+    || summary.idempotency.some(item => !['executed', 'replayed'].includes(item.status));
+  return {countsKnown,inFlight,uncertainEffects};
+}
+
+// Polling is observation, not permission to repeat an uncertain effect under
+// a new tool-call identity. Scope this check to the actual conversation; other
+// independent conversations remain usable. Zero-call timeouts retain the
+// existing remote-state/orphan-recovery path and are not fabricated as settled.
+export function assertNoUnresolvedToolEffects(operations, projectId, sessionName, sessionId) {
+  for (const operation of operations) {
+    if (operation.engine !== 'letta' || operation.projectId !== projectId) continue;
+    const sameConversation = sessionId && operation.sessionId
+      ? sessionId === operation.sessionId : operation.sessionName === sessionName;
+    if (!sameConversation || operation.reconciliation?.requiresReconciliation !== true) continue;
+    const effects = inspectEffectEvidence(operation.reconciliation);
+    if (!effects.countsKnown || effects.inFlight || effects.uncertainEffects)
+      throw Error(`OPERATION_EFFECTS_UNRESOLVED: ${operation.id}; inspect and reconcile the original operation before continuing this conversation`);
+  }
+}
+
 // Apply an explicit, identity-bound remote settlement without erasing effects.
 export function applyRemoteSettlement(operation, summary) {
   const receipt = operation.remoteSettlement;
@@ -67,11 +92,7 @@ export function applyRemoteSettlement(operation, summary) {
       || receipt.clientMessageId !== summary.clientMessageId
       || !['cancelled', 'already_idle'].includes(receipt.status)
       || !Number.isFinite(Date.parse(receipt.observedAt))) return summary;
-  const countsKnown = summary.externalExecution?.integrity !== 'invalid' && [summary.externalRequests, summary.externalCompleted]
-    .every(value => Number.isSafeInteger(value) && value >= 0);
-  const inFlight = countsKnown && summary.externalRequests !== summary.externalCompleted;
-  const uncertainEffects = summary.externalExecution?.uncertain > 0 || !Array.isArray(summary.idempotency)
-    || summary.idempotency.some(item => !['executed', 'replayed'].includes(item.status));
+  const {countsKnown,inFlight,uncertainEffects} = inspectEffectEvidence(summary);
   const backendConfirmed=receipt.status==='cancelled';
   return { ...summary, remoteState: backendConfirmed ? 'settled' : 'uncertain',
     requiresReconciliation: !backendConfirmed || !countsKnown || inFlight || uncertainEffects,

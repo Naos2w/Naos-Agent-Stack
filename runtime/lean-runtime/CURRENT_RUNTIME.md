@@ -28,6 +28,17 @@ retry. Unresolved operations retain their inputs and logs beyond ordinary count
 limits. Letta interruption recovery remains bounded by its protocol; a remote
 idle state is not proof that a side effect did not occur.
 
+For the same actual conversation, `run` refuses `OPERATION_EFFECTS_UNRESOLVED`
+when a retained reconciliation record has incomplete, invalid, in-flight or
+uncertain tool-effect evidence. Reading the result, renaming the session or a
+newer successful operation cannot clear that condition. The check runs before
+remote inspection and again inside the dispatch lock. Manual and automatic
+compaction also preserve that unresolved context. Inspect the identified
+original operation; do not create a replacement identity to retry it.
+Independent conversations remain usable. Proven zero-call timeouts and complete
+recorded tool outcomes retain the existing remote-state checks and recovery
+path; passing this effect-specific check does not mark remote state settled.
+
 For an already-polled failed operation whose Worker has stopped, an explicitly
 authorized `cancel` also rechecks remote settlement using that operation's
 retained project, Agent, conversation and client-message identity. It records a
