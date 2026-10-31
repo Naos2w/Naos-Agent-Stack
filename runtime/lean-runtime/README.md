@@ -71,6 +71,9 @@ records same-conversation dispatch/compaction protection, the current installed
 revision and rebuilt candidates. Fresh Windows and whole-stack acceptance are
 excluded from the current MSI task by the owner.
 
+[MSI/PC2 closeout](../MSI_PC2_CLOSEOUT_20261031.md) records the subsequent real
+model/tool checks on both hosts, completed PC2 migration and PM2 compatibility fix.
+
 The existing Headless exporter includes the updated TypeScript sources. A future
 Complete installer still requires its own package/build/fresh-install acceptance;
 this local change makes no claim that such a release has been published.

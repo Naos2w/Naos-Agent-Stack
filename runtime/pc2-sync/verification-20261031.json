@@ -1,0 +1,577 @@
+{
+  "schema": 1,
+  "runtimeTests": { "passed": 166, "failed": 0, "skipped": 0 },
+  "sourceRuntimeCommit": "134d25c",
+  "sourceBundleSha256": "C5529684ED996667A6290CA2E326029C15570E8B5AA9CD61E3594C197B544FA8",
+  "payloadSha256": "6C3E7C045A31C3247DCD1EB9D37E92DBF96DEA94540D6CA8CACF8BCC8123DB74",
+  "pc2PlanSha256": "CD51E574349EAB5650AA33D34670ED5946842A229424353E75FEFBCA05BFB92B",
+  "migration": {
+    "ok": true,
+    "backup": "C:\\Users\\simpl\\.openchatx-mcp\\headless\\backups\\core-audit-HuALwO",
+    "files": 74,
+    "readiness": {
+      "schema": 1,
+      "ready": true,
+      "state": "ready",
+      "reason": "READY",
+      "running": 0,
+      "stale": 0,
+      "unresolved": 0,
+      "registry": "present",
+      "lock": null
+    },
+    "preserved": true,
+    "sourceCommit": "134d25c",
+    "completedAt": "2026-10-31T11:44:19.364Z"
+  },
+  "liveChecks": {
+    "msi": {
+      "operationId": "op_048effbaf262454e",
+      "state": "completed",
+      "conversationId": "local-conv-84",
+      "agentId": "agent-local-31166c4b-56a4-4e39-9bdb-04a2ed91e41c",
+      "modelConfiguration": {
+        "version": 1,
+        "effectiveModel": "openai-codex/gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "reasoningState": "observed",
+        "reasoningSource": "model_settings.reasoning",
+        "contextWindow": 272000,
+        "source": "letta.conversation_retrieve",
+        "observedAt": "2026-10-31T11:25:46.742Z",
+        "scope": "before_turn"
+      },
+      "modelSelection": {
+        "version": 1,
+        "mode": "preserve",
+        "taskComplexity": null,
+        "selectedModel": null,
+        "reasoningEffort": null,
+        "reason": "KEEP_CURRENT_CONVERSATION",
+        "effortSource": "existing",
+        "scope": "conversation",
+        "state": "applied"
+      },
+      "toolOutcomes": {
+        "version": 1,
+        "scope": "runtime_recorded_calls",
+        "total": 1,
+        "succeeded": 1,
+        "failed": 0,
+        "unknown": 0,
+        "recovered": 0,
+        "reviewRequired": 0,
+        "failures": [],
+        "failuresTruncated": false
+      },
+      "toolsUsed": [
+        "openchatx_read_file"
+      ],
+      "changedFiles": [],
+      "deniedRequests": [],
+      "requiresReconciliation": false
+    },
+    "pc2": {
+      "operationId": "op_86da65342bb448e0",
+      "state": "completed",
+      "conversationId": "local-conv-49",
+      "agentId": "agent-local-9f849b69-a1e1-4e62-87ac-38d49a0741bc",
+      "modelConfiguration": {
+        "version": 1,
+        "effectiveModel": "openai-codex/gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "reasoningState": "observed",
+        "reasoningSource": "model_settings.reasoning",
+        "contextWindow": 272000,
+        "source": "letta.conversation_retrieve",
+        "observedAt": "2026-10-31T11:47:35.636Z",
+        "scope": "before_turn"
+      },
+      "modelSelection": {
+        "version": 1,
+        "mode": "explicit",
+        "taskComplexity": "standard",
+        "selectedModel": "openai-codex/gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "reason": "USER_SELECTED_MODEL",
+        "effortSource": "user",
+        "scope": "conversation",
+        "state": "applied"
+      },
+      "toolOutcomes": {
+        "version": 1,
+        "scope": "runtime_recorded_calls",
+        "total": 1,
+        "succeeded": 1,
+        "failed": 0,
+        "unknown": 0,
+        "recovered": 0,
+        "reviewRequired": 0,
+        "failures": [],
+        "failuresTruncated": false
+      },
+      "toolsUsed": [
+        "openchatx_read_file"
+      ],
+      "changedFiles": [],
+      "deniedRequests": [],
+      "requiresReconciliation": false
+    }
+  },
+  "pc2PackageHashBeforeAndAfter": "B45EDAB64F1F3907DDBD0ED60230EE9BF3625DE837EDCB41809CCDC8137C4605",
+  "pc2ProjectTreeCleanBeforeAndAfter": true,
+  "pc2SourceHashMismatches": [],
+  "pc2ShellPolicyVersion": 2,
+  "pc2SshEndpoint": "ws://127.0.0.1:4501",
+  "pc2LettaAutoStart": false,
+  "temporaryMigrationTaskRemoved": true,
+  "pm2DuplicateCaseRegression": "failed before fix; passed after fix under Windows PowerShell 5.1",
+  "freshWindowsAndWholeStackAcceptance": "excluded_by_user",
+  "fullInterruptedApprovalResumption": false,
+  "files": [
+    {
+      "root": "headless",
+      "path": "codebase-index/qa-ci-verify.mjs",
+      "before": null,
+      "after": "0C84D2FD474B7D7F6C2225058B6B9C3E423A5F1ADC119D22256AA5CD8E252111"
+    },
+    {
+      "root": "headless",
+      "path": "codebase-index/qa-ci-verify-v2.mjs",
+      "before": null,
+      "after": "B90E03D5E29803AB0B18319914FC16CB1A49C73D246C6E3870F24387F7D9F474"
+    },
+    {
+      "root": "headless",
+      "path": "codebase-index/qa-denial-trace.mjs",
+      "before": null,
+      "after": "B18BC9AE3CA8B0B7CAC99F50FD50D8BE72D2A8599505D6882E96C977E5B3A42F"
+    },
+    {
+      "root": "headless",
+      "path": "codebase-index/qa-dispatch-readiness.mjs",
+      "before": null,
+      "after": "D2071852E0A7A6C03BBD2C0B9D1BC4FC1EC40D393DD9915CBC91ED556DDA38B2"
+    },
+    {
+      "root": "headless",
+      "path": "codebase-index/qa-fetch-pr-proof.mjs",
+      "before": null,
+      "after": "99A3F92E79C8FFE6237702C126C7CD9A6E4D7F563F4A860B6F750FE8F4F9B860"
+    },
+    {
+      "root": "headless",
+      "path": "codebase-index/qa-operation-precheck.mjs",
+      "before": null,
+      "after": "05EC2775C14F2ED79615A9643A0EFB4EB0F56366E85404326E26C3151BD95EE0"
+    },
+    {
+      "root": "headless",
+      "path": "codebase-index/qa-pr-ci-inventory.mjs",
+      "before": null,
+      "after": "0F830644150F87760FECF82F20578F07D4F7631A49D7F380E3C504594A97662E"
+    },
+    {
+      "root": "headless",
+      "path": "codebase-index/qa-readiness-audit.mjs",
+      "before": null,
+      "after": "B7D931E00B26B95F4BE52D4FAC93C90EB434CF01A36D71E9DC943640426F8E1E"
+    },
+    {
+      "root": "headless",
+      "path": "codebase-index/qa-review-bundle-source.mjs",
+      "before": null,
+      "after": "AFA227E8CA7744E0FBF18AA6C9903AAECBBA65477D5D81513553C699C45FDC84"
+    },
+    {
+      "root": "headless",
+      "path": "codebase-index/qa-review-bundle-v2.mjs",
+      "before": null,
+      "after": "EC17A71492B5B610576993C3F720AB49377744CE0A0D4F45518A01B770D9DD87"
+    },
+    {
+      "root": "headless",
+      "path": "codebase-index/qa-review-capacity.mjs",
+      "before": null,
+      "after": "EDDDC8A03DE25B13A33983331C6CC8917F9AAA56E3FB8F206F1CCE506AFB3040"
+    },
+    {
+      "root": "headless",
+      "path": "codebase-index/qa-review-evidence-v2.mjs",
+      "before": null,
+      "after": "B2F9ACD5A8CBBB6B179C218F8BC1F82F969F716CAB23FB971B1C93BEFA22D78F"
+    },
+    {
+      "root": "headless",
+      "path": "codebase-index/qa-review-preflight.mjs",
+      "before": null,
+      "after": "4BD64760B3B6F2DE5833EBFECBF127BFCF77C0CF6A383204CBD5E7986B11D85D"
+    },
+    {
+      "root": "headless",
+      "path": "codebase-index/verify-cli.mjs",
+      "before": null,
+      "after": "032B0F4C7BC33179B9C00AEBFE556C799037F0F932D480B528ADA2A17598A8CC"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/rules/runtime-anti-loop-triage.mdc",
+      "before": "A032BA477168919B479DD3130055A2A6699DAB96D94E82C0E1512320A3AEAC9D",
+      "after": "35923C758594D64A21EAA82EC76D1DCE439602AAD6964B1095339B0E85972576"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/toolbox.json",
+      "before": "B91103AD4E1DBA15F5983BC7DD1AF30F9C17B49FC059CD3EA7EE562EA644BF8D",
+      "after": "3EBE3CD33668A47D735DB707871E3435D438F1D0B1AA5C63AAE7BE4A8A98D79B"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/development_gate.ts",
+      "before": null,
+      "after": "9D05BF1110A9587CC99D8F568B4BB2058BF594F6B934B5030231A6D23C9995CA"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/development_receipt.ts",
+      "before": null,
+      "after": "F09C0350BDAE247AC78F74405E4FBB4597613EAF714CC72D2B18E1711BC4569B"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/independent_reviewer.ts",
+      "before": null,
+      "after": "5655B5873138B6251C6A1BE7D73BE9B7755802C778AE886134F1C786CE750825"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/operation_invariants.ts",
+      "before": null,
+      "after": "0D9038C3824C8957684D71DA9140CC1C46C8B9B3C2BB9171C4B19BFEA67F057C"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/project_executor.ts",
+      "before": "4E1291DC7EB848CAB09D745F8AADD3309C073E40F5EB888A21A27FA708E7D9D4",
+      "after": "E39C4EA2057DFD6D8BEE0920DE60C1CA752E33FE3A47FD7C8811CC39B2156F16"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/qa_attestation.ts",
+      "before": null,
+      "after": "2A73084FDA0944A825853E77C725F908554FA05F82E26CD3DC263A6875E26E9E"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/qa_batch_lifecycle.ts",
+      "before": null,
+      "after": "AD412900282960DE0E989466781CD377E43CDB4015770D9922F5A7A93BE4F9BC"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/qa_dispatch_lock.ts",
+      "before": null,
+      "after": "B03E5679C0DB3629BBD94196354F42275DF23CAB712B1FFEDC91DB66952BC733"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/qa_operation_archive.ts",
+      "before": null,
+      "after": "7A16442816E3E46A1F8007C06C242C186D8FAF0072E29816F0F9824313BEB9D6"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/qa_retry_policy.ts",
+      "before": null,
+      "after": "720D19BEC39EE79D059D23A49D6141EE979716C35A0554A8711488AE0EABA942"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/qa_review_bundle_plan.ts",
+      "before": null,
+      "after": "05F8A6F075C4316A93D7F66CF56F5B4284FDC34262FB10C76D4BC97A095B9F11"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/qa_review_precheck.ts",
+      "before": null,
+      "after": "74E40E6689C690B57F5DB49482A7B9F6C4A9BE2A2F0A3BD136A74FB1025193F2"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/qa_reviewer_directory.ts",
+      "before": null,
+      "after": "6A3CA54906315B8D1A3100436DB7140F6CA77A5628F77962717722F7CC7087B8"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/qa_reviewer_directory_policy.mjs",
+      "before": null,
+      "after": "D9505FEEBDCC72ACF1A2BF40626B4AE826E801C48C5D503761FBB32F7EA24B0F"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/review_policy.ts",
+      "before": null,
+      "after": "2195F88EDBC0E9E5ED0AFC9EFE013390A1C3120402D5ADF931B824E30B4D836E"
+    },
+    {
+      "root": "headless",
+      "path": "audit-retention.mjs",
+      "before": null,
+      "after": "B2CE153CD4ACA83C0E366448BEC022BB115ADF5963612BA0608AC4E149F6600A"
+    },
+    {
+      "root": "headless",
+      "path": "audit-retention-policy.json",
+      "before": null,
+      "after": "F2707F26B645AA804F98FF0FD6E6AD5242230F8E69AF203EB4A1A3DE63959007"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/baseline/audit-format.js",
+      "before": null,
+      "after": "CC1B0A203D6BD8CA3D2ADD43768B359C707DBE2CC3DBAF9415BBC274BC6C65F8"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/baseline/audit-log.js",
+      "before": null,
+      "after": "E451B27310099258CCB253C213FF68ACA9BC1F7DD30913671ACB52003E27596D"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/baseline/audit-request.js",
+      "before": null,
+      "after": "368032374F8097CA68A9FE6503A3CFAE1D62950040D2D12240BDCBF764EFA62E"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/baseline/audit-response.js",
+      "before": null,
+      "after": "66C5436AE2986F6FF2486FB579088485E77E4D925AA25E9C285EDADE87EED400"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/baseline/config.js",
+      "before": null,
+      "after": "3F06B67859465C044A74DB8496970CAE1511097B8A6DD07B1CD2DCFB0ED96873"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/baseline/http-server.js",
+      "before": null,
+      "after": "C498259D6F67572E05E53AC469294A4632CCF5D3FE71580619258F241B451C7B"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/baseline/project-executor.js",
+      "before": null,
+      "after": "093162427F3B92B465151467FD59A296DBAD01F408FF676B38B5D98A294909D8"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/baseline/summarize-tool.js",
+      "before": null,
+      "after": "54347149B98A48DD8AFB1C694E75EFA2D260554EB16FB0D60C66EEBA56FAEE26"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/baseline/summary-registry.js",
+      "before": null,
+      "after": "A8D36C29D79A8B8D3B6C2FF204C4B1B4C60D72AF2AE230E586478903F269C2B9"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/baseline/tool-schema-presentation.js",
+      "before": null,
+      "after": "9912066663276A165A90D2D7CAD27D5A2B879D2CB928231C83C517A92A4CBBC9"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/manifest.json",
+      "before": null,
+      "after": "4C9775E679CEA6695ECD94E830E521FB891ED06160EE478B312B174E378A5EDD"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/README.md",
+      "before": null,
+      "after": "8DE878945A09DF5BA453F56F5F9C87401E4E901E9F0AF4AB3447C9F1BEFC3117"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/Test-OpenChatXCorePatch.ps1",
+      "before": null,
+      "after": "2B2A5DF242A9DAB7F6EF34D8C969462A133C3F2D098A80150813B2DD17A958EE"
+    },
+    {
+      "root": "headless",
+      "path": "core-maintenance/verify-core.mjs",
+      "before": null,
+      "after": "DF532116AC1920F1CF021F755F3050A846F96F865E02FCCAACECCFCDD2E6356E"
+    },
+    {
+      "root": "headless",
+      "path": "runtime-readiness.ps1",
+      "before": null,
+      "after": "B512ECFB6309D0B92F21766D6EF5EB7C47A7B3E3E6FAC03F40B4CB324C5F4515"
+    },
+    {
+      "root": "headless",
+      "path": "status-headless.ps1",
+      "before": "4E9D19BFB899367A11C22AC556CF603D68195F451BA07C89C8871F615CFA6443",
+      "after": "9964612062BC4A1092B3F3B225D8A8579296977BB13B3CB6949CA75186675B30"
+    },
+    {
+      "root": "headless",
+      "path": "Watch-OpenChatXHealth.ps1",
+      "before": null,
+      "after": "5115BFB3CA8413A284B035D18344950675493411F7C006A8AE0761559651D248"
+    },
+    {
+      "root": "runtime",
+      "path": "dist/config.js",
+      "before": "44B8DB235A495804877F8CBE9391126682A3E841EA68FC52E94469772218A110",
+      "after": "3F06B67859465C044A74DB8496970CAE1511097B8A6DD07B1CD2DCFB0ED96873"
+    },
+    {
+      "root": "runtime",
+      "path": "dist/mcp/tool-schema-presentation.js",
+      "before": "7E31817A92766F44447686CBD2BB0A17835753ABD4EF8F7F05B46ED636156628",
+      "after": "9912066663276A165A90D2D7CAD27D5A2B879D2CB928231C83C517A92A4CBBC9"
+    },
+    {
+      "root": "runtime",
+      "path": "dist/projects/project-executor.js",
+      "before": "DC330DCD7B0DE649239D81A69107EE41BF911F69EAD1736BDDDBC73385BA234B",
+      "after": "093162427F3B92B465151467FD59A296DBAD01F408FF676B38B5D98A294909D8"
+    },
+    {
+      "root": "runtime",
+      "path": "dist/server/audit/audit-format.js",
+      "before": "ADE5949CD392FEA4C1F2D81BF1E1A8387ABC152A03F0B62EC40F7EA44E5EBB77",
+      "after": "CC1B0A203D6BD8CA3D2ADD43768B359C707DBE2CC3DBAF9415BBC274BC6C65F8"
+    },
+    {
+      "root": "runtime",
+      "path": "dist/server/audit/audit-log.js",
+      "before": "95FED0DFBCC10EF7DE689DF7647833A5D7D1249AD7F6DCD561ABD2181EEB1213",
+      "after": "E451B27310099258CCB253C213FF68ACA9BC1F7DD30913671ACB52003E27596D"
+    },
+    {
+      "root": "runtime",
+      "path": "dist/server/audit/audit-request.js",
+      "before": "E9886D67F5903774160647CC473C7220FADF8512450C3398F1C5F8712C4F6325",
+      "after": "368032374F8097CA68A9FE6503A3CFAE1D62950040D2D12240BDCBF764EFA62E"
+    },
+    {
+      "root": "runtime",
+      "path": "dist/server/audit/audit-response.js",
+      "before": null,
+      "after": "66C5436AE2986F6FF2486FB579088485E77E4D925AA25E9C285EDADE87EED400"
+    },
+    {
+      "root": "runtime",
+      "path": "dist/server/http-server.js",
+      "before": "A43D7EA73DB2BA7A88FF51BFC4C77F43884F19B82653FDDE27D2C933F9098197",
+      "after": "C498259D6F67572E05E53AC469294A4632CCF5D3FE71580619258F241B451C7B"
+    },
+    {
+      "root": "runtime",
+      "path": "dist/summaries/summary-registry.js",
+      "before": "E214B6F7EDAB024DB93A162CE73AD0623A24715BB84FC510683838DEA943B2CD",
+      "after": "A8D36C29D79A8B8D3B6C2FF204C4B1B4C60D72AF2AE230E586478903F269C2B9"
+    },
+    {
+      "root": "runtime",
+      "path": "dist/tools/summarize/summarize-tool.js",
+      "before": "DBE7867A6C50F5323E8FB8A48977B54B96ABD6A39790F545F1BD72FB000E3FAD",
+      "after": "54347149B98A48DD8AFB1C694E75EFA2D260554EB16FB0D60C66EEBA56FAEE26"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/README.md",
+      "before": "0CCEE6A2A93BD852758E55693CF47771AC31DF530FF77AF2049D29DA067C42B9",
+      "after": "DA8E0B42A986F2F2ECD58AE9A02FECB5DCED9A250003DAB240D22EA8773E300C"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/rules/shared-development-preflight.mdc",
+      "before": null,
+      "after": "F22D8BDA344931EBEF263D25749AB73F3E3E9BB65588F20FC593A27EC65147E7"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/skills/agent-runtime-usage/SKILL.md",
+      "before": "CD78E19075407F162FDB2B1A37AFAD8B76B8F5E22BE913A1CCEE879B4B1FABE7",
+      "after": "B3A3984FA60C538611E2CD2A2F3715D40BEC51BD8C0897F35C1A9E496BAD959E"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/agent_capabilities.ts",
+      "before": null,
+      "after": "024911023D96A0DFBF47EF86DF40EE1EB4F39657BA858070C6DB49182FFE3E6D"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/agent_runtime.ts",
+      "before": "8B7AE7D4E00847DE3EEB18B9A0589CD3BC3728B949C35F187131DC3004D0EA08",
+      "after": "A04524FC14CE8B653B19CC612B8467B289E58525BE5B8F2A6D4AD75D335690C4"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/development_preflight.ts",
+      "before": null,
+      "after": "D938B0AF5928FED6E491797FA48E4AF4E936CD78EFDC0ED44917EF56837A8296"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/external_tool_idempotency.ts",
+      "before": "BD592492F9EA7332ECDB49FADE8A80D9915BE8AB9D4498C9CE4E38FC23C95C35",
+      "after": "BD592492F9EA7332ECDB49FADE8A80D9915BE8AB9D4498C9CE4E38FC23C95C35"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/letta_worker.ts",
+      "before": "559085345062E6C1969303FEAE45E3888BF4A5D16697898855568D040BAB9096",
+      "after": "3DF4190FCA2EE927C0C8912AAA6C0522BBDDA038B7ADA0C635EFF5345B2F6A8E"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/model_routing.mjs",
+      "before": null,
+      "after": "234F51248B9467CB14AC422655DD0EE8C5CAEBBF26FA3E46575584078B1E3465"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/operation_reconciliation.mjs",
+      "before": null,
+      "after": "DF20CA6B220E4D44CF40BA4B62AA81783C51190EC7DB3528AA48E7D84EBE767D"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/runtime_contract.ts",
+      "before": null,
+      "after": "D4CD6AFF23C72DAE80DC22D19B944B847FB191F9B01C02F94DA228746708D3D3"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/runtime_maintenance.mjs",
+      "before": null,
+      "after": "D4CF70708E9C6263DCF26CFAA5883FA995B75FC68BB312FD6F340AD2139D236C"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/runtime_readiness.mjs",
+      "before": null,
+      "after": "70F2A3300812C421E95BC9A2C6D96FFDAE1C13728CFDB2FB9E102AF2C50E4F0C"
+    },
+    {
+      "root": "headless",
+      "path": "toolboxes/agent-runtime/tools/tool_evidence.mjs",
+      "before": null,
+      "after": "284E63C8C83DB2503B41E7EAB0B043F098D947C7298F28896F6653E95B6D0515"
+    }
+  ]
+}

@@ -1,5 +1,9 @@
 # MSI unresolved-effect dispatch validation — 2026-10-31
 
+The later [MSI/PC2 closeout](MSI_PC2_CLOSEOUT_20261031.md) records final live
+verification and the completed PC2 synchronization. The scope below describes
+this earlier MSI-only application.
+
 Fresh Windows and whole-stack installation acceptance remain explicitly excluded
 by the owner. MSI is the only target; PC2 was not accessed or synchronized.
 

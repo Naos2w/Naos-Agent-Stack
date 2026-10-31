@@ -15,7 +15,18 @@ $createdPause = $false
 $stopped = $false
 $restored = $false
 function Get-ManagedMcpApps {
-    $output = & $Node $pm2Cli jlist
+    # PM2 includes arbitrary environment keys, including username/USERNAME.
+    # JSON keys are case-sensitive; PowerShell 5.1 dictionaries are not.
+    # Project only lifecycle fields in Node before handing JSON to PowerShell.
+    $inspect = @'
+const {execFileSync}=require('node:child_process');
+try {
+  const apps=JSON.parse(execFileSync(process.execPath,[process.argv[1],'jlist'],{windowsHide:true,timeout:15000,maxBuffer:20*1024*1024,encoding:'utf8'}));
+  if(!Array.isArray(apps)) throw Error('invalid apps');
+  console.log(JSON.stringify(apps.map(app=>({name:app.name,pid:app.pid,pm2_env:{status:app.pm2_env?.status}}))));
+} catch { process.stderr.write('PM2_STATUS_UNVERIFIED\n'); process.exitCode=1; }
+'@
+    $output = & $Node -e $inspect $pm2Cli
     if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect managed MCP.' }
     return ($output | Out-String) | ConvertFrom-Json
 }

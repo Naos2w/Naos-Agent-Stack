@@ -63,15 +63,23 @@ try {
     $converter=@($offline.FindAll({param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq 'Get-ManagedMcpApps'},$true))
     if($converter.Count -ne 1){throw 'OFFLINE_CONVERTER_MISSING'}
     Invoke-Expression $converter[0].Extent.Text
-    function Mock-Pm2 { $global:LASTEXITCODE=0; '[{"name":"openchatx-mcp","pid":42,"pm2_env":{"status":"online"}}]' }
-    $Node='Mock-Pm2';$pm2Cli='fixture-only'
+    $Node=$nodePath
+    $pm2Cli=Join-Path $fixtureRoot 'pm2-fixture.cjs'
+    # PM2 can preserve case-distinct environment keys; PowerShell 5.1 cannot
+    # parse that full object. Exercise real native output, not a PS mock.
+    [IO.File]::WriteAllText($pm2Cli,'console.log(JSON.stringify([{name:"openchatx-mcp",pid:42,pm2_env:{status:"online",env:{username:"synthetic",USERNAME:"synthetic",TOKEN:"synthetic-secret"}}}]))')
     $apps=@(Get-ManagedMcpApps)
     if($apps.Count -ne 1 -or $apps[0].pm2_env.status -ne 'online' -or $apps[0].pid -ne 42){throw 'OFFLINE_PM2_JSON_COMPATIBILITY_FAILED'}
-    function Mock-Pm2 { $global:LASTEXITCODE=3; '[]' }
+    if($apps[0].pm2_env.PSObject.Properties.Name -contains 'env'){throw 'OFFLINE_PM2_ENV_EXPOSED'}
+    [IO.File]::WriteAllText($pm2Cli,'process.exit(3)')
     $blocked=$false
     try { Get-ManagedMcpApps | Out-Null } catch { $blocked=$true }
     if(-not $blocked){throw 'OFFLINE_PM2_ERROR_WAS_IGNORED'}
-    Write-Output '[PASS] Actual offline updater PM2 parser supports PowerShell 5.1 and rejects native failures'
+    [IO.File]::WriteAllText($pm2Cli,'console.log("invalid-json")')
+    $blocked=$false
+    try { Get-ManagedMcpApps | Out-Null } catch { $blocked=$true }
+    if(-not $blocked){throw 'OFFLINE_PM2_INVALID_JSON_WAS_IGNORED'}
+    Write-Output '[PASS] Actual offline updater PM2 parser handles case-distinct environment keys, omits environment data and rejects native/JSON failures'
     $observerFixture=Join-Path $fixtureRoot 'observer-install'
     New-Item -ItemType Directory -Path $observerFixture|Out-Null
     $observerNames=@('runtime-readiness.ps1','audit-retention.mjs','audit-retention-policy.json','status-headless.ps1','Watch-OpenChatXHealth.ps1')
