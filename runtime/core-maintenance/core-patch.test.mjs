@@ -26,6 +26,12 @@ test("known-good core baseline passes, changing any compiled module or version f
     await copyFile(join(source, "audit-log.js"), auditFile);
     const formatFile = join(fixture, "dist", "server", "audit", "audit-format.js");
     await copyFile(join(source, "audit-format.js"), formatFile);
+    const manifest = JSON.parse(await readFile(join(base, "manifest.json"), "utf8"));
+    for (const entry of manifest.files) {
+      const target = join(fixture, entry.relativePath);
+      await mkdir(dirname(target), { recursive: true });
+      await copyFile(join(base, entry.snapshot), target);
+    }
     await writeFile(join(fixture, "package.json"),
       JSON.stringify({ name: "openchatx-mcp", version: "1.0.0-beta.2" }), "utf8");
 

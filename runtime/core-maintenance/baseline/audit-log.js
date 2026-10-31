@@ -44,10 +44,10 @@ export class McpAuditLogger {
             console.warn(`Audit archive recovery deferred: ${errorMessage(error)}`);
         }
     }
-    startRequest(payload) {
-        return createAuditRequest(payload, (toolName, argumentsValue) => this.startToolCall(toolName, argumentsValue), () => this.appendToolList());
+    startRequest(payload, options) {
+        return createAuditRequest(payload, (toolName, argumentsValue, metadata) => this.startToolCall(toolName, argumentsValue, metadata), () => this.appendToolList(), options);
     }
-    startToolCall(toolName, argumentsValue) {
+    startToolCall(toolName, argumentsValue, metadata = {}) {
         const identity = getAgentIdentity();
         let agentLabel;
         if (identity) {
@@ -62,7 +62,7 @@ export class McpAuditLogger {
                 if (finished)
                     return;
                 finished = true;
-                const toolResponse = summarizeToolResult(input.toolResult, input.modelResult ?? input.toolResult, input.error);
+                const toolResponse = summarizeToolResult(input.toolResult, input.modelResult ?? input.toolResult, input.error, input.observation);
                 const httpStatus = input.httpStatus ?? 200;
                 const state = input.state ?? "finished";
                 const exitCode = toolResponse.structuredContent?.exit_code;
@@ -90,6 +90,8 @@ export class McpAuditLogger {
                     failureMessage,
                     responseSummary: toolResponse,
                     agentLabel,
+                    requestRef: (typeof metadata.requestId === "string" || typeof metadata.requestId === "number")
+                        ? createHash("sha256").update(JSON.stringify(metadata.requestId)).digest("hex").slice(0, 16) : undefined,
                 }));
             },
         };

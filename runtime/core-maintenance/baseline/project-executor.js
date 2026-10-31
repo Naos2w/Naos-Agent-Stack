@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { promises as fs } from "node:fs";
 import { dirname, isAbsolute, join, posix, relative, resolve, sep } from "node:path";
 import { promisify } from "node:util";
+import { MCP_CONFIG } from "../config.js";
 import { ProjectRegistry, projectRoots as registeredProjectRoots } from "./project-registry.js";
 
 const execFileAsync = promisify(execFile);
@@ -424,7 +425,7 @@ export async function executeProjectTool(project, toolName, input) {
             const directWsl = process.platform === "win32" &&
                 /^wsl(?:\.exe)?\s/iu.test(command);
             const executable = directWsl ? "wsl.exe" :
-                process.platform === "win32" ? "powershell.exe" : "/bin/sh";
+                process.platform === "win32" ? MCP_CONFIG.shell.path : "/bin/sh";
             const args = directWsl
                 ? tokenizeWslCommand(command).slice(1)
                 : process.platform === "win32"

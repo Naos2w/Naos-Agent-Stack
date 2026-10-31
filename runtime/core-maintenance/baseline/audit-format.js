@@ -15,6 +15,8 @@ export function formatAuditEntry(input) {
     const heading = `--- # ${tagPrefix}${input.toolName} - ${input.durationMs}ms${tokenCounts}${abnormal} - ${formatAuditTime(input.time)}`;
     const details = [
         formatAgentLabel(input.agentLabel),
+        /^[a-f0-9]{16}$/.test(input.requestRef ?? "") ? `request_ref: ${input.requestRef}` : "",
+        formatProtocolObservation(input.responseSummary),
         formatArguments(input.toolName, input.argumentsValue, input.toolFailed, input.failureMessage),
         formatFailureMetadata(input),
         formatResponseSummary(input.toolName, input.responseSummary),
@@ -23,7 +25,18 @@ export function formatAuditEntry(input) {
         .join("\n");
     return details ? `${heading}\n${details}\n\n` : `${heading}\n\n`;
 }
-export function summarizeToolResult(toolResult, modelResult, error) {
+export function summarizeToolResult(toolResult, modelResult, error, observation) {
+    if (["remote_auth", "mcp_protocol"].includes(observation?.phase) &&
+        ["success", "error", "unverified"].includes(observation?.outcome)) {
+        return {
+            failed: observation.outcome === "error",
+            phase: observation.phase,
+            outcome: observation.outcome,
+            ...(["authentication", "protocol", "tool"].includes(observation.kind) ? { failureKind: observation.kind } : {}),
+            ...(["json_rpc", "structured_result"].includes(observation.codeSource)
+                ? failureCodeMetadata(observation.code, observation.codeSource) : {}),
+        };
+    }
     if (error !== undefined)
         return {
             failed: true,
@@ -70,15 +83,19 @@ function formatFailureMetadata(input) {
         return "";
     const summary = input.responseSummary;
     const source = summary.failureCodeSource;
-    const metadata = source === "exception" || source === "structured_result"
+    const metadata = source === "exception" || source === "structured_result" || source === "json_rpc"
         ? failureCodeMetadata(summary.failureCode, source)
         : {};
     return `failure: ${JSON.stringify({
         observed_at: "openchatx_mcp",
-        kind: input.toolFailed ? "tool" : "transport",
+        kind: summary.failureKind ?? (input.toolFailed ? "tool" : "transport"),
         code: metadata.failureCode ?? null,
         code_source: metadata.failureCodeSource ?? "unavailable",
     })}`;
+}
+function formatProtocolObservation(summary) {
+    if (!["remote_auth", "mcp_protocol"].includes(summary?.phase)) return "";
+    return `observation: ${JSON.stringify({ phase: summary.phase, outcome: summary.outcome })}`;
 }
 export function formatAuditTime(date) {
     const hours = date.getHours();
@@ -98,6 +115,7 @@ function formatAgentLabel(agentLabel) {
 function auditTag(input) {
     if (input.toolFailed || input.httpStatus >= 400 || input.state !== "finished")
         return "!";
+    if (input.responseSummary?.outcome === "unverified") return "?";
     if (input.durationMs >= SLOW_CALL_MS)
         return "~";
     return "";

@@ -36,13 +36,21 @@ async function preparePlan(runtimeRoot, headlessRoot) {
   const pkg = JSON.parse(await readFile(join(runtimeRoot, 'package.json'), 'utf8'));
   if (pkg.name !== 'openchatx-mcp' || pkg.version !== '1.0.0-beta.2') throw Error('AUDIT_UPDATE_VERSION_MISMATCH');
   const core = join(headlessRoot, 'core-maintenance');
+  // The nine existing modules must retain their exact verified MSI identities.
+  const manifest = JSON.parse(await readFile(join(here, 'manifest.json'), 'utf8'));
+  const priorFiles = manifest.files.filter(entry => entry.snapshot !== 'baseline/config.js');
+  if (priorFiles.length !== 9) throw Error('AUDIT_UPDATE_BASE_SCOPE_INVALID');
+  for (const entry of priorFiles) {
+    for (const target of [join(runtimeRoot, entry.relativePath), join(core, entry.snapshot)]) {
+      if (await digest(target) !== entry.sha256) throw Error('AUDIT_UPDATE_BASE_UNRECOGNIZED: ' + entry.relativePath);
+    }
+  }
   const rows = [
-    ['baseline/audit-format.js', join(runtimeRoot, 'dist/server/audit/audit-format.js'), 'ADE5949CD392FEA4C1F2D81BF1E1A8387ABC152A03F0B62EC40F7EA44E5EBB77'],
-    ['baseline/audit-format.js', join(core, 'baseline/audit-format.js'), null],
-    ['manifest.json', join(core, 'manifest.json'), '5CA55A3AE38B8F96CDF725A0D9695938E32D390D09163C4D90E3AD58A7832AF0'],
-    ['verify-core.mjs', join(core, 'verify-core.mjs'), '152D98A788615EDD24CC0391B0C9006F8C9090234B8ADCFED46C1FA533AB1519'],
-    ['README.md', join(core, 'README.md'), '52F69F7B264A0C9CC48AE59E6B64D9310B27854D9A4D530AD82409A0A0E26CA3'],
-    ['core-patch.test.mjs', join(core, 'core-patch.test.mjs'), '04B580F95DDCBCDDF7C5C2104AD4A66194F74276712357A03242D765D66D8784'],
+    ['baseline/config.js', join(runtimeRoot, 'dist/config.js'), '44B8DB235A495804877F8CBE9391126682A3E841EA68FC52E94469772218A110'],
+    ['baseline/config.js', join(core, 'baseline/config.js'), null],
+    ['manifest.json', join(core, 'manifest.json'), '3BDF1733C2A7C6DAD702D2F53472AEC8D89FC2B6ABFD8E09954B995C49AD4304'],
+    ['verify-core.mjs', join(core, 'verify-core.mjs'), 'CC2ACCDE4F3633A5C8CF3D3156C5AF072F942BF650280CA7E4B07E35DA990C22'],
+    ['README.md', join(core, 'README.md'), 'E3412C988B6F9E0FFAECE3BA527034A88D0C4254EB1C4FBB25F5EE1B48D6E8A1'],
   ];
   const plan = [];
   for (const [source, target, before] of rows) {
@@ -175,7 +183,7 @@ async function install(runtimeRoot, headlessRoot) {
     const result = await applyVerifiedFiles(plan, journal, join(headlessRoot, 'backups'), {
       verify: async () => {
         const check = await verifyCore({ runtimeRoot, manifestPath: join(here, 'manifest.json'), snapshotRoot: join(core, 'baseline') });
-        if (!check.ok) throw Error('AUDIT_UPDATE_CORE_VERIFY_FAILED');
+        if (!check.ok) throw Error(`AUDIT_UPDATE_CORE_VERIFY_FAILED: ${check.failures.join('; ')}`);
       },
     });
     process.stdout.write(`AUDIT_OVERLAY_APPLIED ${JSON.stringify(result)}\n`);

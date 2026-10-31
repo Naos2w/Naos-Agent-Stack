@@ -6,9 +6,16 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const expectedFiles = new Map([
+  ["dist/config.js", "config.js"],
   ["dist/projects/project-executor.js", "project-executor.js"],
   ["dist/server/audit/audit-log.js", "audit-log.js"],
   ["dist/server/audit/audit-format.js", "audit-format.js"],
+  ["dist/server/audit/audit-request.js", "audit-request.js"],
+  ["dist/server/audit/audit-response.js", "audit-response.js"],
+  ["dist/server/http-server.js", "http-server.js"],
+  ["dist/mcp/tool-schema-presentation.js", "tool-schema-presentation.js"],
+  ["dist/summaries/summary-registry.js", "summary-registry.js"],
+  ["dist/tools/summarize/summarize-tool.js", "summarize-tool.js"],
 ]);
 const defaultRuntime = join(
   process.env.LOCALAPPDATA || join(homedir(), "AppData", "Local"),

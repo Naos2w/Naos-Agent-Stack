@@ -2,26 +2,68 @@
   "schemaVersion": 1,
   "runtimePackage": "openchatx-mcp",
   "runtimeVersion": "1.0.0-beta.2",
-  "overlayRevision": "2026-10-28.audit.1",
+  "overlayRevision": "2026-10-30.handoff.2",
   "policy": "verified-local-MSI-overlay-do-not-auto-apply-to-unknown-upstream-versions",
   "files": [
     {
       "relativePath": "dist/projects/project-executor.js",
       "snapshot": "baseline/project-executor.js",
-      "sha256": "C36F82A914F0C1BFF0915298DA7075B3074FB1B3F6D9D16B60B757C4D3929DD7",
-      "purpose": "Project scoped WSL argv execution, quote handling and command-chain boundary"
+      "sha256": "093162427F3B92B465151467FD59A296DBAD01F408FF676B38B5D98A294909D8",
+      "purpose": "Project scoped WSL argv execution, quote handling and command-chain boundary; preserve configured Windows shell path"
     },
     {
       "relativePath": "dist/server/audit/audit-log.js",
       "snapshot": "baseline/audit-log.js",
-      "sha256": "BD5040C72407D3FFC26BB088D793A80BFA078DAF0DCA889156CCF5538F37584D",
-      "purpose": "Verified nonblocking audit rotation and interrupted temp recovery"
+      "sha256": "E451B27310099258CCB253C213FF68ACA9BC1F7DD30913671ACB52003E27596D",
+      "purpose": "Verified nonblocking rotation and hashed request correlation"
     },
     {
       "relativePath": "dist/server/audit/audit-format.js",
       "snapshot": "baseline/audit-format.js",
-      "sha256": "A6702EBA21A04B8CCD287781509AB3BC14E86EAD9F50968AE4DCFF258565DF87",
-      "purpose": "Retain explicit tool failure codes and distinguish observed transport failures"
+      "sha256": "CC1B0A203D6BD8CA3D2ADD43768B359C707DBE2CC3DBAF9415BBC274BC6C65F8",
+      "purpose": "Distinguish tool, authentication, protocol, transport and unverified outcomes"
+    },
+    {
+      "relativePath": "dist/server/audit/audit-request.js",
+      "snapshot": "baseline/audit-request.js",
+      "sha256": "368032374F8097CA68A9FE6503A3CFAE1D62950040D2D12240BDCBF764EFA62E",
+      "purpose": "Match protocol observations by request ID; unknown transport completion remains unverified"
+    },
+    {
+      "relativePath": "dist/server/audit/audit-response.js",
+      "snapshot": "baseline/audit-response.js",
+      "sha256": "66C5436AE2986F6FF2486FB579088485E77E4D925AA25E9C285EDADE87EED400",
+      "purpose": "Bounded transparent JSON/SSE observation and redacted remote authentication audit"
+    },
+    {
+      "relativePath": "dist/server/http-server.js",
+      "snapshot": "baseline/http-server.js",
+      "sha256": "C498259D6F67572E05E53AC469294A4632CCF5D3FE71580619258F241B451C7B",
+      "purpose": "Observe SDK protocol responses and record authentication rejection before dispatch"
+    },
+    {
+      "relativePath": "dist/mcp/tool-schema-presentation.js",
+      "snapshot": "baseline/tool-schema-presentation.js",
+      "sha256": "9912066663276A165A90D2D7CAD27D5A2B879D2CB928231C83C517A92A4CBBC9",
+      "purpose": "Preserve explicit tool annotations with conservative defaults"
+    },
+    {
+      "relativePath": "dist/summaries/summary-registry.js",
+      "snapshot": "baseline/summary-registry.js",
+      "sha256": "A8D36C29D79A8B8D3B6C2FF204C4B1B4C60D72AF2AE230E586478903F269C2B9",
+      "purpose": "Repeatable reads, revision acknowledgment, durable receipts and atomic summary persistence"
+    },
+    {
+      "relativePath": "dist/tools/summarize/summarize-tool.js",
+      "snapshot": "baseline/summarize-tool.js",
+      "sha256": "54347149B98A48DD8AFB1C694E75EFA2D260554EB16FB0D60C66EEBA56FAEE26",
+      "purpose": "Explicit revision acknowledgment for reliable context handoff"
+    },
+    {
+      "relativePath": "dist/config.js",
+      "snapshot": "baseline/config.js",
+      "sha256": "3F06B67859465C044A74DB8496970CAE1511097B8A6DD07B1CD2DCFB0ED96873",
+      "purpose": "Align public server handoff instructions with explicit revision acknowledgment"
     }
   ],
   "regressionTests": [
