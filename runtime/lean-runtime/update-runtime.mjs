@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { acquireRuntimeMaintenance, RECOVERY_FILE } from './runtime_maintenance.mjs';
+import { inspectConsumerRelease, assertConsumerReleaseUnchanged } from './consumer-release.mjs';
 import { patchModelWorker, patchModelRuntime } from './model-observation-patch.mjs';
 import { patchRoutingWorker, patchRoutingRuntime, patchRoutingGuidance } from './model-routing-patch.mjs';
 import { patchStoppedReconciliation } from './stopped-reconciliation-patch.mjs';
@@ -343,6 +344,12 @@ export async function apply(root, stage, { renameFile = rename, verifyInstalled 
       if (sha(candidate) !== file.after) throw Error('Candidate hash mismatch: ' + file.path);
       prepared.push({ ...file, beforeBytes: before, candidate });
     }
+    // Bind the proposed post-release source closure to each independently
+    // registered consumer's already-reviewed exact source SHA. A consumer
+    // mismatch prevents any replacement, including its first file.
+    const consumers = await inspectConsumerRelease(root, new Map(
+      prepared.map(file => [file.path, file.candidate]),
+    ));
     backup = join(root, 'backups', 'lean-runtime-' + new Date().toISOString().replaceAll(/[:.]/g, '-') + '-' + randomUUID());
     await assertNoLinks(backup);
     await mkdir(backup, { recursive: true });
@@ -367,6 +374,7 @@ export async function apply(root, stage, { renameFile = rename, verifyInstalled 
       await renameFile(file.temporary, path);
     }
     const result = await verifyInstalled(root, stage);
+    await assertConsumerReleaseUnchanged(root, consumers);
     await unlink(pending);
     journaled = false;
     return { backup, ...result };
