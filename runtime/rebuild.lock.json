@@ -48,7 +48,7 @@
     {
       "source": "runtime/lean-runtime/runtime_contract.ts",
       "target": "toolboxes/agent-runtime/tools/runtime_contract.ts",
-      "sha256": "D4CD6AFF23C72DAE80DC22D19B944B847FB191F9B01C02F94DA228746708D3D3"
+      "sha256": "6EC30F77AE49E86482592211752FF8E4BF219DAB09014AFA305A827D5A6295CE"
     },
     {
       "source": "runtime/lean-runtime/runtime_maintenance.mjs",
@@ -93,7 +93,7 @@
     {
       "source": "runtime/core-maintenance/manifest.json",
       "target": "headless/core-maintenance/manifest.json",
-      "sha256": "1079A3EBB57C94E22ADCDE5C4E3C4EC0663FCD83E22FBBE6EDD397252DBBF75F"
+      "sha256": "267F6CEFF824B18104A1EB1D2384C2952D142E2D06102983BAEB481E3A5806CA"
     },
     {
       "source": "runtime/core-maintenance/verify-core.mjs",
@@ -118,7 +118,7 @@
     {
       "source": "runtime/core-maintenance/README.md",
       "target": "headless/core-maintenance/README.md",
-      "sha256": "9FEA85A4A3502CEEEBF9DCD6C63D455055CE86E1C0F751B68EE729D889AECD86"
+      "sha256": "2359EB53F699750BE6A5B7EAFE7F19A666C5DA62622E125F8872C7577F62C8E8"
     },
     {
       "source": "runtime/core-maintenance/baseline/audit-format.js",
@@ -163,12 +163,12 @@
     {
       "source": "runtime/core-maintenance/baseline/tool-schema-presentation.js",
       "target": "runtime/dist/mcp/tool-schema-presentation.js",
-      "sha256": "9912066663276A165A90D2D7CAD27D5A2B879D2CB928231C83C517A92A4CBBC9"
+      "sha256": "85D7A55430AFE80D62F562D861CBDE71D302582108004E409C9648A770372556"
     },
     {
       "source": "runtime/core-maintenance/baseline/tool-schema-presentation.js",
       "target": "headless/core-maintenance/baseline/tool-schema-presentation.js",
-      "sha256": "9912066663276A165A90D2D7CAD27D5A2B879D2CB928231C83C517A92A4CBBC9"
+      "sha256": "85D7A55430AFE80D62F562D861CBDE71D302582108004E409C9648A770372556"
     },
     {
       "source": "runtime/core-maintenance/baseline/summary-registry.js",
@@ -243,12 +243,12 @@
     {
       "source": "runtime/core-maintenance/baseline/conversation-bootstrap.js",
       "target": "runtime/dist/mcp/conversation-bootstrap.js",
-      "sha256": "6DD714F83DE59F002ABBE2FE7CBF505FDF3FA2AE49D9305F494DF14DC8585EC6"
+      "sha256": "2C32A8A8EBA30237101434147AAA88B7D849B6D9720C7EE7409E4FCC58D6E754"
     },
     {
       "source": "runtime/core-maintenance/baseline/conversation-bootstrap.js",
       "target": "headless/core-maintenance/baseline/conversation-bootstrap.js",
-      "sha256": "6DD714F83DE59F002ABBE2FE7CBF505FDF3FA2AE49D9305F494DF14DC8585EC6"
+      "sha256": "2C32A8A8EBA30237101434147AAA88B7D849B6D9720C7EE7409E4FCC58D6E754"
     },
     {
       "source": "runtime/core-maintenance/baseline/server-factory.js",
@@ -263,22 +263,22 @@
     {
       "source": "runtime/core-maintenance/baseline/tool-registration-boundary.js",
       "target": "runtime/dist/mcp/tool-registration-boundary.js",
-      "sha256": "30398CFD4D3472BA72C56031B6A91975B23574115AD83E2C2842AF2A8FAC6FCB"
+      "sha256": "A1F3EC220611E2BAC0605094424E63E6726085A0DE018BA50077F28CA1A27BFD"
     },
     {
       "source": "runtime/core-maintenance/baseline/tool-registration-boundary.js",
       "target": "headless/core-maintenance/baseline/tool-registration-boundary.js",
-      "sha256": "30398CFD4D3472BA72C56031B6A91975B23574115AD83E2C2842AF2A8FAC6FCB"
+      "sha256": "A1F3EC220611E2BAC0605094424E63E6726085A0DE018BA50077F28CA1A27BFD"
     },
     {
       "source": "runtime/core-maintenance/baseline/start-here.js",
       "target": "runtime/dist/tools/start-here/start-here.js",
-      "sha256": "31ED07BA04E5EA9AB16733DC9D60284AC72571D78ED45AEDE38DFD04ACE172CD"
+      "sha256": "FDA0424B202F68ADF23750CD4228644FBBDDC22F069D045295C2B387748F8988"
     },
     {
       "source": "runtime/core-maintenance/baseline/start-here.js",
       "target": "headless/core-maintenance/baseline/start-here.js",
-      "sha256": "31ED07BA04E5EA9AB16733DC9D60284AC72571D78ED45AEDE38DFD04ACE172CD"
+      "sha256": "FDA0424B202F68ADF23750CD4228644FBBDDC22F069D045295C2B387748F8988"
     }
   ]
 }

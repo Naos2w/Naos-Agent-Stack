@@ -176,9 +176,9 @@ export function renderCurrentToolContracts() {
     return [
         "# Current OpenChatX Tool Contracts",
         "- Current execution guidance and version evidence are supplied in openchatx_context. Project selection returns scoped continuation. Use the existing task/TODO and acceptance criteria; one Developer by default.",
-        "- Persistent execution: tool_search query=agent_runtime, then tool_call with the returned id. Load agent-runtime-usage with skill_search. Inspect existing Operations before run; recover retains the original operation_id. Direct MCP remains suitable for bounded work.",
+        "- Persistent execution: tool_search query=agent_runtime, then tool_call with the returned id. Load skill_search action=load name=agent-runtime.agent-runtime-usage. Inspect existing Operations before run; recover retains the original operation_id. Direct MCP remains suitable for bounded work.",
         "These runtime-owned contracts are authoritative for the current tool surface.",
-        "- Projects: project_manage actions=list|upsert|remove|use|resolve|grant_once|grant_all_session|revoke_all_session. Activate/switch with action=use + project_id; clear for machine/global work with action=use + project_id=null.",
+        "- Projects: project_manage actions=list|upsert|remove|use|resolve|grant_once|grant_all_session|revoke_all_session. Known registered ID: directly activate/switch with action=use + project_id. resolve requires id and only inspects access; path is not an ID lookup. Use list when the ID is unknown. Clear for machine/global work with action=use + project_id=null.",
         "- Skills: skill_search action=search (default) or action=load + name; skill_manage handles create|edit|delete.",
         "- Capabilities: capability_list action=list (default) or action=health.",
         "- Subagents: subagent_run runs an explicit model, auto-routes when model is omitted, or only selects with action=route.",

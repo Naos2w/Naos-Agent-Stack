@@ -111,6 +111,12 @@ export function describeOperationOutcome(input: {
     execution: { state: input.state, scope: "operation" },
     delivery: { state: "not_evaluated", taskRef, acceptanceVerified: false },
     next_move: { action, taskRef, automaticRetryAllowed: false },
+    acceptance: {
+      state: "not_evaluated",
+      evidenceRequired: ["current_scoped_diff", "affected_check_results", "task_criteria_mapping"],
+      conditionalEvidence: { ui: "rendered_desktop_mobile_and_interaction" },
+      note: "Evidence requirements guide the current task; they do not execute commands or authorize publication.",
+    },
   }
 }
 
@@ -154,6 +160,9 @@ export async function prepareWorkerRunContext(
       "No routine QA receipt or independent reviewer is required. " +
       "Project permissions, current safety denials, CI and release approvals remain in force. " +
       "Historical notes do not create new authorization or permanent blockers." +
+      " Before editing, inspect the current scoped Git status/diff if shell is granted and preserve unrelated edits; if Git is unavailable, compare the relevant source and report the limitation. Read only task-relevant source and immediate dependencies. Separate verified facts from assumptions." +
+      " For a failing check, diagnose its concrete output, make the smallest authorized correction, and rerun affected checks. Do not repeat an unchanged failing command without new evidence. Correct documented argument/lookup errors; never route around current denials or retry uncertain side effects. Continue independent approved steps when safe." +
+      " Before finishing, inspect the final scoped diff and map each acceptance criterion to an actual check/result or an explicit not-verified reason. Report commands actually run, remaining blockers and the next action. UI acceptance requires rendered desktop/mobile and interaction evidence, not only a build. Do not broaden tests after sufficient passing checks without a new reason." +
       " On resumed or compacted work, reread the existing task record and relevant current source. " +
       "Keep approved constraints, verified progress, real test evidence, unresolved issues and the next action in the existing TODO when writing it is authorized; do not create a second task ledger." +
       (reference ? "\nExisting task reference (identifier only): " + JSON.stringify(reference) : ""),

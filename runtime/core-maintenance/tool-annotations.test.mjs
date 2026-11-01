@@ -3,11 +3,31 @@ import assert from 'node:assert/strict';
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { compactToolAnnotations, prepareToolRegistration } from './baseline/tool-schema-presentation.js';
+import { compactToolAnnotations, prepareToolRegistration, projectRoutingInputError } from './baseline/tool-schema-presentation.js';
+
+test('missing activation ID cannot silently clear routing; explicit null and exact IDs retain semantics', () => {
+  assert.match(projectRoutingInputError('project_manage', {action:'use'}), /must not silently clear/);
+  assert.match(projectRoutingInputError('project_manage', {action:'resolve',path:'C:\\somewhere'}), /requires id/);
+  for (const input of [{action:'use',project_id:null},{action:'use',project_id:'isolated'},
+    {action:'resolve',id:'isolated'},{action:'list'},{action:'upsert',id:'a',path:'b'}])
+    assert.equal(projectRoutingInputError('project_manage',input),null);
+  assert.equal(projectRoutingInputError('unrelated',{action:'use'}),null);
+});
 
 const conservative = {
   readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true,
 };
+
+test('project and skill descriptions explain exact inputs without changing schemas or risk hints', () => {
+  for (const [name, expected] of [['project_manage', /resolve requires id/], ['skill_search', /agent-runtime\.agent-runtime-usage/]]) {
+    const schema = { type: 'object', properties: { action: { type: 'string' } } };
+    const config = { description: 'old', inputSchema: schema, annotations: { ...conservative } };
+    prepareToolRegistration(name, config, false);
+    assert.match(config.description, expected);
+    assert.equal(config.inputSchema, schema);
+    assert.deepEqual(config.annotations, conservative);
+  }
+});
 const fixtures = [
   { name: 'bash', annotations: { ...conservative } },
   { name: 'file_edit', annotations: { ...conservative, openWorldHint: false } },

@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Offline filter test</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f8f7f3;color:#252824;font:16px/1.6 system-ui}
+main{max-width:42rem;margin:3rem auto;padding:1.5rem}h1{font-size:2rem;line-height:1.2}p{max-width:65ch}
+label{display:block;font-weight:600}input{width:100%;font:inherit;color:inherit;padding:.7rem;border:1px solid #666d62;background:white;border-radius:6px}
+input:focus-visible{outline:3px solid #345d33;outline-offset:3px}ul{padding:0;list-style:none}li{padding:.7rem 0;border-bottom:1px solid #c8ccc4;overflow-wrap:anywhere}
+::selection{background:#d7e7cb;color:#152812}[hidden]{display:none}input{caret-color:#345d33}
+@media(max-width:480px){main{margin:1rem auto}}
+</style><main><h1>Find a sample item</h1><p>Isolated test fixture. All names are synthetic.</p>
+<label for="query">Filter items</label><input id="query" type="search" autocomplete="off">
+<p role="status" aria-live="polite"></p><ul aria-label="Matching items"></ul><p id="empty" hidden>No matching items.</p></main>
+</html>

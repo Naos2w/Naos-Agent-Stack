@@ -14,6 +14,9 @@ test('successful operation never certifies delivery, tests or publication', () =
   assert.equal(result.next_move.action, 'check_existing_task_acceptance');
   assert.equal(result.runtimePolicy.releaseAuthorized, false);
   assert.equal(result.next_move.automaticRetryAllowed, false);
+  assert.equal(result.acceptance.state, 'not_evaluated');
+  assert.ok(result.acceptance.evidenceRequired.includes('current_scoped_diff'));
+  assert.equal(result.acceptance.conditionalEvidence.ui, 'rendered_desktop_mobile_and_interaction');
 });
 test('pending, blocked and uncertain work have distinct next actions', () => {
   assert.equal(describeOperationOutcome({ state: 'running' }).next_move.action, 'poll_existing_operation');

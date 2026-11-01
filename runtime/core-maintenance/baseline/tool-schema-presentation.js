@@ -82,6 +82,14 @@ const TOOL_ANNOTATION_DEFAULTS = {
     openWorldHint: true,
 };
 const canonicalizedSchemas = new WeakSet();
+export function projectRoutingInputError(name, input) {
+    if (name !== "project_manage") return null;
+    if (input.action === "use" && !Object.hasOwn(input, "project_id"))
+        return "action=use requires project_id=<registered ID> or explicit null for machine/global work. An omitted ID must not silently clear the current Project.";
+    if (input.action === "resolve" && !input.id)
+        return "action=resolve requires id=<registered ID> and only inspects permission. To activate a known Project use action=use with project_id; a path is not an ID lookup.";
+    return null;
+}
 /**
  * Apply openchatx-mcp's model-facing registration rules to one tool config.
  *
@@ -90,6 +98,12 @@ const canonicalizedSchemas = new WeakSet();
  * canonicalization. Runtime dispatch should use only the returned execution metadata.
  */
 export function prepareToolRegistration(name, config, structuredOutput) {
+    // Clarify existing contracts at their public entry point; do not rewrite
+    // inputs, activate guessed projects or loosen declared permissions.
+    if (name === "project_manage") config.description =
+        "Manage Projects. Activate a known Project with action=use and project_id=<exact registered ID>; null explicitly clears routing. action=resolve requires id plus optional permission and only inspects access, not activation or path lookup. action=list discovers IDs when unknown. path belongs to upsert/grant_once.";
+    if (name === "skill_search") config.description =
+        "Search reusable Skills with action=search and query. Load with action=load and the exact qualified name returned by search (toolbox.skill), e.g. agent-runtime.agent-runtime-usage. Do not load an unqualified short name.";
     const acceptsInput = config.inputSchema !== undefined;
     const nativeContent = name === "image_view" ||
         name === "file_read" ||

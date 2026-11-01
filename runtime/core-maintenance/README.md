@@ -25,8 +25,10 @@ application and the core health check; inspect its backup before manual recovery
 It preserves Project routing, authentication and tool permissions. Declared tool
 annotations are retained explicitly; missing flags use conservative MCP defaults.
 Shell and file-edit tools keep their existing write/destructive classifications.
-The current updater accepts only the pinned MSI 2026-11-01.bootstrap.2 overlay
-listed in bootstrap-preimages.json, advancing it to bootstrap.3 with bounded
+The current updater accepts only the pinned MSI 2026-11-01.bootstrap.4 overlay
+listed in bootstrap-preimages.json, advancing it to 2026-11-02.bootstrap.1 with exact Project
+and qualified Skill discovery guidance, scoped work context and acceptance evidence.
+It retains bounded
 execution audit fields. Bootstrap uses the configured Toolbox root, which may
 differ from the MCP state directory.
 It verifies installed modules and existing snapshots before installing the

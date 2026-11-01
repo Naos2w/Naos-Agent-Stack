@@ -3,7 +3,15 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { join, dirname, resolve, basename } from 'node:path';
 import { tmpdir } from 'node:os';
-import { appendConversationContext, projectContinuation, readRuntimeIdentity } from './baseline/conversation-bootstrap.js';
+import { appendConversationContext, projectContinuation, readRuntimeIdentity, WORK_GUIDANCE } from './baseline/conversation-bootstrap.js';
+
+test('entry guidance uses exact routing and qualified Skills with evidence-based completion', () => {
+  assert.match(WORK_GUIDANCE, /project_id:<exact ID>/);
+  assert.match(WORK_GUIDANCE, /name:agent-runtime\.agent-runtime-usage/);
+  assert.match(WORK_GUIDANCE, /pre-existing changes/);
+  assert.match(WORK_GUIDANCE, /each acceptance criterion/);
+  assert.match(WORK_GUIDANCE, /uncertain side effects/);
+});
 
 async function fixture(work) {
   const root = await mkdtemp(join(tmpdir(), 'bootstrap-test-'));

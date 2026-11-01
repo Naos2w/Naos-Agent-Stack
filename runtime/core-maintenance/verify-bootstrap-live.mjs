@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 const session = 'msi-bootstrap-validation-' + randomUUID();
 let id = 0;
-async function rpc(method, params) {
+async function rpc(method, params, allowToolError = false) {
   const response = await fetch('http://127.0.0.1:8001/mcp', {
     method: 'POST', signal: AbortSignal.timeout(20_000),
     headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream', 'x-openai-session': session },
@@ -16,7 +16,7 @@ async function rpc(method, params) {
     ? body.split(/\r?\n/).filter(line => line.startsWith('data:')).map(line => JSON.parse(line.slice(5))) : [JSON.parse(body)];
   const message = frames.find(frame => frame.id === id);
   assert.ok(message); assert.equal(message.error, undefined);
-  assert.notEqual(message.result?.isError, true, JSON.stringify(message.result));
+  if (!allowToolError) assert.notEqual(message.result?.isError, true, JSON.stringify(message.result));
   return message.result;
 }
 const call = (name, args) => rpc('tools/call', { name, arguments: args });
@@ -29,7 +29,11 @@ function contexts(result) {
 const init = await rpc('initialize', { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'msi-bootstrap-acceptance', version: '1' } });
 assert.match(init.instructions, /openchatx_context/);
 const start = contexts(await call('start_here', { mode: 'general', task_id: session }));
-assert.equal(start.at(-1).runtime.bootstrap, '2026-11-01.3');
+assert.equal(start.at(-1).runtime.bootstrap, '2026-11-02.1');
+assert.match(start.at(-1).guidance, /name:agent-runtime\.agent-runtime-usage/);
+const tools = await rpc('tools/list', {});
+assert.match(tools.tools.find(tool => tool.name === 'project_manage').description, /resolve requires id/);
+assert.match(tools.tools.find(tool => tool.name === 'skill_search').description, /exact qualified name/);
 assert.equal(start.at(-1).runtime.policy_version, '2026-10-28.3');
 assert.equal(start.at(-1).runtime.discovery, 'enabled');
 assert.equal(start.at(-1).readiness.ready, true);
@@ -37,12 +41,20 @@ const selected = contexts(await call('project_manage', { action: 'use', project_
 assert.equal(selected.continuation.project_id, 'letta-poc');
 assert.ok(selected.continuation.operations.length > 0);
 assert.ok(selected.continuation.operations.every(row => row.id && !('prompt' in row)));
+for (const input of [{ action: 'use' }, { action: 'resolve', path: 'not-an-id' }]) {
+  const rejected = await rpc('tools/call', { name: 'project_manage', arguments: input }, true);
+  assert.equal(rejected.isError, true);
+  assert.match(JSON.stringify(rejected), /PROJECT_ARGUMENT_REQUIRED/);
+}
+const skill = await call('skill_search', { action: 'load', name: 'agent-runtime.agent-runtime-usage' });
+assert.match(JSON.stringify(skill), /Agent Runtime usage/);
 const search = await call('tool_search', { query: 'agent_runtime', limit: 3 });
 assert.match(JSON.stringify(search), /agent_runtime/);
 const listed = contexts(await call('goal_list', {})).at(-1);
 assert.equal(listed.execution_receipt.path, 'direct_mcp');
 assert.equal(listed.guidance, undefined);
 assert.equal(listed.execution_receipt.model, null);
+assert.equal(listed.execution_receipt.project_id, 'letta-poc');
 const clear = contexts(await call('project_manage', { action: 'use', project_id: null })).at(-1);
 assert.equal(clear.continuation.status, 'unscoped');
 assert.equal(clear.continuation.operations, undefined);

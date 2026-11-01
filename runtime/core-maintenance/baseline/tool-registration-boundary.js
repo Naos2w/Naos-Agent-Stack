@@ -5,7 +5,7 @@ import { shellRunFileEditNotices } from "../tools/shell/apply-patch-guidance.js"
 import { START_HERE_TOOL_NAME } from "../tools/start-here/start-here.js";
 import { ToolError, toToolError } from "./tool-error.js";
 import { appendToolEvents, compactToolResult, normalizeToolResultImages } from "./tool-output.js";
-import { prepareToolRegistration, } from "./tool-schema-presentation.js";
+import { prepareToolRegistration, projectRoutingInputError } from "./tool-schema-presentation.js";
 export function installToolRegistrationBoundary(server, options) {
     const originalRegisterTool = server.registerTool;
     const registerTool = (name, config, callback) => Reflect.apply(originalRegisterTool, server, [name, config, callback]);
@@ -22,6 +22,8 @@ export function installToolRegistrationBoundary(server, options) {
             if (agent?.projectRouting === "pending" && !isProjectRoutingTool(name, input)) {
                 throw new ToolError("PROJECT_ROUTING_REQUIRED", "Resolve Project routing before normal work with project_manage. For project work: action=list, action=upsert if needed, then action=use with project_id. For machine/global work: action=use with project_id=null. Do not bypass routing or reach for internal paths. Only glob is available while routing is pending.");
             }
+            const routingError = projectRoutingInputError(name, input);
+            if (routingError) throw new ToolError("PROJECT_ARGUMENT_REQUIRED", routingError);
             observedCallId = options.agentObserver?.startTool(agent, name, input);
             const userStopController = new AbortController();
             options.agentObserver?.registerToolStop(agent, observedCallId, () => {

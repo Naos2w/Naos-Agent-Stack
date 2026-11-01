@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "runtimePackage": "openchatx-mcp",
   "runtimeVersion": "1.0.0-beta.2",
-  "overlayRevision": "2026-11-01.bootstrap.3",
+  "overlayRevision": "2026-11-02.bootstrap.1",
   "policy": "verified-local-MSI-overlay-do-not-auto-apply-to-unknown-upstream-versions",
   "files": [
     {
@@ -44,7 +44,7 @@
     {
       "relativePath": "dist/mcp/tool-schema-presentation.js",
       "snapshot": "baseline/tool-schema-presentation.js",
-      "sha256": "9912066663276A165A90D2D7CAD27D5A2B879D2CB928231C83C517A92A4CBBC9",
+      "sha256": "85D7A55430AFE80D62F562D861CBDE71D302582108004E409C9648A770372556",
       "purpose": "Preserve explicit tool annotations with conservative defaults"
     },
     {
@@ -69,7 +69,7 @@
       "relativePath": "dist/mcp/conversation-bootstrap.js",
       "snapshot": "baseline/conversation-bootstrap.js",
       "purpose": "Versioned conversation entry, scoped continuation and additive execution evidence",
-      "sha256": "6DD714F83DE59F002ABBE2FE7CBF505FDF3FA2AE49D9305F494DF14DC8585EC6"
+      "sha256": "2C32A8A8EBA30237101434147AAA88B7D849B6D9720C7EE7409E4FCC58D6E754"
     },
     {
       "relativePath": "dist/mcp/server-factory.js",
@@ -81,13 +81,13 @@
       "relativePath": "dist/mcp/tool-registration-boundary.js",
       "snapshot": "baseline/tool-registration-boundary.js",
       "purpose": "Versioned conversation entry, scoped continuation and additive execution evidence",
-      "sha256": "30398CFD4D3472BA72C56031B6A91975B23574115AD83E2C2842AF2A8FAC6FCB"
+      "sha256": "A1F3EC220611E2BAC0605094424E63E6726085A0DE018BA50077F28CA1A27BFD"
     },
     {
       "relativePath": "dist/tools/start-here/start-here.js",
       "snapshot": "baseline/start-here.js",
       "purpose": "Versioned conversation entry, scoped continuation and additive execution evidence",
-      "sha256": "31ED07BA04E5EA9AB16733DC9D60284AC72571D78ED45AEDE38DFD04ACE172CD"
+      "sha256": "FDA0424B202F68ADF23750CD4228644FBBDDC22F069D045295C2B387748F8988"
     }
   ],
   "regressionTests": [
