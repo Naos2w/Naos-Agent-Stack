@@ -235,6 +235,13 @@ export async function prepare(root, stage) {
     const guidance = await readFile(join(here, 'policy/agent-runtime-usage.md'), 'utf8');
     newSkill += '\n' + guidance.slice(guidance.indexOf('## Interrupted Operation recovery — version 1'));
   }
+  const workGuidance = (await readFile(join(here, 'policy/shared-development-preflight.mdc'), 'utf8'))
+    .split('## Bounded task context and declared checks — version 1')[1];
+  if (workGuidance) {
+    const section = '\n## Bounded task context and declared checks — version 1' + workGuidance;
+    if (!newRule.includes('## Bounded task context and declared checks — version 1')) newRule += section;
+    if (!newSkill.includes('## Bounded task context and declared checks — version 1')) newSkill += section;
+  }
   const history = await bytesOrNull(join(root, 'docs/history/runtime-before-20261028.md'));
   const contents = new Map([
     ['tools/runtime_maintenance.mjs', await readFile(join(here, 'runtime_maintenance.mjs'), 'utf8')],

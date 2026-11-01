@@ -139,6 +139,13 @@ test('actual run summary propagates failures, verified changes and existing deni
   const result = summarize({ external_tool_calls: [call(error)], approval_decisions: [{ toolName: 'openchatx_shell', decision: { behavior: 'deny', message: 'fixture denial' } }] });
   assert.equal(result.validation.tool_outcomes.failed, 1); assert.equal(result.blockers.length, 2);
   assert.deepEqual(result.changedFiles, []);
+  const missing = summarize({approval_decisions:[{toolName:'openchatx_read_file',decision:{behavior:'deny',message:'ENOENT: fixture'}}]});
+  assert.equal(missing.blockers.length,0);
+  assert.equal(missing.validation.denied_requests[0].classification,'source_unavailable');
+  for(const [toolName,message] of [['openchatx_read_file','PROJECT_PERMISSION_DENIED: read'],['openchatx_shell','ENOENT: executable'],['openchatx_write_file','ENOENT: parent']]){
+    const denied=summarize({approval_decisions:[{toolName,decision:{behavior:'deny',message}}]});
+    assert.equal(denied.blockers.length,1);assert.equal(denied.validation.denied_requests[0].classification,'denied');
+  }
 });
 
 test('migration is idempotent and continuation guidance keeps existing task ownership', () => {

@@ -380,9 +380,24 @@ export async function executeProjectTool(project, toolName, input) {
             const info = await fs.stat(actual);
             if (!info.isFile())
                 throw new Error(`NOT_A_FILE: ${requested}`);
-            const maxChars = Math.min(Math.max(Number(input.max_chars ?? 20000), 1), 50000);
-            const raw = await fs.readFile(actual, "utf8");
-            const clipped = truncate(raw, maxChars);
+            const requestedLimit = Number(input.max_chars ?? 20000);
+            const maxChars = Number.isFinite(requestedLimit) ? Math.min(Math.max(Math.floor(requestedLimit), 1), 50000) : 20000;
+            // At most four UTF-8 bytes per character, plus lookahead. Bound the
+            // actual allocation/read rather than loading a whole large file.
+            const handle = await fs.open(actual, "r");
+            let clipped;
+            try {
+                if (!(await handle.stat()).isFile()) throw new Error(`NOT_A_FILE: ${requested}`);
+                const buffer = Buffer.alloc((maxChars + 1) * 4);
+                let length = 0;
+                while (length < buffer.length) {
+                    const { bytesRead } = await handle.read(buffer, length, buffer.length - length, null);
+                    if (!bytesRead) break;
+                    length += bytesRead;
+                }
+                clipped = truncate(buffer.subarray(0, length).toString("utf8"), maxChars);
+                clipped.truncated ||= length === buffer.length;
+            } finally { await handle.close(); }
             return {
                 content: [{
                     type: "text",

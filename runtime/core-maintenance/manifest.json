@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "runtimePackage": "openchatx-mcp",
   "runtimeVersion": "1.0.0-beta.2",
-  "overlayRevision": "2026-11-02.bootstrap.1",
+  "overlayRevision": "2026-11-02.context.1",
   "policy": "verified-local-MSI-overlay-do-not-auto-apply-to-unknown-upstream-versions",
   "files": [
     {
       "relativePath": "dist/projects/project-executor.js",
       "snapshot": "baseline/project-executor.js",
-      "sha256": "093162427F3B92B465151467FD59A296DBAD01F408FF676B38B5D98A294909D8",
+      "sha256": "03F5815527DC9C623D0937AC6F5A01C5AC630669B2B11B390F23E22AF31426BF",
       "purpose": "Project scoped WSL argv execution, quote handling and command-chain boundary; preserve configured Windows shell path"
     },
     {

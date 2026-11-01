@@ -8,8 +8,8 @@
   "core": {
     "package": "naos-headless-stack-bundle.zip",
     "version": "OpenChatX Headless 1.0.0-beta.2",
-    "sha256": "C5529684ED996667A6290CA2E326029C15570E8B5AA9CD61E3594C197B544FA8",
-    "note": "Rebuilt 2026-10-31 v0.2.3 local candidate from the SHA-pinned base and 44 repository overlays. Adds same-conversation dispatch and compaction guards for unresolved tool effects; preserves the existing zero-call timeout recovery path and preflight fixes. Fresh Windows and whole-stack acceptance excluded from the current MSI task by the owner; not claimed as performed or as public release acceptance."
+    "sha256": "9F321C11C6C19C11359C0365BBDB59C4CD63D7BE07799E14EF10C2B69E50001E",
+    "note": "Rebuilt 2026-11-02 local candidate from the SHA-pinned base and 55 repository overlays. Includes bounded task context, host-recorded declared checks, cold recovery and latest bootstrap. Fresh Windows acceptance is excluded by owner; no public release acceptance claimed."
   },
   "node": {
     "package": "node-v22.23.3-win-x64.zip",

@@ -3,7 +3,7 @@ function once(text, before, after) {
   return text.replace(before, after);
 }
 export function patchContextWorker(text) {
-  if (text.includes('inspectDevelopmentContext, input.taskRef, input.contextPaths)')) return text;
+  if (/inspectDevelopmentContext, input\.taskRef, input\.contextPaths[),]/.test(text)) return text;
   text=once(text,'  modelSelection?: Record<string, unknown>\n  runId?: string','  modelSelection?: Record<string, unknown>\n  contextPaths?: string[]\n  runId?: string');
   text=once(text,'inspectDevelopmentContext, input.taskRef)','inspectDevelopmentContext, input.taskRef, input.contextPaths)');
   return text;

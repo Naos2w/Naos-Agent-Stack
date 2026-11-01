@@ -1,6 +1,6 @@
 import { readdir, readFile, mkdir, copyFile, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { stripTypeScriptTypes } from 'node:module';
@@ -9,18 +9,19 @@ import { acquireRuntimeMaintenance } from './runtime_maintenance.mjs';
 const here = dirname(fileURLToPath(import.meta.url));
 const source = join(homedir(), '.openchatx-mcp/headless');
 const stage = join(here, '.test-stage');
+const candidate = resolve(process.argv[2] ?? join(here, '.candidate'));
 const tools = join(stage, 'toolboxes/agent-runtime/tools');
 await mkdir(tools, { recursive: true });
 await mkdir(join(stage, 'codebase-index'), { recursive: true });
 for (const name of await readdir(join(source, 'toolboxes/agent-runtime/tools'))) {
   if (/\.(ts|mjs)$/.test(name)) await copyFile(join(source, 'toolboxes/agent-runtime/tools', name), join(tools, name));
 }
-await copyFile(join(here, '.candidate/candidate/tools/runtime_maintenance.mjs'), join(tools, 'runtime_maintenance.mjs'));
+await copyFile(join(candidate, 'candidate/tools/runtime_maintenance.mjs'), join(tools, 'runtime_maintenance.mjs'));
 for (const name of ['runtime_readiness.mjs', 'operation_reconciliation.mjs', 'model_routing.mjs', 'tool_evidence.mjs']) {
-  await copyFile(join(here, '.candidate/candidate/tools', name), join(tools, name));
+  await copyFile(join(candidate, 'candidate/tools', name), join(tools, name));
 }
 for (const name of ['letta_worker.ts', 'agent_runtime.ts', 'runtime_contract.ts', 'agent_capabilities.ts', 'external_tool_idempotency.ts', 'development_preflight.ts']) {
-  const input = await readFile(join(here, '.candidate/candidate/tools', name), 'utf8');
+  const input = await readFile(join(candidate, 'candidate/tools', name), 'utf8');
   await writeFile(join(tools, name), input);
   const output = stripTypeScriptTypes(input, { mode: 'transform', sourceMap: false });
   const generated = join(tools, name.replace(/\.ts$/, '.candidate.mjs'));

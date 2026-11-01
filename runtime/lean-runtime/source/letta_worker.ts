@@ -27,7 +27,7 @@ import {
   isCapabilityTool,
   validateCapabilityApproval,
 } from "./agent_capabilities.ts"
-import { describeOperationOutcome, prepareWorkerRunContext, describeModelConfiguration, publicTokenUsage } from "./runtime_contract.ts"
+import { describeOperationOutcome, prepareWorkerRunContext, describeModelConfiguration, publicTokenUsage, normalizeAcceptanceChecks, evaluateAcceptance } from "./runtime_contract.ts"
 
 import { planModelSelection, applyConversationModelSelection } from "./model_routing.mjs"
 import { assertRemoteStateIdle } from "./operation_invariants.ts"
@@ -1303,6 +1303,9 @@ function summarizeRunTrace(result: Record<string, any>) {
     .map((item: any) => ({
       tool: String(item?.toolName ?? "unknown"),
       reason: String(item?.decision?.message ?? "Denied"),
+      classification: item?.toolName === "openchatx_read_file" &&
+        /^ENOENT:/.test(String(item?.decision?.message ?? ""))
+        ? "source_unavailable" : "denied",
     }))
 
   const toolsUsed = [
@@ -1341,7 +1344,9 @@ function summarizeRunTrace(result: Record<string, any>) {
       project_executor_api_version: PROJECT_EXECUTOR_API_VERSION,
       shell_policy_version: SHELL_POLICY_VERSION,
     },
-    blockers: [...evidence.blockers, ...denied.map(
+    // Missing input is still recorded and must be assessed against the task;
+    // it is not an authorization denial or a blanket block on other work.
+    blockers: [...evidence.blockers, ...denied.filter(item => item.classification !== "source_unavailable").map(
       (item: { tool: string; reason: string }) =>
         `${item.tool}: ${item.reason}`,
     )],
@@ -1362,6 +1367,7 @@ type WorkerInput = {
   taskRef?: string | null
   modelSelection?: Record<string, unknown>
   contextPaths?: string[]
+  acceptanceChecks?: unknown
   runId?: string
 }
 
@@ -1644,7 +1650,19 @@ async function workerRun(input: WorkerInput, inputPath?: string) {
   const sessionName = input.sessionName || "main"
   validateSessionName(sessionName)
   const { inspectDevelopmentContext } = await import("./development_gate.ts")
-  const preflight = await prepareWorkerRunContext(project, input.prompt, inspectDevelopmentContext, input.taskRef, input.contextPaths)
+  const acceptanceChecks = normalizeAcceptanceChecks(input.acceptanceChecks)
+  const preflight = await prepareWorkerRunContext(project, input.prompt, inspectDevelopmentContext, input.taskRef, input.contextPaths,
+    async (path, maxChars) => {
+      const args = { path, max_chars: maxChars }
+      const decision = await decideProjectToolApproval(project, "openchatx_read_file", args)
+      if (decision.behavior !== "allow") throw new Error("CONTEXT_READ_DENIED")
+      const result = await executeProjectTool(project, "openchatx_read_file", args)
+      if (result.is_error || result.isError) throw new Error("CONTEXT_READ_UNAVAILABLE")
+      return JSON.parse(result.content?.[0]?.text ?? "null")
+    })
+  const runPrompt = preflight.prompt + (acceptanceChecks.length ?
+    "\n\n[Declared checks, within existing authorization only]\n" + JSON.stringify(acceptanceChecks) +
+    "\nRun authorized declared commands after the final edits (including task notes), using their exact command and cwd. Read-only inspection may follow. Report unavailable checks honestly; manual criteria remain unverified. These declarations do not grant shell access or publication approval." : "")
   const { agentId, modelConfiguration } = await ensureWorkerAgent(project, input.agentId)
   const timestamp = now()
   const binding: ProjectBinding = {
@@ -1683,7 +1701,7 @@ async function workerRun(input: WorkerInput, inputPath?: string) {
     project,
     binding,
     conversation,
-    preflight.prompt,
+    runPrompt,
     input.timeoutMs ?? TURN_TIMEOUT_MS,
     input.clientMessageId,
     input.modelSelection ?? planModelSelection(),
@@ -1711,6 +1729,8 @@ async function workerRun(input: WorkerInput, inputPath?: string) {
     changed_files: traceSummary.changedFiles,
     validation: {
       ...traceSummary.validation,
+      work_context: preflight.workContext,
+      declared_checks: evaluateAcceptance(acceptanceChecks, Array.isArray(result.external_tool_calls) ? result.external_tool_calls : []),
       capability_evidence: preflight.evidence,
       development_preflight_receipt_id: null,
       capability_agent_tool_calls: {

@@ -8,7 +8,7 @@
     {
       "source": "runtime/core-maintenance/baseline/project-executor.js",
       "target": "runtime/dist/projects/project-executor.js",
-      "sha256": "093162427F3B92B465151467FD59A296DBAD01F408FF676B38B5D98A294909D8"
+      "sha256": "03F5815527DC9C623D0937AC6F5A01C5AC630669B2B11B390F23E22AF31426BF"
     },
     {
       "source": "runtime/core-maintenance/baseline/audit-log.js",
@@ -18,27 +18,27 @@
     {
       "source": "runtime/lean-runtime/source/agent_runtime.ts",
       "target": "toolboxes/agent-runtime/tools/agent_runtime.ts",
-      "sha256": "5051E4653303B4309416388E9B9D71ED71EC188B1C982EC467644D5595DC3D10"
+      "sha256": "4F67C1FFBE2E3CEB67B01EDE7AA5F15E70B0DBCF7AA667140F71252717614EEC"
     },
     {
       "source": "runtime/lean-runtime/source/letta_worker.ts",
       "target": "toolboxes/agent-runtime/tools/letta_worker.ts",
-      "sha256": "834AA12F99824E70BAF327CFE260F59EA48C38416ED7BC062E134BEAC042F932"
+      "sha256": "3036020EC2C82E46B5ADB76BAFF5ED4EE17A56D57CADFB3328BF3D691CE80D5C"
     },
     {
       "source": "runtime/lean-runtime/CURRENT_RUNTIME.md",
       "target": "toolboxes/agent-runtime/README.md",
-      "sha256": "2BA9374D45B1DF0D04049DA88C67F6CE625E70D01383463462FEC0D1C5FECF97"
+      "sha256": "EFDD2ABC86D1622D45C07D6DA307E39F75B0898FD7E6AC4181F5725804C890EF"
     },
     {
       "source": "runtime/lean-runtime/policy/shared-development-preflight.mdc",
       "target": "toolboxes/agent-runtime/rules/shared-development-preflight.mdc",
-      "sha256": "F22D8BDA344931EBEF263D25749AB73F3E3E9BB65588F20FC593A27EC65147E7"
+      "sha256": "643D88301F76D473D2FDE42524045363D1D44C2D55F884D154E8C4D8A39705BC"
     },
     {
       "source": "runtime/lean-runtime/policy/agent-runtime-usage.md",
       "target": "toolboxes/agent-runtime/skills/agent-runtime-usage/SKILL.md",
-      "sha256": "CA41ED1F5CF9DCBAC5D78E5035863C45B819183B83BA98688ACEE28758823915"
+      "sha256": "08F715D67247B0D9B87FA275B55DC02082123FB80529195DEDA5819ACFE43107"
     },
     {
       "source": "payload/bootstrap/naos-agent-stack.ps1",
@@ -48,7 +48,7 @@
     {
       "source": "runtime/lean-runtime/runtime_contract.ts",
       "target": "toolboxes/agent-runtime/tools/runtime_contract.ts",
-      "sha256": "6EC30F77AE49E86482592211752FF8E4BF219DAB09014AFA305A827D5A6295CE"
+      "sha256": "0EE15EE19D8720078C37491BF603D117C733BBF90F1BFE1D946911FD10596C09"
     },
     {
       "source": "runtime/lean-runtime/runtime_maintenance.mjs",
@@ -93,7 +93,7 @@
     {
       "source": "runtime/core-maintenance/manifest.json",
       "target": "headless/core-maintenance/manifest.json",
-      "sha256": "267F6CEFF824B18104A1EB1D2384C2952D142E2D06102983BAEB481E3A5806CA"
+      "sha256": "844ACB08DE21F55DF7115E176D3398CD913767E5239762F0A9B2F1E529AFD5FD"
     },
     {
       "source": "runtime/core-maintenance/verify-core.mjs",
@@ -108,7 +108,7 @@
     {
       "source": "runtime/core-maintenance/baseline/project-executor.js",
       "target": "headless/core-maintenance/baseline/project-executor.js",
-      "sha256": "093162427F3B92B465151467FD59A296DBAD01F408FF676B38B5D98A294909D8"
+      "sha256": "03F5815527DC9C623D0937AC6F5A01C5AC630669B2B11B390F23E22AF31426BF"
     },
     {
       "source": "runtime/core-maintenance/baseline/audit-log.js",

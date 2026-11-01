@@ -21,7 +21,7 @@ const {
 } = await import(operationGuardsUrl.href)
 const runtimeContractUrl = new URL("./runtime_contract.ts", import.meta.url)
 runtimeContractUrl.searchParams.set("source_mtime", String((await fs.stat(fileURLToPath(runtimeContractUrl))).mtimeMs))
-const { describeOperationOutcome, normalizeTaskRef, publicModelConfiguration, publicTokenUsage, assertLettaModelSelection, normalizeContextPaths } = await import(runtimeContractUrl.href)
+const { describeOperationOutcome, normalizeTaskRef, publicModelConfiguration, publicTokenUsage, assertLettaModelSelection, normalizeContextPaths, normalizeAcceptanceChecks } = await import(runtimeContractUrl.href)
 
 const routingUrl = new URL("./model_routing.mjs", import.meta.url)
 routingUrl.searchParams.set("source_mtime", String((await fs.stat(fileURLToPath(routingUrl))).mtimeMs))
@@ -177,6 +177,7 @@ type RuntimeOperation = {
   taskRef?: string | null
   modelSelection?: Record<string, unknown>
   contextPaths?: string[]
+  acceptanceChecks?: ReturnType<typeof normalizeAcceptanceChecks>
   reconciliation?: Record<string, any>
   remoteSettlement?: Record<string, any>
 
@@ -1146,8 +1147,9 @@ async function dispatchLettaRun(args: {
   taskRef?: string | null
   modelSelection?: Record<string, unknown>
   contextPaths?: string[]
+  acceptanceChecks?: ReturnType<typeof normalizeAcceptanceChecks>
 }) {
-  const { project, projectState, session, prompt, config, timeoutMs, taskRef, modelSelection, contextPaths } = args
+  const { project, projectState, session, prompt, config, timeoutMs, taskRef, modelSelection, contextPaths, acceptanceChecks } = args
   assertNoUnresolvedToolEffects(Object.values(await readOperations()), project.id, session.name, session.sessionId)
   await ensureLettaService(config)
 
@@ -1190,6 +1192,7 @@ async function dispatchLettaRun(args: {
       clientMessageId: `openchatx-${operationId}`,
       modelSelection,
       contextPaths,
+      acceptanceChecks,
       taskRef,
       prompt,
       timeoutMs,
@@ -1217,6 +1220,7 @@ async function dispatchLettaRun(args: {
       model: session.model,
       inputPath,
       contextPaths,
+      acceptanceChecks,
       modelSelection,
       taskRef: taskRef ?? null,
       state: "running",
@@ -1478,10 +1482,17 @@ async function pollOperation(
       changed_files: Array.isArray(parsed.changed_files)
         ? parsed.changed_files
         : [],
-      validation:
-        parsed.validation && typeof parsed.validation === "object"
-          ? parsed.validation
-          : {},
+      validation: {
+        ...(parsed.validation && typeof parsed.validation === "object" ? parsed.validation : {}),
+        // Evidence belongs to this operation's end snapshot, never current
+        // workspace acceptance or a newer session's delivery decision.
+        declared_checks: { ...(parsed.validation?.declared_checks ?? {
+          state: "not_evaluated", checks: [],
+        }), scope: "declared_checks_only", deliveryVerified: false,
+          snapshot: "operation_end", staleOperation: !sessionUpdate.current,
+          ...(!sessionUpdate.current ? { state: "stale_operation" } : {}),
+        },
+      },
       blockers: Array.isArray(parsed.blockers) ? parsed.blockers : [],
       ...describeOperationOutcome({
         state: operation.state, taskRef: operation.taskRef, blockers: parsed.blockers,
@@ -1945,6 +1956,11 @@ export default defineTool({
     operation_id: z.string().optional(),
     prompt: z.string().optional(),
     task_ref: z.string().trim().min(1).max(512).optional(),
+    acceptance_checks: z.array(z.union([
+      z.object({ id: z.string().regex(/^[a-z][a-z0-9_-]{0,47}$/), kind: z.literal("command"),
+        command: z.string().min(1).max(2000), cwd: z.string().max(512).optional() }).strict(),
+      z.object({ id: z.string().regex(/^[a-z][a-z0-9_-]{0,47}$/), kind: z.literal("manual") }).strict(),
+    ])).max(8).optional().describe("run only: explicit existing task checks, not permission to execute or publish. Commands are matched to actual host-recorded shell results; manual criteria stay manual. Omit when no check is known."),
     context_paths: z.array(z.string().min(1).max(512)).max(16).optional().describe("run only: known exact files relevant to this task, relative to the Project root. No directories, globs or traversal. Enables bounded per-file index freshness/coverage checks; not a write allowlist or permission grant. Omit when files are not yet known."),
     engine: z.enum(["letta"]).optional(),
     model: z.string().optional().describe("run only: explicit user-selected openai-codex handle or gpt-* alias; auto/omitted routes by task_complexity. letta/agent-config preserves the current conversation."),
@@ -1975,6 +1991,7 @@ export default defineTool({
     prompt,
     task_ref,
     context_paths,
+    acceptance_checks,
     reasoning_effort,
     task_complexity,
     engine,
@@ -1996,6 +2013,7 @@ export default defineTool({
   }) {
     return withRuntimeActivity(TOOLBOX_ROOT, async () => {
     if (action !== "run" && context_paths !== undefined) throw new Error("CONTEXT_PATHS_RUN_ONLY")
+    if (action !== "run" && acceptance_checks !== undefined) throw new Error("ACCEPTANCE_CHECKS_RUN_ONLY")
     const config = await ensureConfig()
 
     if (action === "probe") {
@@ -2416,6 +2434,7 @@ export default defineTool({
       if (!prompt?.trim()) throw new Error("PROMPT_REQUIRED")
       const taskRef = normalizeTaskRef(task_ref)
       const contextPaths = normalizeContextPaths(context_paths)
+      const acceptanceChecks = normalizeAcceptanceChecks(acceptance_checks)
       const modelSelection = planModelSelection({ model, reasoningEffort: reasoning_effort, taskComplexity: task_complexity })
 
       const session = resolveSession(
@@ -2481,6 +2500,7 @@ export default defineTool({
               taskRef,
               modelSelection,
               contextPaths,
+              acceptanceChecks,
             })
           : await dispatchOpenCodeRun({
               project,
