@@ -6,6 +6,10 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const expectedFiles = new Map([
+  ["dist/mcp/conversation-bootstrap.js", "conversation-bootstrap.js"],
+  ["dist/mcp/server-factory.js", "server-factory.js"],
+  ["dist/mcp/tool-registration-boundary.js", "tool-registration-boundary.js"],
+  ["dist/tools/start-here/start-here.js", "start-here.js"],
   ["dist/config.js", "config.js"],
   ["dist/projects/project-executor.js", "project-executor.js"],
   ["dist/server/audit/audit-log.js", "audit-log.js"],

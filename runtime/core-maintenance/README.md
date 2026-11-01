@@ -1,7 +1,7 @@
 # Pinned OpenChatX compiled overlay
 
 These files preserve the existing MSI `openchatx-mcp@1.0.0-beta.2` overlay.
-The manifest binds ten compiled modules and their snapshots by SHA256.
+The manifest binds fourteen compiled modules and their snapshots by SHA256.
 They are not an upstream TypeScript source build or a signed upstream release.
 Never apply them to a different package version or an unrecognized base bundle.
 
@@ -25,10 +25,29 @@ application and the core health check; inspect its backup before manual recovery
 It preserves Project routing, authentication and tool permissions. Declared tool
 annotations are retained explicitly; missing flags use conservative MCP defaults.
 Shell and file-edit tools keep their existing write/destructive classifications.
-The current updater accepts only the verified MSI 2026-10-30.handoff.1 overlay.
-It verifies all nine existing modules and snapshots before aligning the server
-instructions with summary acknowledgment and updating maintenance metadata. Unrecognized local changes stop
+The current updater accepts only the pinned MSI 2026-11-01.bootstrap.2 overlay
+listed in bootstrap-preimages.json, advancing it to bootstrap.3 with bounded
+execution audit fields. Bootstrap uses the configured Toolbox root, which may
+differ from the MCP state directory.
+It verifies installed modules and existing snapshots before installing the
+conversation bootstrap overlay. Unrecognized local changes stop
 the update; existing shell and audit behavior is preserved.
+
+The 2026-11-01 bootstrap adds versioned guidance on initialization, Project use,
+and the first response observed after an identity change. Every successful tool
+dispatch includes a compact execution receipt in the existing result/audit path.
+The receipt distinguishes direct MCP and Runtime control, without claiming a
+Worker executed or guessing the outer model. Letta operation results retain
+their existing model selection evidence. Existing sessions and Operations are
+not restarted or replayed by context refresh.
+
+Continuation exposes bounded, read-permitted active-Project goals and recent
+Session/Operation metadata only. It does not read repository files outside the
+Project executor, create a second task ledger, or treat historical task text as
+authorization. The Developer still reads the actual task and applicable rules
+through scoped tools. Unknown readiness or damaged registries remain unknown.
+This is MCP protocol integration, not proof of autonomous ChatGPT adoption or
+Codex-equivalent task success. User-visible product acceptance remains separate.
 
 Summary reads are repeatable until an explicit acknowledgment of the exact
 revision. A failed read response no longer consumes the handoff. Updates reject

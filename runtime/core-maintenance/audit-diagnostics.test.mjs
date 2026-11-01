@@ -34,6 +34,19 @@ function failure(output) {
   return JSON.parse(line.slice('failure: '.length));
 }
 
+test('audit records only server execution version/path/hash and never guessed models or private context', () => {
+  const original = { content: [{ type: 'text', text: 'PRIVATE_CONTENT' }] };
+  const model = { ...original, _meta: { openchatxExecution: {
+    version: '2026-11-01.3', path: 'runtime_control', worker_sha256: 'a'.repeat(64),
+    model: 'GUESS', secret: 'PRIVATE_TOKEN', project_id: 'PRIVATE_PROJECT',
+  } } };
+  const output = render(summarizeToolResult(original, model));
+  assert.match(output, /execution:.*runtime_control/);
+  assert.match(output, /inspect_operation_result/);
+  assert.doesNotMatch(output, /PRIVATE|GUESS/);
+  assert.doesNotMatch(render(summarizeToolResult(original, original)), /execution:/);
+});
+
 test('thrown routing errors retain the explicit code without logging the private message', () => {
   const error = Object.assign(new Error('private-path-and-token-do-not-log'),
     { code: 'PROJECT_ROUTING_REQUIRED' });

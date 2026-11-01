@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "runtimePackage": "openchatx-mcp",
   "runtimeVersion": "1.0.0-beta.2",
-  "overlayRevision": "2026-10-30.handoff.2",
+  "overlayRevision": "2026-11-01.bootstrap.3",
   "policy": "verified-local-MSI-overlay-do-not-auto-apply-to-unknown-upstream-versions",
   "files": [
     {
@@ -20,7 +20,7 @@
     {
       "relativePath": "dist/server/audit/audit-format.js",
       "snapshot": "baseline/audit-format.js",
-      "sha256": "CC1B0A203D6BD8CA3D2ADD43768B359C707DBE2CC3DBAF9415BBC274BC6C65F8",
+      "sha256": "9A976984DF827DF1CC72E73A5D5F42D876F79DB814836288F4126C31DA5DE486",
       "purpose": "Distinguish tool, authentication, protocol, transport and unverified outcomes"
     },
     {
@@ -62,8 +62,32 @@
     {
       "relativePath": "dist/config.js",
       "snapshot": "baseline/config.js",
-      "sha256": "3F06B67859465C044A74DB8496970CAE1511097B8A6DD07B1CD2DCFB0ED96873",
+      "sha256": "F8A27B970B253AE28EAA4E6230AAF81AAE8629DBA296148D8B250D900F337580",
       "purpose": "Align public server handoff instructions with explicit revision acknowledgment"
+    },
+    {
+      "relativePath": "dist/mcp/conversation-bootstrap.js",
+      "snapshot": "baseline/conversation-bootstrap.js",
+      "purpose": "Versioned conversation entry, scoped continuation and additive execution evidence",
+      "sha256": "6DD714F83DE59F002ABBE2FE7CBF505FDF3FA2AE49D9305F494DF14DC8585EC6"
+    },
+    {
+      "relativePath": "dist/mcp/server-factory.js",
+      "snapshot": "baseline/server-factory.js",
+      "purpose": "Versioned conversation entry, scoped continuation and additive execution evidence",
+      "sha256": "034E9F1573F00403F4B927D02346A37341D04AD861CBD6C8F13489AE09DEF9BC"
+    },
+    {
+      "relativePath": "dist/mcp/tool-registration-boundary.js",
+      "snapshot": "baseline/tool-registration-boundary.js",
+      "purpose": "Versioned conversation entry, scoped continuation and additive execution evidence",
+      "sha256": "30398CFD4D3472BA72C56031B6A91975B23574115AD83E2C2842AF2A8FAC6FCB"
+    },
+    {
+      "relativePath": "dist/tools/start-here/start-here.js",
+      "snapshot": "baseline/start-here.js",
+      "purpose": "Versioned conversation entry, scoped continuation and additive execution evidence",
+      "sha256": "31ED07BA04E5EA9AB16733DC9D60284AC72571D78ED45AEDE38DFD04ACE172CD"
     }
   ],
   "regressionTests": [

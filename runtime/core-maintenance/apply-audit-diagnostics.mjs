@@ -36,27 +36,23 @@ async function preparePlan(runtimeRoot, headlessRoot) {
   const pkg = JSON.parse(await readFile(join(runtimeRoot, 'package.json'), 'utf8'));
   if (pkg.name !== 'openchatx-mcp' || pkg.version !== '1.0.0-beta.2') throw Error('AUDIT_UPDATE_VERSION_MISMATCH');
   const core = join(headlessRoot, 'core-maintenance');
-  // The nine existing modules must retain their exact verified MSI identities.
   const manifest = JSON.parse(await readFile(join(here, 'manifest.json'), 'utf8'));
-  const priorFiles = manifest.files.filter(entry => entry.snapshot !== 'baseline/config.js');
-  if (priorFiles.length !== 9) throw Error('AUDIT_UPDATE_BASE_SCOPE_INVALID');
-  for (const entry of priorFiles) {
-    for (const target of [join(runtimeRoot, entry.relativePath), join(core, entry.snapshot)]) {
-      if (await digest(target) !== entry.sha256) throw Error('AUDIT_UPDATE_BASE_UNRECOGNIZED: ' + entry.relativePath);
-    }
+  const preimages = JSON.parse((await readFile(join(here, 'bootstrap-preimages.json'), 'utf8')).replace(/^\uFEFF/, ''));
+  const rows = [];
+  for (const entry of manifest.files) {
+    const prior = preimages[entry.relativePath];
+    const snapshotPrior = preimages['snapshot/' + entry.snapshot];
+    if (prior === undefined || snapshotPrior === undefined) throw Error('AUDIT_UPDATE_BASE_SCOPE_INVALID');
+    rows.push([entry.snapshot, join(runtimeRoot, entry.relativePath), prior]);
+    rows.push([entry.snapshot, join(core, entry.snapshot), snapshotPrior]);
   }
-  const rows = [
-    ['baseline/config.js', join(runtimeRoot, 'dist/config.js'), '44B8DB235A495804877F8CBE9391126682A3E841EA68FC52E94469772218A110'],
-    ['baseline/config.js', join(core, 'baseline/config.js'), null],
-    ['manifest.json', join(core, 'manifest.json'), '3BDF1733C2A7C6DAD702D2F53472AEC8D89FC2B6ABFD8E09954B995C49AD4304'],
-    ['verify-core.mjs', join(core, 'verify-core.mjs'), 'CC2ACCDE4F3633A5C8CF3D3156C5AF072F942BF650280CA7E4B07E35DA990C22'],
-    ['README.md', join(core, 'README.md'), 'E3412C988B6F9E0FFAECE3BA527034A88D0C4254EB1C4FBB25F5EE1B48D6E8A1'],
-  ];
+  for (const name of ['manifest.json', 'verify-core.mjs', 'README.md'])
+    rows.push([name, join(core, name), preimages['metadata/' + name]]);
   const plan = [];
   for (const [source, target, before] of rows) {
     await noLinks(join(here, source));
     const bytes = await readFile(join(here, source));
-    if (await digest(target) !== before) throw Error(`AUDIT_UPDATE_PREIMAGE_MISMATCH: ${source}`);
+    if (await digest(target) !== before) throw Error('AUDIT_UPDATE_PREIMAGE_MISMATCH: ' + source);
     plan.push({ target, before, after: sha(bytes), bytes });
   }
   return plan;

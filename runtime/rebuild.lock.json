@@ -93,12 +93,12 @@
     {
       "source": "runtime/core-maintenance/manifest.json",
       "target": "headless/core-maintenance/manifest.json",
-      "sha256": "4C9775E679CEA6695ECD94E830E521FB891ED06160EE478B312B174E378A5EDD"
+      "sha256": "1079A3EBB57C94E22ADCDE5C4E3C4EC0663FCD83E22FBBE6EDD397252DBBF75F"
     },
     {
       "source": "runtime/core-maintenance/verify-core.mjs",
       "target": "headless/core-maintenance/verify-core.mjs",
-      "sha256": "DF532116AC1920F1CF021F755F3050A846F96F865E02FCCAACECCFCDD2E6356E"
+      "sha256": "695570E861007C1706E3D876D97357FFDA6C4D8498AFF279BE2C93292DDF7FF0"
     },
     {
       "source": "runtime/core-maintenance/Test-OpenChatXCorePatch.ps1",
@@ -118,17 +118,17 @@
     {
       "source": "runtime/core-maintenance/README.md",
       "target": "headless/core-maintenance/README.md",
-      "sha256": "8DE878945A09DF5BA453F56F5F9C87401E4E901E9F0AF4AB3447C9F1BEFC3117"
+      "sha256": "9FEA85A4A3502CEEEBF9DCD6C63D455055CE86E1C0F751B68EE729D889AECD86"
     },
     {
       "source": "runtime/core-maintenance/baseline/audit-format.js",
       "target": "runtime/dist/server/audit/audit-format.js",
-      "sha256": "CC1B0A203D6BD8CA3D2ADD43768B359C707DBE2CC3DBAF9415BBC274BC6C65F8"
+      "sha256": "9A976984DF827DF1CC72E73A5D5F42D876F79DB814836288F4126C31DA5DE486"
     },
     {
       "source": "runtime/core-maintenance/baseline/audit-format.js",
       "target": "headless/core-maintenance/baseline/audit-format.js",
-      "sha256": "CC1B0A203D6BD8CA3D2ADD43768B359C707DBE2CC3DBAF9415BBC274BC6C65F8"
+      "sha256": "9A976984DF827DF1CC72E73A5D5F42D876F79DB814836288F4126C31DA5DE486"
     },
     {
       "source": "runtime/core-maintenance/baseline/audit-request.js",
@@ -193,12 +193,12 @@
     {
       "source": "runtime/core-maintenance/baseline/config.js",
       "target": "runtime/dist/config.js",
-      "sha256": "3F06B67859465C044A74DB8496970CAE1511097B8A6DD07B1CD2DCFB0ED96873"
+      "sha256": "F8A27B970B253AE28EAA4E6230AAF81AAE8629DBA296148D8B250D900F337580"
     },
     {
       "source": "runtime/core-maintenance/baseline/config.js",
       "target": "headless/core-maintenance/baseline/config.js",
-      "sha256": "3F06B67859465C044A74DB8496970CAE1511097B8A6DD07B1CD2DCFB0ED96873"
+      "sha256": "F8A27B970B253AE28EAA4E6230AAF81AAE8629DBA296148D8B250D900F337580"
     },
     {
       "source": "runtime/lean-runtime/model_routing.mjs",
@@ -239,6 +239,46 @@
       "source": "runtime/lean-runtime/source/letta_recovery.mjs",
       "target": "letta-poc/scripts/source/letta_recovery.mjs",
       "sha256": "19AD0225F15B7350D608479A09B55DC57B067C08118FCD7FFDC26F9F4C8D7AB7"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/conversation-bootstrap.js",
+      "target": "runtime/dist/mcp/conversation-bootstrap.js",
+      "sha256": "6DD714F83DE59F002ABBE2FE7CBF505FDF3FA2AE49D9305F494DF14DC8585EC6"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/conversation-bootstrap.js",
+      "target": "headless/core-maintenance/baseline/conversation-bootstrap.js",
+      "sha256": "6DD714F83DE59F002ABBE2FE7CBF505FDF3FA2AE49D9305F494DF14DC8585EC6"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/server-factory.js",
+      "target": "runtime/dist/mcp/server-factory.js",
+      "sha256": "034E9F1573F00403F4B927D02346A37341D04AD861CBD6C8F13489AE09DEF9BC"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/server-factory.js",
+      "target": "headless/core-maintenance/baseline/server-factory.js",
+      "sha256": "034E9F1573F00403F4B927D02346A37341D04AD861CBD6C8F13489AE09DEF9BC"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/tool-registration-boundary.js",
+      "target": "runtime/dist/mcp/tool-registration-boundary.js",
+      "sha256": "30398CFD4D3472BA72C56031B6A91975B23574115AD83E2C2842AF2A8FAC6FCB"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/tool-registration-boundary.js",
+      "target": "headless/core-maintenance/baseline/tool-registration-boundary.js",
+      "sha256": "30398CFD4D3472BA72C56031B6A91975B23574115AD83E2C2842AF2A8FAC6FCB"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/start-here.js",
+      "target": "runtime/dist/tools/start-here/start-here.js",
+      "sha256": "31ED07BA04E5EA9AB16733DC9D60284AC72571D78ED45AEDE38DFD04ACE172CD"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/start-here.js",
+      "target": "headless/core-maintenance/baseline/start-here.js",
+      "sha256": "31ED07BA04E5EA9AB16733DC9D60284AC72571D78ED45AEDE38DFD04ACE172CD"
     }
   ]
 }

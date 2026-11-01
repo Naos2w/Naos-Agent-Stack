@@ -17,6 +17,7 @@ export function formatAuditEntry(input) {
         formatAgentLabel(input.agentLabel),
         /^[a-f0-9]{16}$/.test(input.requestRef ?? "") ? `request_ref: ${input.requestRef}` : "",
         formatProtocolObservation(input.responseSummary),
+        input.responseSummary?.execution ? `execution: ${JSON.stringify(input.responseSummary.execution)}` : "",
         formatArguments(input.toolName, input.argumentsValue, input.toolFailed, input.failureMessage),
         formatFailureMetadata(input),
         formatResponseSummary(input.toolName, input.responseSummary),
@@ -50,7 +51,7 @@ export function summarizeToolResult(toolResult, modelResult, error, observation)
         return { failed: false, modelOutput };
     const structuredContent = asRecord(toolRecord.structuredContent);
     if (toolRecord.isError !== true)
-        return { failed: false, modelOutput, structuredContent };
+        return { failed: false, modelOutput, structuredContent, ...executionMetadata(modelRecord) };
     const resultOutput = structuredContent && typeof structuredContent.output === "string"
         ? structuredContent.output
         : undefined;
@@ -68,6 +69,18 @@ export function summarizeToolResult(toolResult, modelResult, error, observation)
             return { failed: true, failureMessage: message, modelOutput, structuredContent, ...failureMetadata };
     }
     return { failed: true, modelOutput, structuredContent, ...failureMetadata };
+}
+export function executionMetadata(modelRecord) {
+    // Only the server-owned metadata field is observed; never parse tool text
+    // as execution evidence or persist arbitrary model/content/config values.
+    const receipt = asRecord(asRecord(modelRecord?._meta)?.openchatxExecution);
+    if (!receipt || !/^\d{4}-\d{2}-\d{2}\.\d{1,4}$/.test(receipt.version ?? "") ||
+        !["context", "direct_mcp", "runtime_control"].includes(receipt.path)) return {};
+    return { execution: {
+        version: receipt.version, path: receipt.path,
+        worker_sha256: /^[a-f0-9]{64}$/.test(receipt.worker_sha256 ?? "") ? receipt.worker_sha256 : null,
+        model: null, model_source: receipt.path === "runtime_control" ? "inspect_operation_result" : "not_exposed_by_mcp",
+    } };
 }
 function failureCodeMetadata(value, source) {
     // Record explicit machine codes only, never guess from error messages or
