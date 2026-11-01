@@ -28,6 +28,56 @@ preserves a recovery journal and blocks dispatch until `recover` completes.
 It requires permission to write that installation directory. Do not use it to
 override an authorization denial or a concurrent editor.
 
+## Cross-project source release handoff (Stock P0 #135)
+
+The authoritative publisher is this `update-runtime.mjs`, not Stock's
+Task Scheduler or an ad hoc copy into the installed toolbox. For an installed
+runtime with registered consumers, `apply` now verifies *before replacing
+any installed file* that the **complete proposed post-release SHA closure**
+matches each consumer's independently reviewed source pins.
+
+Register consumers in a **local, publisher-owned** file at
+`<installed agent-runtime>/release-consumers.v1.json`:
+
+```json
+{
+  "schema": 1,
+  "consumers": [
+    {
+      "id": "stock",
+      "contract": "stock-reviewed-11-source-pins-v1",
+      "pin_file": "C:\\Naos\\02.Git\\personal\\Stock\\scripts\\windows_scheduler\\AgentRuntimeStatus.ps1"
+    }
+  ]
+}
+```
+
+Do not use the sample JSON until the project location and current Stock pins
+are actually checked on this host. This registration never edits the consumer
+review source. The Stock side retains its exact eleven source SHA pins,
+full functional contract checks, no-replay policies and its own Git/CI gates.
+
+The registered consumer's reviewed runtime, worker and nine dependency
+fingerprints must equal the staged candidate's proposed post-release bytes.
+For files not changed by the candidate, verify the existing installed bytes.
+Missing or ambiguous pin source, unexpected dependency, invalid registry or
+mismatch fails the *publisher* with `RUNTIME_CONSUMER_PIN_MISMATCH` or a
+specific error **before** its first atomic replacement. After installation
+but before clearing the recovery marker, revalidate that neither registry nor
+consumer's source file changed. Otherwise roll back every installed source,
+leaving original unrelated data, sessions and approvals unchanged.
+
+To coordinate an authorized new release: prepare and review the candidate,
+obtain a separate exact-SHA-reviewed Stock PR/CI for its *proposed* closure,
+then run publisher `apply` under its existing maintenance/lease lock. Until
+the publisher finishes, Stock must fail closed on any hash mismatch. This is a
+two-phase release admission, **not** an automatic Stock pin update, security
+override or a claim that independent consumer source review is cryptographically
+signed. An unregistered disposable runtime has no consumer pins; on MSI keep
+the real `release-consumers.v1.json` registered and protected. Unmanaged
+direct file edits bypass this publisher and remain prohibited by the release
+process; this guard alone cannot prevent such unauthorized writes.
+
 The generated `.openchatx.mjs` files belong to the existing toolbox loader.
 New workers use updated `.ts` source. The first migration from the unguarded
 runtime requires offline bootstrap: use `apply-offline.ps1 -Node <Node22Path>`
