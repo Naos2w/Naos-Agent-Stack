@@ -1,0 +1,96 @@
+{
+  "scope": "read-only comparison; not approval and no Stock file changes",
+  "consumer": "stock",
+  "sourcePinFile": "C:\\Naos\\02.Git\\personal\\Stock\\scripts\\windows_scheduler\\AgentRuntimeStatus.ps1",
+  "installedFilesChanged": false,
+  "rows": [
+    {
+      "name": "agent_runtime.ts",
+      "stockReviewed": "5051e4653303b4309416388e9b9d71ed71ec188b1c982ec467644d5595dc3d10",
+      "installed": "5051e4653303b4309416388e9b9d71ed71ec188b1c982ec467644d5595dc3d10",
+      "proposed": "4f67c1ffbe2e3ceb67b01ede7aa5f15e70b0dbcf7aa667140f71252717614eec",
+      "currentMatches": true,
+      "candidateMatches": false
+    },
+    {
+      "name": "letta_worker.ts",
+      "stockReviewed": "834aa12f99824e70baf327cfe260f59ea48c38416ed7bc062e134beac042f932",
+      "installed": "834aa12f99824e70baf327cfe260f59ea48c38416ed7bc062e134beac042f932",
+      "proposed": "a5d471f5af422fe8c8f42cdc90487d68e407cc64ce2d88b9434272b6bb6e6766",
+      "currentMatches": true,
+      "candidateMatches": false
+    },
+    {
+      "name": "agent_capabilities.ts",
+      "stockReviewed": "60c051aad9e8838fad079efcfa03ce5d178b86cba954b673b86ec2fbf018655e",
+      "installed": "60c051aad9e8838fad079efcfa03ce5d178b86cba954b673b86ec2fbf018655e",
+      "proposed": "60c051aad9e8838fad079efcfa03ce5d178b86cba954b673b86ec2fbf018655e",
+      "currentMatches": true,
+      "candidateMatches": true
+    },
+    {
+      "name": "development_gate.ts",
+      "stockReviewed": "9d05bf1110a9587cc99d8f568b4bb2058bf594f6b934b5030231a6d23c9995ca",
+      "installed": "9d05bf1110a9587cc99d8f568b4bb2058bf594f6b934b5030231a6d23c9995ca",
+      "proposed": "9d05bf1110a9587cc99d8f568b4bb2058bf594f6b934b5030231a6d23c9995ca",
+      "currentMatches": true,
+      "candidateMatches": true
+    },
+    {
+      "name": "operation_invariants.ts",
+      "stockReviewed": "0d9038c3824c8957684d71da9140cc1c46c8b9b3c2bb9171c4b19bfea67f057c",
+      "installed": "0d9038c3824c8957684d71da9140cc1c46c8b9b3c2bb9171c4b19bfea67f057c",
+      "proposed": "0d9038c3824c8957684d71da9140cc1c46c8b9b3c2bb9171c4b19bfea67f057c",
+      "currentMatches": true,
+      "candidateMatches": true
+    },
+    {
+      "name": "runtime_contract.ts",
+      "stockReviewed": "6ec30f77ae49e86482592211752ff8e4bf219dab09014afa305a827d5a6295ce",
+      "installed": "6ec30f77ae49e86482592211752ff8e4bf219dab09014afa305a827d5a6295ce",
+      "proposed": "0ee15ee19d8720078c37491bf603d117c733bbf90f1bfe1d946911fd10596c09",
+      "currentMatches": true,
+      "candidateMatches": false
+    },
+    {
+      "name": "project_executor.ts",
+      "stockReviewed": "e39c4ea2057dfd6d8bee0920de60c1ca752e33fe3a47fd7c8811cc39b2156f16",
+      "installed": "e39c4ea2057dfd6d8bee0920de60c1ca752e33fe3a47fd7c8811cc39b2156f16",
+      "proposed": "e39c4ea2057dfd6d8bee0920de60c1ca752e33fe3a47fd7c8811cc39b2156f16",
+      "currentMatches": true,
+      "candidateMatches": true
+    },
+    {
+      "name": "external_tool_idempotency.ts",
+      "stockReviewed": "c35a024bf4e0af757500bca5ac6544c4b7f253781705d4157aed8ff3347f357b",
+      "installed": "c35a024bf4e0af757500bca5ac6544c4b7f253781705d4157aed8ff3347f357b",
+      "proposed": "c35a024bf4e0af757500bca5ac6544c4b7f253781705d4157aed8ff3347f357b",
+      "currentMatches": true,
+      "candidateMatches": true
+    },
+    {
+      "name": "qa_operation_archive.ts",
+      "stockReviewed": "7a16442816e3e46a1f8007c06c242c186d8faf0072e29816f0f9824313beb9d6",
+      "installed": "7a16442816e3e46a1f8007c06c242c186d8faf0072e29816f0f9824313beb9d6",
+      "proposed": "7a16442816e3e46a1f8007c06c242c186d8faf0072e29816f0f9824313beb9d6",
+      "currentMatches": true,
+      "candidateMatches": true
+    },
+    {
+      "name": "runtime_maintenance.mjs",
+      "stockReviewed": "d4cf70708e9c6263dcf26cfaa5883fa995b75fc68bb312fd6f340ad2139d236c",
+      "installed": "d4cf70708e9c6263dcf26cfaa5883fa995b75fc68bb312fd6f340ad2139d236c",
+      "proposed": "d4cf70708e9c6263dcf26cfaa5883fa995b75fc68bb312fd6f340ad2139d236c",
+      "currentMatches": true,
+      "candidateMatches": true
+    },
+    {
+      "name": "operation_reconciliation.mjs",
+      "stockReviewed": "104f1a0ec2a21487366e8f1dfed95c1f76160037965ae5989e0f5e46eb516b5c",
+      "installed": "104f1a0ec2a21487366e8f1dfed95c1f76160037965ae5989e0f5e46eb516b5c",
+      "proposed": "104f1a0ec2a21487366e8f1dfed95c1f76160037965ae5989e0f5e46eb516b5c",
+      "currentMatches": true,
+      "candidateMatches": true
+    }
+  ]
+}

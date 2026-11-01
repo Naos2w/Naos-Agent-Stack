@@ -8,7 +8,7 @@
   "core": {
     "package": "naos-headless-stack-bundle.zip",
     "version": "OpenChatX Headless 1.0.0-beta.2",
-    "sha256": "9F321C11C6C19C11359C0365BBDB59C4CD63D7BE07799E14EF10C2B69E50001E",
+    "sha256": "5EF43AC710910899D857140ACAABC6AE1AD382F3C1FEF113BA7BE04FBE5AA893",
     "note": "Rebuilt 2026-11-02 local candidate from the SHA-pinned base and 55 repository overlays. Includes bounded task context, host-recorded declared checks, cold recovery and latest bootstrap. Fresh Windows acceptance is excluded by owner; no public release acceptance claimed."
   },
   "node": {

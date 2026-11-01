@@ -1,0 +1,122 @@
+{
+  "scope": "isolated candidate facade and Worker on MSI, not shared runtime deployment",
+  "operationId": "op_b98e817d5445402b",
+  "sessionId": "local-conv-110",
+  "state": "completed",
+  "model": {
+    "version": 1,
+    "effectiveModel": "openai-codex/gpt-6.1-sol",
+    "reasoningEffort": "high",
+    "reasoningState": "observed",
+    "reasoningSource": "model_settings.reasoning",
+    "contextWindow": 272000,
+    "source": "letta.conversation_retrieve",
+    "observedAt": "2026-11-01T16:50:11.385Z",
+    "scope": "before_turn"
+  },
+  "workContext": {
+    "state": "observed",
+    "files": [
+      {
+        "path": "TASK.md",
+        "state": "observed",
+        "truncated": false
+      },
+      {
+        "path": "subject.mjs",
+        "state": "observed",
+        "truncated": false
+      }
+    ],
+    "omitted": 0,
+    "contentChars": 481
+  },
+  "declaredChecks": {
+    "state": "manual_required",
+    "checks": [
+      {
+        "id": "unit",
+        "kind": "command",
+        "state": "passed"
+      },
+      {
+        "id": "owner_review",
+        "kind": "manual",
+        "state": "manual_required"
+      }
+    ],
+    "scope": "declared_checks_only",
+    "deliveryVerified": false,
+    "snapshot": "operation_end",
+    "staleOperation": false
+  },
+  "toolOutcomes": {
+    "version": 1,
+    "scope": "runtime_recorded_calls",
+    "total": 14,
+    "succeeded": 14,
+    "failed": 0,
+    "unknown": 0,
+    "recovered": 0,
+    "reviewRequired": 0,
+    "failures": [],
+    "failuresTruncated": false
+  },
+  "changedFiles": [
+    "subject.mjs",
+    "TASK.md"
+  ],
+  "blockers": [],
+  "delivery": {
+    "state": "not_evaluated",
+    "taskRef": "TASK.md",
+    "acceptanceVerified": false
+  },
+  "executorTest": "candidate core project-executor with normal installed config/ProjectRegistry dependencies resolved by test-only module hooks",
+  "sources": {
+    "runtime/lean-runtime/source/agent_runtime.ts": "4f67c1ffbe2e3ceb67b01ede7aa5f15e70b0dbcf7aa667140f71252717614eec",
+    "runtime/lean-runtime/source/letta_worker.ts": "a5d471f5af422fe8c8f42cdc90487d68e407cc64ce2d88b9434272b6bb6e6766",
+    "runtime/lean-runtime/runtime_contract.ts": "0ee15ee19d8720078c37491bf603d117c733bbf90f1bfe1d946911fd10596c09",
+    "runtime/core-maintenance/baseline/project-executor.js": "03f5815527dc9c623d0937ac6f5a01c5ac630669b2b11b390f23e22af31426bf"
+  },
+  "followup": {
+    "operationId": "op_7b6ce861509d4233",
+    "sessionId": "local-conv-110",
+    "sameSession": true,
+    "state": "completed",
+    "declaredChecks": {
+      "state": "checks_passed",
+      "checks": [
+        {
+          "id": "unit",
+          "kind": "command",
+          "state": "passed"
+        }
+      ],
+      "scope": "declared_checks_only",
+      "deliveryVerified": false,
+      "snapshot": "operation_end",
+      "staleOperation": false
+    },
+    "previousOperationChecks": {
+      "state": "stale_operation",
+      "checks": [
+        {
+          "id": "unit",
+          "kind": "command",
+          "state": "passed"
+        },
+        {
+          "id": "owner_review",
+          "kind": "manual",
+          "state": "manual_required"
+        }
+      ],
+      "scope": "declared_checks_only",
+      "deliveryVerified": false,
+      "snapshot": "operation_end",
+      "staleOperation": true
+    },
+    "blockers": []
+  }
+}

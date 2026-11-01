@@ -1657,7 +1657,7 @@ async function workerRun(input: WorkerInput, inputPath?: string) {
       const decision = await decideProjectToolApproval(project, "openchatx_read_file", args)
       if (decision.behavior !== "allow") throw new Error("CONTEXT_READ_DENIED")
       const result = await executeProjectTool(project, "openchatx_read_file", args)
-      if (result.is_error || result.isError) throw new Error("CONTEXT_READ_UNAVAILABLE")
+      if (result.is_error) throw new Error("CONTEXT_READ_UNAVAILABLE")
       return JSON.parse(result.content?.[0]?.text ?? "null")
     })
   const runPrompt = preflight.prompt + (acceptanceChecks.length ?

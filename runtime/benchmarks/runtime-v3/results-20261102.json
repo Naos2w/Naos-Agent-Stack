@@ -1,0 +1,273 @@
+{
+  "date": "2026-11-02",
+  "baseCommit": "a3e1fd5b5454bc37dcda1c728dff05c410e6987e",
+  "initialFingerprint": "5646887cf07a110de3f6770e1074e3443bf50bffc4e618b0875bfd15035a638f",
+  "initialTests": {
+    "passed": 1,
+    "failed": 16
+  },
+  "sequentialModelRuns": true,
+  "sharedRuntimeWorkerSha256": "834aa12f99824e70baf327cfe260f59ea48c38416ed7bc062e134beac042f932",
+  "rows": [
+    {
+      "id": "codex-1",
+      "identity": "01a197e9-fc80-7860-86dc-55bf5a406fa2",
+      "model": {
+        "name": "gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "source": "codex.turn_context"
+      },
+      "durationMs": 181296,
+      "timingScope": "Codex recorded turn duration",
+      "testsPassed": 17,
+      "testsTotal": 17,
+      "scopePassed": true,
+      "changed": [
+        "PROGRESS.md",
+        "runtime_contract.ts"
+      ],
+      "sourceSha256": "45ba3f3cd8dbe334c733beb7bc962dffc4e4a9497fca7137bbff3377634a83a4",
+      "supervisingRepairRounds": 0
+    },
+    {
+      "id": "openchatx-1",
+      "identity": "op_4219e8ff33004e36",
+      "model": {
+        "name": "openai-codex/gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "source": "letta.conversation_retrieve"
+      },
+      "durationMs": 175876,
+      "timingScope": "local dispatch registry creation to final Worker stdout mtime; excludes later poll delay",
+      "testsPassed": 17,
+      "testsTotal": 17,
+      "scopePassed": true,
+      "changed": [
+        "PROGRESS.md",
+        "runtime_contract.ts"
+      ],
+      "sourceSha256": "f048b4be87718659cf2a5e5480b7b155ebe994a448159baa79f7c3a23af8582c",
+      "supervisingRepairRounds": 0
+    },
+    {
+      "id": "codex-2",
+      "identity": "01a197f1-ed9e-7f73-b031-335cd793e966",
+      "model": {
+        "name": "gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "source": "codex.turn_context"
+      },
+      "durationMs": 239089,
+      "timingScope": "Codex recorded turn duration",
+      "testsPassed": 17,
+      "testsTotal": 17,
+      "scopePassed": true,
+      "changed": [
+        "PROGRESS.md",
+        "runtime_contract.ts"
+      ],
+      "sourceSha256": "8642fb1174367ac052b997c2d732b5bb245bc38b407d3dc9050960dc0313596b",
+      "supervisingRepairRounds": 0
+    },
+    {
+      "id": "openchatx-2",
+      "identity": "op_26ca666ea2bd4f3c",
+      "model": {
+        "name": "openai-codex/gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "source": "letta.conversation_retrieve"
+      },
+      "durationMs": 163002,
+      "timingScope": "local dispatch registry creation to final Worker stdout mtime; excludes later poll delay",
+      "testsPassed": 17,
+      "testsTotal": 17,
+      "scopePassed": true,
+      "changed": [
+        "PROGRESS.md",
+        "runtime_contract.ts"
+      ],
+      "sourceSha256": "3d21764749dbea4bf77a51a45e56572c0ac5b67aa3ec5503a64c1d4fe86f84a2",
+      "supervisingRepairRounds": 0
+    },
+    {
+      "id": "codex-3",
+      "identity": "01a197f9-7220-7953-a369-be4f745da257",
+      "model": {
+        "name": "gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "source": "codex.turn_context"
+      },
+      "durationMs": 156450,
+      "timingScope": "Codex recorded turn duration",
+      "testsPassed": 17,
+      "testsTotal": 17,
+      "scopePassed": true,
+      "changed": [
+        "PROGRESS.md",
+        "runtime_contract.ts"
+      ],
+      "sourceSha256": "b8267742fa905e1fe87c4ad90d6982763286b176a2928efa9f9de2eb1239153f",
+      "supervisingRepairRounds": 0
+    },
+    {
+      "id": "openchatx-3",
+      "identity": "op_e14a10422ebe4d70",
+      "model": {
+        "name": "openai-codex/gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "source": "letta.conversation_retrieve"
+      },
+      "durationMs": 220197,
+      "timingScope": "local dispatch registry creation to final Worker stdout mtime; excludes later poll delay",
+      "testsPassed": 17,
+      "testsTotal": 17,
+      "scopePassed": true,
+      "changed": [
+        "PROGRESS.md",
+        "runtime_contract.ts"
+      ],
+      "sourceSha256": "da2cd830466e8e3e22ccc057b6266351d664bbc8ea10ca8e3853d85092b7d8e4",
+      "supervisingRepairRounds": 0
+    }
+  ],
+  "resources": {
+    "scope": "isolated Node validator process; excludes model inference, Codex app, Letta server and machine memory",
+    "node": "v25.2.1",
+    "measuredAt": "2026-11-01T16:46:36.247Z",
+    "rows": [
+      {
+        "id": "codex-1",
+        "sourceSha256": "45ba3f3cd8dbe334c733beb7bc962dffc4e4a9497fca7137bbff3377634a83a4",
+        "samples": [
+          {
+            "elapsedMs": 162,
+            "maxRssKiB": 62736,
+            "rssBytes": 59805696
+          },
+          {
+            "elapsedMs": 124,
+            "maxRssKiB": 62792,
+            "rssBytes": 60260352
+          },
+          {
+            "elapsedMs": 187,
+            "maxRssKiB": 62444,
+            "rssBytes": 60272640
+          }
+        ]
+      },
+      {
+        "id": "openchatx-1",
+        "sourceSha256": "f048b4be87718659cf2a5e5480b7b155ebe994a448159baa79f7c3a23af8582c",
+        "samples": [
+          {
+            "elapsedMs": 156,
+            "maxRssKiB": 61964,
+            "rssBytes": 60305408
+          },
+          {
+            "elapsedMs": 166,
+            "maxRssKiB": 61876,
+            "rssBytes": 60186624
+          },
+          {
+            "elapsedMs": 174,
+            "maxRssKiB": 61652,
+            "rssBytes": 60035072
+          }
+        ]
+      },
+      {
+        "id": "codex-2",
+        "sourceSha256": "8642fb1174367ac052b997c2d732b5bb245bc38b407d3dc9050960dc0313596b",
+        "samples": [
+          {
+            "elapsedMs": 122,
+            "maxRssKiB": 59840,
+            "rssBytes": 58408960
+          },
+          {
+            "elapsedMs": 132,
+            "maxRssKiB": 61452,
+            "rssBytes": 60170240
+          },
+          {
+            "elapsedMs": 173,
+            "maxRssKiB": 59652,
+            "rssBytes": 58204160
+          }
+        ]
+      },
+      {
+        "id": "openchatx-2",
+        "sourceSha256": "3d21764749dbea4bf77a51a45e56572c0ac5b67aa3ec5503a64c1d4fe86f84a2",
+        "samples": [
+          {
+            "elapsedMs": 133,
+            "maxRssKiB": 62740,
+            "rssBytes": 59666432
+          },
+          {
+            "elapsedMs": 138,
+            "maxRssKiB": 62404,
+            "rssBytes": 60452864
+          },
+          {
+            "elapsedMs": 135,
+            "maxRssKiB": 60540,
+            "rssBytes": 57999360
+          }
+        ]
+      },
+      {
+        "id": "codex-3",
+        "sourceSha256": "b8267742fa905e1fe87c4ad90d6982763286b176a2928efa9f9de2eb1239153f",
+        "samples": [
+          {
+            "elapsedMs": 123,
+            "maxRssKiB": 61408,
+            "rssBytes": 60260352
+          },
+          {
+            "elapsedMs": 126,
+            "maxRssKiB": 62196,
+            "rssBytes": 60456960
+          },
+          {
+            "elapsedMs": 121,
+            "maxRssKiB": 61564,
+            "rssBytes": 59969536
+          }
+        ]
+      },
+      {
+        "id": "openchatx-3",
+        "sourceSha256": "da2cd830466e8e3e22ccc057b6266351d664bbc8ea10ca8e3853d85092b7d8e4",
+        "samples": [
+          {
+            "elapsedMs": 201,
+            "maxRssKiB": 61336,
+            "rssBytes": 59777024
+          },
+          {
+            "elapsedMs": 110,
+            "maxRssKiB": 59640,
+            "rssBytes": 58408960
+          },
+          {
+            "elapsedMs": 121,
+            "maxRssKiB": 61192,
+            "rssBytes": 59977728
+          }
+        ]
+      }
+    ]
+  },
+  "limits": [
+    "one visible-test backend feature repeated three times, not general Codex parity",
+    "root integration/build checks shared the host",
+    "separation enforced by task instructions and candidate file inventory, not a whole-host access audit",
+    "generation memory and comparable token cost unavailable",
+    "OpenChatX 2 and 3 reported a missing optional PROGRESS.md read as a blocker; new host integration fixes classification separately"
+  ]
+}

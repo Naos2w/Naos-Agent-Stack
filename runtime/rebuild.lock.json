@@ -23,7 +23,7 @@
     {
       "source": "runtime/lean-runtime/source/letta_worker.ts",
       "target": "toolboxes/agent-runtime/tools/letta_worker.ts",
-      "sha256": "3036020EC2C82E46B5ADB76BAFF5ED4EE17A56D57CADFB3328BF3D691CE80D5C"
+      "sha256": "A5D471F5AF422FE8C8F42CDC90487D68E407CC64CE2D88B9434272B6BB6E6766"
     },
     {
       "source": "runtime/lean-runtime/CURRENT_RUNTIME.md",
