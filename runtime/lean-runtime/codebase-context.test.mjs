@@ -160,6 +160,8 @@ test('known non-code files still request context without classifying them as UI'
 test('explicit UI exclusions do not load design skills for backend work',()=>{
   for(const task of ['Backend-only, no UI, fix the worker timeout',
     'Fix the API; no UI/UX changes.', 'Non-UI runtime maintenance',
+    'Offline repair. UI work is not applicable.',
+    'UI/UX changes are out of scope; repair the backend.',
     '修正後端，不涉及 UI，保留原有功能', '純後端修正，不修改畫面',
     '修復逾時，無前端變更']) {
     assert.equal(classifyCapabilityTask(task,['tools/worker.ts']).ui,false,task);
@@ -173,6 +175,8 @@ test('UI exclusions never suppress explicit frontend paths or separate positive 
     ['不修改畫面動畫，但修正前端表單',['server.ts']],
     ['Not only UI: repair the API too',['server.ts']],
     ['Fix frontend validation',['server.ts']],
+    ['UI work is not applicable to the API; fix the UI layout separately',['server.ts']],
+    ['UI work is not applicable',['src/App.tsx']],
   ]) assert.equal(classifyCapabilityTask(task,paths).ui,true,task);
 });
 test('failed coverage retains verified root and marks the requested file as unverified without retry',async()=>{

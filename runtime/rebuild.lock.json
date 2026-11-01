@@ -208,7 +208,7 @@
     {
       "source": "runtime/lean-runtime/source/agent_capabilities.ts",
       "target": "toolboxes/agent-runtime/tools/agent_capabilities.ts",
-      "sha256": "024911023D96A0DFBF47EF86DF40EE1EB4F39657BA858070C6DB49182FFE3E6D"
+      "sha256": "60C051AAD9E8838FAD079EFCFA03CE5D178B86CBA954B673B86EC2FBF018655E"
     },
     {
       "source": "runtime/lean-runtime/tool_evidence.mjs",

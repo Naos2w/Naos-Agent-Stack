@@ -176,7 +176,7 @@ export function patchDispatchReconciliation(text) {
 
 export function patchCapabilities(original, candidate) {
   if (normalize(original) === normalize(candidate)) return candidate;
-  if (!['19cf235bbaec0e5767b78a83f93acfd851fa0b5480746abc563f61b0e217933d', 'b0c33d5282afb2963190fdbd5c903c1dae88b7b55d351fb6624f1eb1709da96c', '449d1a75102ea1879227018ac340be5617736f1e2839be67d5758c0c15afbdc0'].includes(sha(original)))
+  if (!['024911023d96a0dfbf47ef86df40ee1eb4f39657ba858070c6db49182ffe3e6d', '19cf235bbaec0e5767b78a83f93acfd851fa0b5480746abc563f61b0e217933d', 'b0c33d5282afb2963190fdbd5c903c1dae88b7b55d351fb6624f1eb1709da96c', '449d1a75102ea1879227018ac340be5617736f1e2839be67d5758c0c15afbdc0'].includes(sha(original)))
     throw Error('CAPABILITY_SOURCE_CHANGED: inspect the installed source before preparing this update');
   return candidate;
 }

@@ -398,6 +398,7 @@ export function classifyCapabilityTask(prompt: string, filePaths: string[] = [])
   // Remove only explicit exclusions, not an entire sentence or a positive
   // requirement elsewhere. Concrete frontend paths always remain applicable.
   const applicablePrompt = prompt
+    .replace(/\b(?:UI(?:\s*\/\s*UX)?|UIUX|UX|frontend)(?:\s+(?:work|changes?))?\s+(?:is|are)\s+(?:not\s+applicable|out\s+of\s+scope)\b/gi, "")
     .replace(/\b(?:no\s+|non[-\s]+)(?:UI(?:\s*\/\s*UX)?|UIUX|UX|frontend)\b/gi, "")
     .replace(/(?:不涉及|不修改|不變更|不变更|不改動|不改动|無|无|沒有|没有)\s*(?:UI(?:\s*\/\s*UX)?|UIUX|UX|前端|使用者介面|畫面|界面|視覺|動畫|动画|動效)/gi, "")
   const paths = filePaths.filter((value) => typeof value === "string")
