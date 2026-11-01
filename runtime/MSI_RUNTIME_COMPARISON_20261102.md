@@ -106,3 +106,12 @@ Final local candidate artifacts (not a public release):
 - Both are in `C:/Users/Naos/Documents/Codex/2026-10-30/codex/`.
 - The core is reproducible from the existing pinned base and 55 locked repository
   overlays; the complete builder verified its seven bundled release assets.
+
+The feature and evidence were pushed to the existing v0.2.3 fix branch, with
+the already-merged Stock publisher admission preserved (`43392ff`). Its four
+consumer-admission regressions and six affected integration/source-lock checks
+passed after local integration. The repository workflow is manual-only. An
+attempt to dispatch it with the existing GitHub CLI credentials returned HTTP
+403 (`Must have admin rights to Repository`); no remote CI run was started and
+no alternate identity was used. Local validation above remains the available
+test evidence. No PR was merged and no production deployment was performed.
