@@ -233,12 +233,12 @@
     {
       "source": "runtime/lean-runtime/letta-recovery-provider-patch.mjs",
       "target": "letta-poc/scripts/letta-recovery-provider-patch.mjs",
-      "sha256": "59FBA7AE56B2AA86D386F4AC2E9F41C5462013B59ED3A0EEE9364B689AE50CE8"
+      "sha256": "F494ADFD8167EF289A5C2C8DAF8558A65D8DE15DF3375AFA85F43D094BEB7575"
     },
     {
       "source": "runtime/lean-runtime/source/letta_recovery.mjs",
       "target": "letta-poc/scripts/source/letta_recovery.mjs",
-      "sha256": "19AD0225F15B7350D608479A09B55DC57B067C08118FCD7FFDC26F9F4C8D7AB7"
+      "sha256": "B224EDD11D8043F75D94D15DB9E74B2F23505BD6C17D076727DAE4BE886C7545"
     },
     {
       "source": "runtime/core-maintenance/baseline/conversation-bootstrap.js",

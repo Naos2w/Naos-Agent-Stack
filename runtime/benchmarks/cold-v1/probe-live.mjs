@@ -64,9 +64,14 @@ if (mode==='worker'||mode==='recover') {
   await copyFile(join(source,'agents',agentFile),join(backend,'agents',agentFile));
   await copyFile(join(source,'providers','auth.json'),join(backend,'providers','auth.json'));
   const packageDir=join(lettaRoot,'node_modules/@letta-ai/letta-code');
-  const entry=join(packageDir,'letta-openchatx-recovery-probe.js');
+  // Keep the candidate helper beside a private bundle. Never replace the live
+  // service's dynamically imported helper merely to run an isolated probe.
+  const candidateDir=join(lettaRoot,'.openchatx-probes',messageId);
+  await mkdir(candidateDir,{recursive:true});
+  await copyFile(join(packageDir,'package.json'),join(candidateDir,'package.json'));
+  const entry=join(candidateDir,'letta.js');
   await writeFile(entry,patchLettaRecovery(await readFile(join(packageDir,'letta.js'),'utf8')));
-  await copyFile(new URL('../../lean-runtime/source/letta_recovery.mjs',import.meta.url),join(packageDir,'openchatx-recovery.mjs'));
+  await copyFile(new URL('../../lean-runtime/source/letta_recovery.mjs',import.meta.url),join(candidateDir,'openchatx-recovery.mjs'));
   let server,child;let serverIndex=0;let serverText='';
   const startServer=async()=>{
     const index=++serverIndex;
@@ -109,6 +114,7 @@ if (mode==='worker'||mode==='recover') {
       assert.equal(code,0,'Recovery worker failed; see recover.log');
       result=JSON.parse(await readFile(join(outputRoot,'recover.json'),'utf8'));
       assert.equal(result.status,'completed');
+      assert.ok(result.approval_decisions.every(item=>item.toolName==='openchatx_shell'));
     }
     assert.equal(await readFile(join(outputRoot,'effect.txt'),'utf8'),marker);
     const initialCounts=JSON.parse(await readFile(join(outputRoot,'worker-counts.json'),'utf8'));

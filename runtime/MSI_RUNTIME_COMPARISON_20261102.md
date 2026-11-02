@@ -226,3 +226,55 @@ observed at about 68 MiB RSS / 94 MiB peak-to-that-point; this excludes the mode
 backend and does not establish whole-system memory use.
 
 [Real-task execution and verification evidence](benchmarks/runtime-v3/real-development-20261102.json).
+
+## Recovery tool scope and provider idle bound (candidate v3d)
+
+The target conversation's durable transcript narrows the earlier timeout:
+after the last successful host result at `02:48:12.766Z`, the provider recorded
+an assistant error at `02:54:16.215Z`: `WebSocket idle timeout after 300000ms`.
+This establishes a stalled model stream, not a still-running regression test.
+It does not identify why the upstream connection stopped delivering events.
+
+The native `ApplyPatch` call occurred only after recovery. Normal Worker input
+already carries `client_tool_allowlist`; the recovery adapter's continuation
+omitted it. Recovery now selects only `openchatx_*` tools registered for the
+same Agent/conversation and supplies the provider's normal allowlist and
+interactive-tool exclusion. Missing controllers fail before writing recovery
+state. Existing host permission decisions and exactly-once checks still apply;
+historical denied-call evidence is retained.
+
+For OpenChatX-only Codex model streams, the provider's existing idle timer is
+capped at 120 seconds, preserving tighter limits, cancellation and retry rules.
+This reduces a single silent-stream wait from 300 to 120 seconds (60%); it is
+not a total Operation deadline or a promise that a whole task is 60% faster.
+It contains the observed stall but cannot prevent upstream network failures.
+Other clients, providers and mixed/native toolsets keep their existing options.
+
+Validation: 38 affected tests passed, including the actual pinned provider's
+tool filters, idle parser, patch upgrade/idempotence, cold/in-flight recovery,
+reconnection and all rebuild overlay hashes. The real isolated Letta probe
+also passed after terminating both backend and Worker: one marker effect,
+one initial prompt submission, zero recovery prompt submissions, and successful
+continuation. Its helper and bundle now live in a private probe directory;
+the probe no longer replaces the shared service's helper.
+
+Candidate artifacts (not installed):
+- Core `core-runtime-v3d-20261102.zip`, SHA256
+  `32F2B8C93A7C535D99AA9EADAA20A3E013C1FB6F5E66B602F6E36811C0428BD3`.
+- Complete `Naos-Agent-Stack-v023-runtime-v3d-Complete.zip`, 288,298,081 bytes,
+  SHA256 `ABAF3A0A9785C560B2229E773F164E9D449EF7A6FE37C753707276F2E5835F88`.
+
+Deployment is pending: MSI readiness is READY with zero running, stale or
+unresolved Operations, but PC2's MCP tunnel reports `tunnel_client_not_seen`.
+Because both use the MSI Letta service, PC2's activity cannot currently be
+verified/held during maintenance. The shared service has not been restarted
+or patched. The installed helper retains its old SHA256 `19AD0225...C8D7AB7`.
+Worker/facade sources and Stock's 11-source consumer contract are unchanged.
+Resume with both machines' maintenance checks, backed-up provider update,
+MSI smoke verification, then PC2 verification. Do not label this deployed.
+
+The owner subsequently chose to finish the candidate and defer the shared
+service update. Source commit `a807d2b` was pushed to
+`naos/fix/letta-recovery-tool-scope`. Creating its PR against the existing
+architecture integration branch failed with GitHub `must be a collaborator`;
+no PR was created or merged, and no alternate identity was used.

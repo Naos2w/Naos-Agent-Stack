@@ -10,6 +10,9 @@ function replaceOnce(text, before, after) {
 }
 export function patchLettaRecovery(source) {
   let text = source.replaceAll('\r\n', '\n');
+  const legacyRegistryLine = '            canRecover: canRecoverConversation, store: createInterruptedTurnStore(),\n            cwd:';
+  text = text.replace(legacyRegistryLine,
+    '            canRecover: canRecoverConversation, store: createInterruptedTurnStore(),\n            registeredTools: () => [...getRegisteredTools(runtime).values()].flat(),\n            cwd:');
   text = replaceOnce(text, `      const hasEligibleFailover = getSubscribedListenerConnections(runtime, {
         agent_id: conversationRuntime.agentId,
         conversation_id: conversationRuntime.conversationId
@@ -36,6 +39,7 @@ export function patchLettaRecovery(source) {
           const result = await handleRecovery(parsed, {
             runtime: scoped, backend: getBackend(), resume: getResumeDataFromBackend,
             canRecover: canRecoverConversation, store: createInterruptedTurnStore(),
+            registeredTools: () => [...getRegisteredTools(runtime).values()].flat(),
             cwd: () => getConversationWorkingDirectory(runtime, parsed.runtime.agent_id, parsed.runtime.conversation_id),
             start: message => {
               const task = processIncomingMessage(message, getOrCreateProcessTransport(runtime), scoped, opts.onStatusChange, connectionId);
@@ -53,6 +57,9 @@ export function patchLettaRecovery(source) {
   // turn an unknown side effect into a stale-denial result on provider startup.
   text = replaceOnce(text, '        const approvals = recordedToolResults(record4, owned.map((approval) => approval.toolCallId));',
     '        if (owned.some(approval => approval.toolName?.startsWith("openchatx_") && !record4.results.some(result => result.tool_call_id === approval.toolCallId))) continue;\n        const approvals = recordedToolResults(record4, owned.map((approval) => approval.toolCallId));');
+  // Separate replacements also upgrade an already-installed recovery adapter.
+  text = replaceOnce(text, '      const result = this.runStream(resolved2.model, context3, options);',
+    '      const { configureOpenchatxStreamOptions } = await import("./openchatx-recovery.mjs");\n      const result = this.runStream(resolved2.model, context3, configureOpenchatxStreamOptions(resolved2.model.api, tools, options));');
   return text;
 }
 export async function installLettaRecovery(target) {
