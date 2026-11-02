@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "date": "2026-11-02",
+  "task": "Real Naosledge M9 fault reconciliation/manual archive correctness verification",
+  "sourceBase": "b20bd695b07b215fd357291f94a2b24a159631c5",
+  "candidateCommit": "c748ae2",
+  "candidateBranch": "naos/fix/m9-runtime-verification-20261102",
+  "parentPR": "https://github.com/Naos2w/Naosledge/pull/63",
+  "scope": "isolated offline synthetic tests; no product publication, live data or credentials",
+  "worker": {
+    "operationId": "op_5d78d55d32af4467",
+    "conversationId": "local-conv-112",
+    "agentId": "agent-local-8cbd0b08-f5a4-4094-afb3-66e8edc79329",
+    "initial": {
+      "state": "failed",
+      "error": "LETTA_TURN_TIMEOUT_REMOTE_SETTLED",
+      "externalRequests": 19,
+      "externalCompleted": 19,
+      "pending": 0,
+      "uncertain": 0,
+      "configuredTimeoutMs": 480000,
+      "observedTimeoutMs": 480010,
+      "lastProgressAgeMs": 349593
+    },
+    "recovery": {
+      "sameOperation": true,
+      "sameConversation": true,
+      "supervisorRecoveryCalls": 1,
+      "originalPromptResubmitted": false,
+      "state": "completed",
+      "model": {
+        "version": 1,
+        "effectiveModel": "openai-codex/gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "reasoningState": "observed",
+        "reasoningSource": "model_settings.reasoning",
+        "contextWindow": 272000,
+        "source": "letta.conversation_retrieve",
+        "observedAt": "2026-11-02T02:54:38.227Z",
+        "scope": "before_turn"
+      },
+      "toolOutcomes": {
+        "version": 1,
+        "scope": "runtime_recorded_calls",
+        "total": 5,
+        "succeeded": 5,
+        "failed": 0,
+        "unknown": 0,
+        "recovered": 0,
+        "reviewRequired": 0,
+        "failures": [],
+        "failuresTruncated": false
+      },
+      "declaredChecks": {
+        "state": "checks_passed",
+        "checks": [
+          {
+            "id": "fault_regressions",
+            "kind": "command",
+            "state": "passed"
+          }
+        ],
+        "scope": "declared_checks_only",
+        "deliveryVerified": false,
+        "snapshot": "operation_end",
+        "staleOperation": false
+      },
+      "deniedRequests": [
+        {
+          "tool": "ApplyPatch",
+          "reason": "EXTERNAL_TOOL_UNKNOWN: ApplyPatch",
+          "classification": "denied"
+        }
+      ],
+      "blockers": [
+        "ApplyPatch: EXTERNAL_TOOL_UNKNOWN: ApplyPatch"
+      ]
+    },
+    "context": {
+      "state": "partial",
+      "files": [
+        {
+          "path": "docs/OBSIDIAN_MANUAL_SYNC_TODO.md",
+          "state": "observed",
+          "truncated": true
+        },
+        {
+          "path": "lib/obsidian-m9-fault-reconciliation-readonly.ts",
+          "state": "observed",
+          "truncated": true
+        },
+        {
+          "path": "lib/obsidian-m9-fault-archive-manual.ts",
+          "state": "observed",
+          "truncated": true
+        },
+        {
+          "path": "lib/obsidian-m9-fault-review-readonly.ts",
+          "state": "observed",
+          "truncated": true
+        }
+      ],
+      "omitted": 1,
+      "contentChars": 12000
+    },
+    "observedProcessMemory": {
+      "workingSetBytes": 71057408,
+      "peakWorkingSetBytes": 98631680,
+      "scope": "single local Worker at one observation, excludes model/server/children"
+    }
+  },
+  "verification": {
+    "initialExistingTests": {
+      "pass": 16,
+      "fail": 0
+    },
+    "newRegressionsAgainstOriginal": {
+      "pass": 16,
+      "fail": 2
+    },
+    "supervisorVerifiedCandidate": {
+      "pass": 18,
+      "fail": 0
+    },
+    "workerFinalDeclaredChecks": "checks_passed",
+    "changedTrackedFiles": [
+      "docs/OBSIDIAN_MANUAL_SYNC_TODO.md",
+      "lib/obsidian-m9-fault-reconciliation-readonly.ts",
+      "tests/obsidian-m9-fault-reconciliation-readonly.test.mjs"
+    ],
+    "sourceFix": "Move final local manifest read after awaited remote/journal/mode reads; archive uses the corrected proof unchanged"
+  },
+  "findings": [
+    "Concrete late-local-edit defect reproduced and minimally repaired without supervisor implementation hints.",
+    "Initial run exhausted its 480-second bound after all 19 host calls completed; root cause of missing progress/terminal response remains unproven.",
+    "Original-operation recovery finished with correct observed model and declared checks; one supervisor recovery was required.",
+    "ApplyPatch was unknown to the host tool contract and remained a blocker; this is a local tool-name error, not evidence of an OpenAI platform refusal.",
+    "Recovered trace summarizes recovery segment; actual full diff and preserved prior logs remain necessary."
+  ],
+  "notClaimed": [
+    "paired Codex comparison for this task",
+    "zero-intervention autonomous delivery",
+    "Naosledge production acceptance or deployment",
+    "general Codex parity"
+  ]
+}

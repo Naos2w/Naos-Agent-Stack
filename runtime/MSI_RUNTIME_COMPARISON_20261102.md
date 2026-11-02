@@ -185,3 +185,44 @@ the scope of the future standing preference. This does not block this release.
   release does not claim a clean Windows reinstall or general Codex parity.
 
 [Machine-readable deployment and smoke evidence](benchmarks/runtime-v3/deployment-20261102.json).
+
+## Real product task after installation
+
+The owner approved using the installed runtime on a real bounded development
+task. An isolated Naosledge worktree started from the current M9 PR #63 head
+`b20bd695b07b215fd357291f94a2b24a159631c5`; the original worktree stayed clean.
+No credentials, actual Vault, Neon calls, product deployment or publication were
+used. This was not a fresh paired Codex comparison.
+
+The Worker found a real stale-local-proof defect: M9's second local inventory
+preceded later awaited remote/journal/mode reads, so an edit during those reads
+could falsely satisfy equality and allow manual fault-marker archive. It added
+two deterministic filesystem/HTTP-fixture interleavings, then moved the final
+local scan after those awaits. The archive implementation and its consent gates
+remain unchanged. Independent supervisor validation reproduced **16 pass / 2 fail**
+against the original source and **18 pass / 0 fail** against the candidate.
+The three-file repair and existing TODO record are saved as local Naosledge
+commit `c748ae2`, branch `naos/fix/m9-runtime-verification-20261102`. It is not
+merged, pushed, deployed or evidence of real-user recovery acceptance.
+
+Execution was not uninterrupted: Operation `op_5d78d55d32af4467` reached its
+480-second bound after 19 completed host calls, with no pending/uncertain effects
+but no final report. One explicit recovery of the **same** Operation/Agent and
+conversation `local-conv-112` completed the work without resubmitting the prompt.
+Recovered model observation confirms GPT-6.1 Sol/high; the final declared check
+passed. The first attempt's missing terminal progress is unresolved, not proven
+to be a platform rejection, memory problem or model-quality failure.
+
+The recovered result also contains `ApplyPatch: EXTERNAL_TOOL_UNKNOWN: ApplyPatch`.
+This local tool-name mismatch remains visible as a blocker despite successful
+subsequent tool calls. Do not erase that evidence or label this zero-intervention
+success. The recovered trace covers its own segment; actual Git diff and prior
+logs remain necessary because shell edits are outside direct-write accounting.
+
+Next evidence-driven improvements are to diagnose the post-tool progress/timeout
+path and align the model's advertised editing tools with the host contract. Do
+not merely extend timeouts or suppress genuine denials. The local Worker was
+observed at about 68 MiB RSS / 94 MiB peak-to-that-point; this excludes the model
+backend and does not establish whole-system memory use.
+
+[Real-task execution and verification evidence](benchmarks/runtime-v3/real-development-20261102.json).
