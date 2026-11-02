@@ -19,7 +19,7 @@ export async function prepare(stage) {
   if(hostname().toUpperCase()!=='NAOS-PC')throw Error('SYNC_WRONG_HOST');
   const roots={runtime:join(process.env.LOCALAPPDATA,'Programs/OpenChatX/runtime'),headless:join(homedir(),'.openchatx-mcp/headless')};
   const payload=JSON.parse(gunzipSync(Buffer.from((await readFile(join(stage,'payload.json.gz.b64'),'utf8')).trim(),'base64')));
-  if(payload.schema!==1||payload.host!=='NAOS-PC'||payload.files.length!==74||payload.sourceBundleSha256!=='C5529684ED996667A6290CA2E326029C15570E8B5AA9CD61E3594C197B544FA8')throw Error('SYNC_BUNDLE_UNRECOGNIZED');
+  if(payload.schema!==1||payload.host!=='NAOS-PC'||payload.files.length!==82||payload.sourceBundleSha256!=='5EF43AC710910899D857140ACAABC6AE1AD382F3C1FEF113BA7BE04FBE5AA893')throw Error('SYNC_BUNDLE_UNRECOGNIZED');
   const pkg=JSON.parse(await readFile(join(roots.runtime,'package.json'),'utf8'));
   if(pkg.name!=='openchatx-mcp'||pkg.version!=='1.0.0-beta.2')throw Error('SYNC_VERSION_MISMATCH');
   const seen=new Set(),files=[];

@@ -1,10 +1,10 @@
 # Reviewed NAOS-PC migration
 
-This directory records the one-time migration from PC2's legacy four-source-file
-toolbox to the MSI candidate from commit `134d25c`. It is not a generic installer,
+This directory prepares the reviewed PC2 update to the MSI candidate from commit
+`49c2213` (core ZIP SHA-256 `5EF43AC710910899D857140ACAABC6AE1AD382F3C1FEF113BA7BE04FBE5AA893`). Apply it only after MSI publication and verification. It is not a generic installer,
 upstream version upgrade, model backend migration or credential synchronization.
 
-`Build-Pc2Payload.ps1` accepts only the recorded core ZIP hash and selects 74 code,
+`Build-Pc2Payload.ps1` accepts only the recorded core ZIP hash and selects 82 code,
 policy and observer files. It excludes configuration, projects, sessions, tokens,
 indexes, product source and the machine-specific search module. The ZIP also
 contains disabled QA helper dependencies; their public tools remain disabled.
@@ -21,10 +21,14 @@ transactional core updater, backup, rollback and recovery-journal behavior.
 Stage `prepare.mjs`, `apply.mjs`, `Run-Pc2Sync.ps1`, the payload's `.gz.b64` as
 `payload.json.gz.b64`, and the following unchanged library sources under `lib/`:
 `core-maintenance/{apply-audit-diagnostics,verify-core}.mjs` and
-`lean-runtime/{runtime_maintenance,runtime_readiness}.mjs`. Run prepare, inspect
+`lean-runtime/{runtime_maintenance,runtime_readiness,consumer-release}.mjs`. Run prepare, inspect
 `plan.json`, and provide its SHA256 to the scheduled wrapper. The wrapper must
 run outside the MCP process tree so its own service stop cannot kill the updater.
 Use a temporary limited-user task and remove it after confirmed completion.
+
+Application also checks any registered consumer's exact source pins under the
+maintenance lock before replacement, and rechecks its approval before committing
+the transaction. It never copies or removes a consumer registry.
 
 Application checks core hashes, actual Worker import, Shell Policy v2 and MCP
 health while preserving the captured configuration and registry bytes. A failed

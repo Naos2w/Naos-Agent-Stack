@@ -2,8 +2,9 @@
 
 Implementation and isolated MSI integration are complete. **The new shared MSI
 Runtime is not deployed. PC2 is unchanged.** The registered Stock consumer still
-pins the current shared version, so publication correctly requires its separate
-source review and version handoff. No Stock pin was changed by this task.
+pins the current shared version. The owner authorized this task to complete the
+Stock handoff; its separate candidate PR now passes CI. Installed Stock pins
+remain unchanged pending the explicit merge/publication gate described below.
 
 ## Actual comparison
 
@@ -91,11 +92,10 @@ The parallel Stock publisher work was preserved separately; its registered
 consumer guard was not removed, relaxed or bypassed.
 [Exact handoff hashes](benchmarks/runtime-v3/stock-handoff-20261102.json).
 
-Remaining order: obtain ownership of the Stock handoff, review/test those three
-source changes through Stock's existing Git/CI/approval gates, publish MSI with
+Remaining order: finish Stock's explicit merge/publication approval gate, publish MSI with
 the transactional updater, verify shared-runtime behavior, then perform PC2's
 code-only sync and live smoke. No full clean Windows reinstall is requested or
-claimed. The owner was asked whether this task should also own the Stock handoff.
+claimed. The owner authorized this task to own the Stock handoff.
 
 Final local candidate artifacts (not a public release):
 
@@ -115,3 +115,36 @@ attempt to dispatch it with the existing GitHub CLI credentials returned HTTP
 403 (`Must have admin rights to Repository`); no remote CI run was started and
 no alternate identity was used. Local validation above remains the available
 test evidence. No PR was merged and no production deployment was performed.
+
+## Stock handoff prepared and verified
+
+- Code-only [Stock PR #169](https://github.com/Naos2w/Stock-Analysts/pull/169),
+  head `dadcdeabd20a3bf25689305fdd70ddc6814d5565`, changes three files in an
+  isolated worktree. It updates three exact source pins and the Worker reader
+  callback assertion while retaining all eleven source checks.
+- Local PowerShell 7 candidate contract/mutation tests and mocked pending-result
+  drain/timeout/no-replay tests passed. Full Stock offline CI run
+  [41374424245](https://github.com/Naos2w/Stock-Analysts/actions/runs/41374424245)
+  completed successfully, including every configured Python and PowerShell step.
+  This is a PR-triggered Stock run, separate from the denied manual upstream run.
+- MSI read-only preflight: readiness `READY`, zero running/stale/unresolved
+  operations; all fifteen Runtime preimages and thirty-one core preimages match.
+  No core recovery journal or health pause exists at this check.
+- PC2's old synchronizer pinned the October candidate. The revised local
+  synchronizer pins the final core ZIP above and selects exactly 82 code files.
+  It now respects any registered consumer approval before replacement and
+  rechecks approval inside the rollback-protected verification step. Configuration,
+  sessions, projects and consumer registries are excluded from the payload.
+- Five consumer-admission/rollback/path-scope tests passed with temporary files
+  under the writable workspace. An initial run under the restricted system temp
+  directory hit Windows rename `EPERM`; it was not a passing run.
+- Local payload `pc2-runtime-v3-payload.json`: SHA256
+  `87F179E7F9EFBF2386E9BAB154FC9C71B8674C1DDDD190EF081A3025DAECB11C`.
+  Transfer staging is `pc2-runtime-v3-stage` alongside the core ZIP, with a hash
+  manifest for its nine transfer files. Nothing has been sent to PC2.
+
+The user's supplied AGENTS.md says “Never auto-merge PRs, deploy production”.
+After producing the concrete passing PR, an explicit one-time exception was
+requested for merging #169, installing MSI, then synchronizing PC2 only after
+MSI verification. No answer is inferred from elapsed time. Until that answer,
+the shared MSI/PC2 installation and Stock daily worktree/index remain unchanged.

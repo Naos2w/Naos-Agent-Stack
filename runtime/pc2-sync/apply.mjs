@@ -10,6 +10,7 @@ import {sha,digest,noLinks,targetPath} from './prepare.mjs';
 import {applyVerifiedFiles} from './lib/core-maintenance/apply-audit-diagnostics.mjs';
 import {acquireRuntimeMaintenance} from './lib/lean-runtime/runtime_maintenance.mjs';
 import {inspectRuntimeReadiness} from './lib/lean-runtime/runtime_readiness.mjs';
+import {inspectConsumerRelease,assertConsumerReleaseUnchanged} from './lib/lean-runtime/consumer-release.mjs';
 import {verifyCore} from './lib/core-maintenance/verify-core.mjs';
 const stage=dirname(fileURLToPath(import.meta.url)),run=promisify(execFile);
 const planBytes=await readFile(join(stage,'plan.json'));
@@ -39,6 +40,9 @@ try{
  if((await mcp()).pm2_env.status!=='online')throw Error('SYNC_MCP_NOT_ONLINE');
  await writeFile(pause,'Reviewed PC2 migration in progress',{flag:'wx'});createdPause=true;
  release=await acquireRuntimeMaintenance(toolbox);
+ const consumers=await inspectConsumerRelease(toolbox,new Map(files
+  .filter(f=>f.root==='headless'&&f.path.startsWith('toolboxes/agent-runtime/'))
+  .map(f=>[f.path.slice('toolboxes/agent-runtime/'.length),f.bytes])));
  await quiet();await preserved();stopped=true;await pm2(['stop','openchatx-mcp']);
  if((await mcp()).pm2_env.status!=='stopped')throw Error('SYNC_STOP_UNVERIFIED');
  await quiet();await preserved();
@@ -53,6 +57,7 @@ try{
    const code='await import('+JSON.stringify(worker)+');const c=await import('+JSON.stringify(executor)+');if(c.SHELL_POLICY_VERSION!==2)throw Error("SHELL_POLICY_MISMATCH");';
    await run(process.execPath,['--input-type=module','-e',code],{env:{...process.env,OPENCHATX_RUNTIME_ROOT:runtime,OPENCHATX_PUBLIC_CONFIG:join(headless,'config/openchatx.toml'),OPENCHATX_APP_DATA:headless},windowsHide:true,timeout:20000});
    await pm2(['restart','openchatx-mcp']);await healthy();
+   await assertConsumerReleaseUnchanged(toolbox,consumers);
   }catch(e){await pm2(['stop','openchatx-mcp']);throw e;}
  }});
  await preserved();

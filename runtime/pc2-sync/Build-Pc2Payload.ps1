@@ -4,7 +4,7 @@
 param([Parameter(Mandatory=$true)][string]$CoreBundlePath,[Parameter(Mandatory=$true)][string]$OutputPath)
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
-if((Get-FileHash -LiteralPath $CoreBundlePath).Hash -ne 'C5529684ED996667A6290CA2E326029C15570E8B5AA9CD61E3594C197B544FA8'){throw 'BUNDLE_HASH_MISMATCH'}
+if((Get-FileHash -LiteralPath $CoreBundlePath).Hash -ne '5EF43AC710910899D857140ACAABC6AE1AD382F3C1FEF113BA7BE04FBE5AA893'){throw 'BUNDLE_HASH_MISMATCH'}
 if((Test-Path -LiteralPath $OutputPath) -or (Test-Path -LiteralPath ($OutputPath+'.gz.b64'))){throw 'PAYLOAD_OUTPUT_ALREADY_EXISTS'}
 $repo=Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $core=(Get-Content -LiteralPath (Join-Path $repo 'runtime/core-maintenance/manifest.json') -Raw|ConvertFrom-Json).files.relativePath
@@ -22,8 +22,8 @@ try {
   $rows+=[ordered]@{root=$targetRoot;path=$relative;sha256=$sha;data=[Convert]::ToBase64String($bytes)}
  }
 }finally{$zip.Dispose()}
-if($rows.Count -ne 74){throw 'PAYLOAD_SCOPE_CHANGED'}
-$payload=[ordered]@{schema=1;host='NAOS-PC';sourceCommit='134d25c';sourceBundleSha256='C5529684ED996667A6290CA2E326029C15570E8B5AA9CD61E3594C197B544FA8';files=$rows}
+if($rows.Count -ne 82){throw 'PAYLOAD_SCOPE_CHANGED'}
+$payload=[ordered]@{schema=1;host='NAOS-PC';sourceCommit='49c2213';sourceBundleSha256='5EF43AC710910899D857140ACAABC6AE1AD382F3C1FEF113BA7BE04FBE5AA893';files=$rows}
 $bytes=[Text.Encoding]::UTF8.GetBytes(($payload|ConvertTo-Json -Depth 10 -Compress))
 [IO.File]::WriteAllBytes([IO.Path]::GetFullPath($OutputPath),$bytes)
 $memory=[IO.MemoryStream]::new();$gzip=[IO.Compression.GZipStream]::new($memory,[IO.Compression.CompressionMode]::Compress,$true)
