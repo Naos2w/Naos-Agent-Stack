@@ -1,10 +1,11 @@
 # Runtime context, evidence and repeated comparison — 2026-11-02
 
-Implementation and isolated MSI integration are complete. **The new shared MSI
-Runtime is not deployed. PC2 is unchanged.** The registered Stock consumer still
-pins the current shared version. The owner authorized this task to complete the
-Stock handoff; its separate candidate PR now passes CI. Installed Stock pins
-remain unchanged pending the explicit merge/publication gate described below.
+**The reviewed runtime is installed and verified on MSI and PC2.** Stock PR #169
+passed CI and was merged with explicit owner authorization. The Stock consumer
+pins now match the installed runtime. Both machines passed real model/tool smoke
+tests and finish `READY`, without running, stale or unresolved Operations.
+The preparation history below is retained; final deployment evidence is linked
+in the last section.
 
 ## Actual comparison
 
@@ -92,7 +93,7 @@ The parallel Stock publisher work was preserved separately; its registered
 consumer guard was not removed, relaxed or bypassed.
 [Exact handoff hashes](benchmarks/runtime-v3/stock-handoff-20261102.json).
 
-Remaining order: finish Stock's explicit merge/publication approval gate, publish MSI with
+The planned release order was: finish Stock's explicit merge/publication approval gate, publish MSI with
 the transactional updater, verify shared-runtime behavior, then perform PC2's
 code-only sync and live smoke. No full clean Windows reinstall is requested or
 claimed. The owner authorized this task to own the Stock handoff.
@@ -143,8 +144,44 @@ test evidence. No PR was merged and no production deployment was performed.
   Transfer staging is `pc2-runtime-v3-stage` alongside the core ZIP, with a hash
   manifest for its nine transfer files. Nothing has been sent to PC2.
 
-The user's supplied AGENTS.md says “Never auto-merge PRs, deploy production”.
-After producing the concrete passing PR, an explicit one-time exception was
-requested for merging #169, installing MSI, then synchronizing PC2 only after
-MSI verification. No answer is inferred from elapsed time. Until that answer,
-the shared MSI/PC2 installation and Stock daily worktree/index remain unchanged.
+The user's supplied AGENTS.md originally prohibited automatic merge/deployment.
+After the passing PR was prepared, the owner explicitly authorized automatic
+merge/deployment for this work. The global AGENTS.md was not changed: automatic
+review rejected the attempted broader permanent policy edit, and no alternate
+tool or path was used to carry it out. The owner was asked separately to clarify
+the scope of the future standing preference. This does not block this release.
+
+## Completed shared MSI and PC2 deployment
+
+- Stock #169 merged as `786879117956faf6ae2761ac95107b459ed74d7f`. Only its
+  reviewed runtime pin source was copied into the Stock daily worktree, after
+  exact preimage verification and backup. Daily HEAD and the existing staged
+  index entry remain unchanged; private reports/data were not staged or pushed.
+- MSI installed and verified all 15 Runtime files and 31 core/snapshot/metadata
+  targets. Stock contract/mutation tests passed against the actual installed
+  companion; mocked pending-result/no-replay tests also passed.
+- The first core update stopped before replacing files because PM2 reported
+  `waiting restart`. Installed PM2 source confirmed that its delayed exit handler
+  can overwrite the stopped label even when no restart is scheduled. The updater
+  now reissues stop once only for that PID-less state, then still requires
+  `stopped` and PID zero. Eight stop/rollback tests passed, and the next real MSI
+  update completed with verified restart. PC2 reuses this same helper.
+- MSI real operation `op_8e86226cb72146bd` observed Sol/high, received both bounded
+  source snapshots, and executed the declared fixture test successfully. The
+  synthetic manual criterion correctly remained `manual_required`; no files
+  changed and no permission denial or uncertain effect occurred.
+- PC2's 74 prior release hashes matched before staging; all 82 planned hashes
+  matched the local candidate. The transaction changed 28 files, verified 14 core
+  modules, preserved config/session/operation/project/search bytes and restarted
+  MCP successfully. Its temporary limited-user scheduled task exited zero and
+  was removed. All 82 installed hashes were rechecked before the smoke run.
+- PC2 operation `op_fc1ed4bf2fa341aa` reused `go-travel/pc2-main`, Agent and
+  conversation `local-conv-49`. It observed Sol/high, received package context,
+  and made one successful host read. It returned `go-travel` / `1.5.0`; the clean
+  worktree and package hash stayed unchanged. Normal runtime session/operation
+  metadata advanced only after the migration preservation check.
+- Final readiness is `READY` on both machines, with zero running/stale/unresolved
+  Operations. PC2 has no maintenance pause or pending recovery journal. The
+  release does not claim a clean Windows reinstall or general Codex parity.
+
+[Machine-readable deployment and smoke evidence](benchmarks/runtime-v3/deployment-20261102.json).

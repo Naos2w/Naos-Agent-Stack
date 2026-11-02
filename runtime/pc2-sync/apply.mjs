@@ -7,7 +7,7 @@ import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {setTimeout as delay} from 'node:timers/promises';
 import {sha,digest,noLinks,targetPath} from './prepare.mjs';
-import {applyVerifiedFiles} from './lib/core-maintenance/apply-audit-diagnostics.mjs';
+import {applyVerifiedFiles,stopServiceForUpdate} from './lib/core-maintenance/apply-audit-diagnostics.mjs';
 import {acquireRuntimeMaintenance} from './lib/lean-runtime/runtime_maintenance.mjs';
 import {inspectRuntimeReadiness} from './lib/lean-runtime/runtime_readiness.mjs';
 import {inspectConsumerRelease,assertConsumerReleaseUnchanged} from './lib/lean-runtime/consumer-release.mjs';
@@ -43,8 +43,8 @@ try{
  const consumers=await inspectConsumerRelease(toolbox,new Map(files
   .filter(f=>f.root==='headless'&&f.path.startsWith('toolboxes/agent-runtime/'))
   .map(f=>[f.path.slice('toolboxes/agent-runtime/'.length),f.bytes])));
- await quiet();await preserved();stopped=true;await pm2(['stop','openchatx-mcp']);
- if((await mcp()).pm2_env.status!=='stopped')throw Error('SYNC_STOP_UNVERIFIED');
+ await quiet();await preserved();stopped=true;
+ await stopServiceForUpdate({stop:()=>pm2(['stop','openchatx-mcp']),inspect:mcp});
  await quiet();await preserved();
  for(const f of files)await mkdir(dirname(f.target),{recursive:true});
  receipt=await applyVerifiedFiles(files,journal,join(headless,'backups'),{verify:async()=>{

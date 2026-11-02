@@ -1,0 +1,175 @@
+{
+  "schema": 1,
+  "date": "2026-11-02",
+  "stock": {
+    "pr": "https://github.com/Naos2w/Stock-Analysts/pull/169",
+    "mergeCommit": "786879117956faf6ae2761ac95107b459ed74d7f",
+    "ciRun": 41374424245,
+    "ci": "success",
+    "installedPinFileSha256": "434DCB3D32BE4742F8627A08C07221D889E7E26EC37BAC7C004295E03F08AD27",
+    "dailyHeadPreserved": "630e7e92ff5f7c32fb3e705291a8beaba494dcfb",
+    "indexBlobPreserved": "b64fb8d2cd893fa07dc9538945ee7ae1530ae545",
+    "contractMutationTests": "passed_against_installed_companion",
+    "pendingDrainTests": "passed"
+  },
+  "msi": {
+    "runtimeFiles": 15,
+    "coreTargets": 31,
+    "coreModules": 14,
+    "runtimeBackup": "C:/Users/Naos/.openchatx-mcp/headless/toolboxes/agent-runtime/backups/lean-runtime-2026-11-02T02-19-37-339Z-f36dd346-8f80-4795-9225-06d2ca755b02",
+    "coreBackup": "C:/Users/Naos/.openchatx-mcp/headless/backups/core-audit-afoHyZ",
+    "smoke": {
+      "operationId": "op_8e86226cb72146bd",
+      "state": "completed",
+      "exitCode": 0,
+      "sessionId": "local-conv-111",
+      "modelConfiguration": {
+        "version": 1,
+        "effectiveModel": "openai-codex/gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "reasoningState": "observed",
+        "reasoningSource": "model_settings.reasoning",
+        "contextWindow": 272000,
+        "source": "letta.conversation_retrieve",
+        "observedAt": "2026-11-02T02:22:39.375Z",
+        "scope": "before_turn"
+      },
+      "changed_files": [],
+      "work_context": {
+        "state": "observed",
+        "files": [
+          {
+            "path": "TASK.md",
+            "state": "observed",
+            "truncated": false
+          },
+          {
+            "path": "subject.mjs",
+            "state": "observed",
+            "truncated": false
+          }
+        ],
+        "omitted": 0,
+        "contentChars": 1513
+      },
+      "declared_checks": {
+        "state": "manual_required",
+        "checks": [
+          {
+            "id": "fixture_test",
+            "kind": "command",
+            "state": "passed"
+          },
+          {
+            "id": "owner_review",
+            "kind": "manual",
+            "state": "manual_required"
+          }
+        ],
+        "scope": "declared_checks_only",
+        "deliveryVerified": false,
+        "snapshot": "operation_end",
+        "staleOperation": false
+      },
+      "tool_outcomes": {
+        "version": 1,
+        "scope": "runtime_recorded_calls",
+        "total": 1,
+        "succeeded": 1,
+        "failed": 0,
+        "unknown": 0,
+        "recovered": 0,
+        "reviewRequired": 0,
+        "failures": [],
+        "failuresTruncated": false
+      },
+      "blockers": []
+    },
+    "finalReadiness": "READY"
+  },
+  "pc2": {
+    "payloadSha256": "87F179E7F9EFBF2386E9BAB154FC9C71B8674C1DDDD190EF081A3025DAECB11C",
+    "planSha256": "4D5C5E415A942F32F967F69D78DAB0579D38E40E297D56F5BB604A49EB659E79",
+    "matchedPriorReleaseFiles": 74,
+    "verifiedInstalledFiles": 82,
+    "changedFiles": 28,
+    "migration": {
+      "ok": true,
+      "backup": "C:\\Users\\simpl\\.openchatx-mcp\\headless\\backups\\core-audit-hLBNyb",
+      "files": 82,
+      "readiness": {
+        "schema": 1,
+        "ready": true,
+        "state": "ready",
+        "reason": "READY",
+        "running": 0,
+        "stale": 0,
+        "unresolved": 0,
+        "registry": "present",
+        "lock": null
+      },
+      "preserved": true,
+      "sourceCommit": "49c2213",
+      "completedAt": "2026-11-02T02:27:06.671Z"
+    },
+    "smoke": {
+      "operationId": "op_fc1ed4bf2fa341aa",
+      "state": "completed",
+      "exitCode": 0,
+      "sessionId": "local-conv-49",
+      "agentId": "agent-local-9f849b69-a1e1-4e62-87ac-38d49a0741bc",
+      "modelConfiguration": {
+        "version": 1,
+        "effectiveModel": "openai-codex/gpt-6.1-sol",
+        "reasoningEffort": "high",
+        "reasoningState": "observed",
+        "reasoningSource": "model_settings.reasoning",
+        "contextWindow": 272000,
+        "source": "letta.conversation_retrieve",
+        "observedAt": "2026-11-02T02:29:33.366Z",
+        "scope": "before_turn"
+      },
+      "assistantText": "{\"name\":\"go-travel\",\"version\":\"1.5.0\"}",
+      "changed_files": [],
+      "work_context": {
+        "state": "observed",
+        "files": [
+          {
+            "path": "package.json",
+            "state": "observed",
+            "truncated": false
+          }
+        ],
+        "omitted": 0,
+        "contentChars": 1230
+      },
+      "tool_outcomes": {
+        "version": 1,
+        "scope": "runtime_recorded_calls",
+        "total": 1,
+        "succeeded": 1,
+        "failed": 0,
+        "unknown": 0,
+        "recovered": 0,
+        "reviewRequired": 0,
+        "failures": [],
+        "failuresTruncated": false
+      },
+      "blockers": []
+    },
+    "smokeProjectClean": true,
+    "smokePackageSha256BeforeAndAfter": "B45EDAB64F1F3907DDBD0ED60230EE9BF3625DE837EDCB41809CCDC8137C4605",
+    "temporaryTaskRemoved": true,
+    "finalReadiness": "READY"
+  },
+  "maintenanceFix": {
+    "rootCause": "PM2 delayed exit handler labels a stopped PID-less process waiting restart despite its stopping flag",
+    "behavior": "Reissue stop once only for PID 0 and waiting restart; require stopped plus PID 0 before replacement",
+    "transactionAndStopTestsPassed": 8
+  },
+  "scope": {
+    "cleanWindowsInstall": false,
+    "generalCodexParityClaimed": false,
+    "globalAgentsPolicyModified": false
+  }
+}

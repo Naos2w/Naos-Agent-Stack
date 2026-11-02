@@ -14,6 +14,22 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex').toUpperCas
 const run = promisify(execFile);
 export const journalName = '.audit-update-pending.json';
 
+// PM2's delayed exit handler can relabel an already stopped process as
+// "waiting restart" even when its stop flag prevented scheduling a restart.
+// Reissue stop once only for that PID-less state; never treat it as stopped.
+export async function stopServiceForUpdate({ stop, inspect, wait = delay }) {
+  await stop();
+  await wait(250);
+  let app = await inspect();
+  if (app.pm2_env.status === 'waiting restart' && app.pid === 0) {
+    await stop();
+    await wait(250);
+    app = await inspect();
+  }
+  if (app.pm2_env.status !== 'stopped' || app.pid !== 0)
+    throw Error('AUDIT_UPDATE_STOP_UNVERIFIED');
+}
+
 async function exists(path) {
   try { await lstat(path); return true; }
   catch (error) { if (error.code === 'ENOENT') return false; throw error; }
@@ -172,8 +188,7 @@ async function install(runtimeRoot, headlessRoot) {
     // Record the stop attempt before dispatch so an uncertain PM2 response still
     // attempts to restore service, provided no recovery journal remains.
     stopped = true;
-    await pm2(['stop', 'openchatx-mcp']);
-    if ((await mcp()).pm2_env.status !== 'stopped') throw Error('AUDIT_UPDATE_STOP_UNVERIFIED');
+    await stopServiceForUpdate({ stop: () => pm2(['stop', 'openchatx-mcp']), inspect: mcp });
     await assertNoOperations(toolbox);
     await assertNoActiveJobs(headlessRoot);
     const result = await applyVerifiedFiles(plan, journal, join(headlessRoot, 'backups'), {
