@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "date": "2026-11-02",
-  "status": "candidate_verified_not_deployed",
+  "status": "msi_installed_verified_pc2_offline",
   "sourceOperation": "op_5d78d55d32af4467",
   "sourceConversation": "local-conv-112",
   "diagnosis": {
@@ -38,12 +38,15 @@
     "completeBytes": 288298081
   },
   "deployment": {
-    "msi": "deferred_by_owner_candidate_only",
-    "pc2": "unreachable_tunnel_client_not_seen",
-    "installedHelperSha256": "19AD0225F15B7350D608479A09B55DC57B067C08118FCD7FFDC26F9F4C8D7AB7",
-    "sharedServiceRestarted": false,
+    "msi": "installed_and_verified",
+    "pc2": "owner_confirmed_powered_off_pending_client_verification",
+    "installedHelperSha256": "B224EDD11D8043F75D94D15DB9E74B2F23505BD6C17D076727DAE4BE886C7545",
+    "sharedServiceRestarted": true,
     "sourceCommit": "a807d2b",
     "remoteBranch": "naos/fix/letta-recovery-tool-scope",
-    "pullRequest": "not_created_github_requires_collaborator"
+    "pullRequest": "https://github.com/Naos2w/Naos-Agent-Stack/pull/6",
+    "mergeCommit": "93006d5b489984c13e204f91b74fd2ac086e10e0",
+    "installedAt": "2026-11-02T04:07:34.486Z",
+    "receipt": "recovery-tools-deployment-20261102.json"
   }
 }
