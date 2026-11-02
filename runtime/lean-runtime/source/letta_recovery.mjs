@@ -11,6 +11,26 @@ const hash = value => createHash('sha256').update(JSON.stringify(stable(value)))
 const items = page => Array.isArray(page) ? page : page?.getPaginatedItems?.() ?? page?.items ?? page?.data ?? [];
 const fail = code => { throw new Error(code); };
 
+// Recovery has no fresh input payload to carry the normal client tool filter.
+// Select only this conversation's currently registered host tools, never native
+// Letta tools or registrations belonging to a different conversation.
+export function recoveryToolAllowlist(registrations, scope) {
+  if (!Array.isArray(registrations)) fail('RECOVERY_TOOL_REGISTRY_UNAVAILABLE');
+  const names = registrations.filter(tool => tool.runtime?.agentId === scope.agent_id &&
+    tool.runtime?.conversationId === scope.conversation_id &&
+    typeof tool.name === 'string' && tool.name.startsWith('openchatx_')).map(tool => tool.name);
+  if (!names.length) fail('RECOVERY_TOOL_CONTROLLER_UNAVAILABLE');
+  return [...new Set(names)].sort();
+}
+
+export function configureOpenchatxStreamOptions(api, tools, options) {
+  if (api !== 'openai-codex-responses' || !Array.isArray(tools) || !tools.length ||
+      !tools.every(tool => typeof tool.name === 'string' && tool.name.startsWith('openchatx_'))) return options;
+  // Bound silence, not model execution time. Every stream event resets the
+  // provider's existing idle timer; partial output is never replayed here.
+  return {...options, timeoutMs: Math.min(options.timeoutMs > 0 ? options.timeoutMs : Infinity, 120_000)};
+}
+
 export async function verifyLocalCompletion(backend, scope, messageId, inputId) {
   // Local 0.34.1 drops ephemeral run IDs after a server restart. Its durable
   // transcript still records the model stop reason. Read a bounded tail only.
@@ -97,6 +117,9 @@ export async function handleRecovery(command, deps) {
     });
     // Stable continuation ID also survives loss of the acceptance response.
     const requestOtid = `openchatx-recovery-${revision}`;
+    const clientToolAllowlist = recoveryToolAllowlist(deps.registeredTools?.(), scope);
+    if (calls.some(call => !clientToolAllowlist.includes(call.toolName)))
+      fail('RECOVERY_TOOL_CONTROLLER_UNAVAILABLE');
     const record = { agentId: scope.agent_id, conversationId: scope.conversation_id,
       workingDirectory: cwd(), toolCallIds: calls.map(call => call.toolCallId), results, requestOtid };
     store.write(record);
@@ -106,6 +129,7 @@ export async function handleRecovery(command, deps) {
     runtime.recoveredApprovalState = null;
     // start() claims the lifecycle synchronously, before this lock is released.
     start({ type: 'message', agentId: scope.agent_id, conversationId: scope.conversation_id,
+      clientToolAllowlist, excludeInteractiveTools: true,
       messages: [{ type: 'approval', approvals: results, otid: requestOtid }] });
     return { success: true, accepted: true, revision, recoveredTools: results.length };
   } finally { locks.delete(key); }

@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "date": "2026-11-02",
+  "status": "candidate_verified_not_deployed",
+  "sourceOperation": "op_5d78d55d32af4467",
+  "sourceConversation": "local-conv-112",
+  "diagnosis": {
+    "lastHostResultAt": "2026-11-02T02:48:12.766Z",
+    "providerErrorAt": "2026-11-02T02:54:16.215Z",
+    "providerError": "WebSocket idle timeout after 300000ms",
+    "upstreamSilenceCause": "unknown",
+    "nativeToolCause": "recovery continuation omitted clientToolAllowlist"
+  },
+  "validation": {
+    "affectedTestsPassed": 38,
+    "affectedTestsFailed": 0,
+    "providerVersion": "0.34.1",
+    "liveProbe": {
+      "timestamp": "2026-11-02T03:46:41.622Z",
+      "status": "passed",
+      "phase": "combined",
+      "conversationId": "local-conv-1",
+      "clientMessageId": "openchatx-cold-e1570b222cc624f1",
+      "providerRestarts": 1,
+      "workerRestarts": 1,
+      "executionCount": 1,
+      "originalPromptSubmissions": 1,
+      "recoveryPromptSubmissions": 0,
+      "scope": "isolated real backend/model; fixed local marker; shared service untouched"
+    }
+  },
+  "candidate": {
+    "helperSha256": "B224EDD11D8043F75D94D15DB9E74B2F23505BD6C17D076727DAE4BE886C7545",
+    "providerPatchSha256": "F494ADFD8167EF289A5C2C8DAF8558A65D8DE15DF3375AFA85F43D094BEB7575",
+    "workerSha256Unchanged": "A5D471F5AF422FE8C8F42CDC90487D68E407CC64CE2D88B9434272B6BB6E6766",
+    "coreSha256": "32F2B8C93A7C535D99AA9EADAA20A3E013C1FB6F5E66B602F6E36811C0428BD3",
+    "completeSha256": "ABAF3A0A9785C560B2229E773F164E9D449EF7A6FE37C753707276F2E5835F88",
+    "completeBytes": 288298081
+  },
+  "deployment": {
+    "msi": "pending_shared_backend_maintenance",
+    "pc2": "unreachable_tunnel_client_not_seen",
+    "installedHelperSha256": "19AD0225F15B7350D608479A09B55DC57B067C08118FCD7FFDC26F9F4C8D7AB7",
+    "sharedServiceRestarted": false
+  }
+}
