@@ -272,3 +272,9 @@ or patched. The installed helper retains its old SHA256 `19AD0225...C8D7AB7`.
 Worker/facade sources and Stock's 11-source consumer contract are unchanged.
 Resume with both machines' maintenance checks, backed-up provider update,
 MSI smoke verification, then PC2 verification. Do not label this deployed.
+
+The owner subsequently chose to finish the candidate and defer the shared
+service update. Source commit `a807d2b` was pushed to
+`naos/fix/letta-recovery-tool-scope`. Creating its PR against the existing
+architecture integration branch failed with GitHub `must be a collaborator`;
+no PR was created or merged, and no alternate identity was used.

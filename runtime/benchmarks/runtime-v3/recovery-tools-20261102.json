@@ -38,9 +38,12 @@
     "completeBytes": 288298081
   },
   "deployment": {
-    "msi": "pending_shared_backend_maintenance",
+    "msi": "deferred_by_owner_candidate_only",
     "pc2": "unreachable_tunnel_client_not_seen",
     "installedHelperSha256": "19AD0225F15B7350D608479A09B55DC57B067C08118FCD7FFDC26F9F4C8D7AB7",
-    "sharedServiceRestarted": false
+    "sharedServiceRestarted": false,
+    "sourceCommit": "a807d2b",
+    "remoteBranch": "naos/fix/letta-recovery-tool-scope",
+    "pullRequest": "not_created_github_requires_collaborator"
   }
 }
