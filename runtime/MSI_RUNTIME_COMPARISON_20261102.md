@@ -227,7 +227,7 @@ backend and does not establish whole-system memory use.
 
 [Real-task execution and verification evidence](benchmarks/runtime-v3/real-development-20261102.json).
 
-## Recovery tool scope and provider idle bound (candidate v3d)
+## Recovery tool scope and provider idle bound (v3d; MSI deployed)
 
 The target conversation's durable transcript narrows the earlier timeout:
 after the last successful host result at `02:48:12.766Z`, the provider recorded
@@ -258,23 +258,44 @@ one initial prompt submission, zero recovery prompt submissions, and successful
 continuation. Its helper and bundle now live in a private probe directory;
 the probe no longer replaces the shared service's helper.
 
-Candidate artifacts (not installed):
+Rebuilt artifacts corresponding to the deployed provider changes:
 - Core `core-runtime-v3d-20261102.zip`, SHA256
   `32F2B8C93A7C535D99AA9EADAA20A3E013C1FB6F5E66B602F6E36811C0428BD3`.
 - Complete `Naos-Agent-Stack-v023-runtime-v3d-Complete.zip`, 288,298,081 bytes,
   SHA256 `ABAF3A0A9785C560B2229E773F164E9D449EF7A6FE37C753707276F2E5835F88`.
 
-Deployment is pending: MSI readiness is READY with zero running, stale or
-unresolved Operations, but PC2's MCP tunnel reports `tunnel_client_not_seen`.
-Because both use the MSI Letta service, PC2's activity cannot currently be
-verified/held during maintenance. The shared service has not been restarted
-or patched. The installed helper retains its old SHA256 `19AD0225...C8D7AB7`.
-Worker/facade sources and Stock's 11-source consumer contract are unchanged.
-Resume with both machines' maintenance checks, backed-up provider update,
-MSI smoke verification, then PC2 verification. Do not label this deployed.
+The initial delivery remained candidate-only while PC2 was unreachable and
+the owner deferred updating the shared service. After the owner requested the
+Naos2w account, PR #6 was created and subsequently merged by the owner as
+`93006d5b489984c13e204f91b74fd2ac086e10e0`. The owner then authorized continuation
+and confirmed PC2 was powered off and would remain off throughout maintenance.
 
-The owner subsequently chose to finish the candidate and defer the shared
-service update. Source commit `a807d2b` was pushed to
-`naos/fix/letta-recovery-tool-scope`. Creating its PR against the existing
-architecture integration branch failed with GitHub `must be a collaborator`;
-no PR was created or merged, and no alternate identity was used.
+MSI's four provider/installer-source files were updated at
+`2026-11-02T04:07:34.486Z` under the existing Runtime maintenance lock. The update
+checked terminal Operations and Stock consumer pins, verified the service PID's
+executable, and used the existing transactional file replacement/rollback helper.
+Backup: `C:/Users/Naos/.openchatx-mcp/headless/toolboxes/agent-runtime/backups/core-audit-aYOG4F`.
+Letta restarted from PID 57460 to 28376; protocol 1 / version 0.34.1 health passed.
+Worker/facade sources and Stock's 11-source consumer contract remain unchanged.
+
+Installed verification passed:
+- Three contract tests against the installed bundle, including native-tool
+  filtering and the idle parser.
+- Actual MCP Operation `op_6ec136bfe7d64caf`, conversation `local-conv-113`,
+  observed GPT-6.1 Sol/high: one successful bounded file read, no denied calls,
+  no blockers, no file changes. The model appended an unrelated personality
+  preference question; this output-quality issue was not changed by this patch.
+- Live service recovery fixture, conversation `local-conv-114`: terminate only
+  the test Worker after its fixed marker is durably recorded, then recover the
+  original tool ID. One effect, one original prompt, zero recovery prompt
+  submissions; completion passed without restarting the shared service again.
+- Final readiness READY: zero running, stale or unresolved Operations.
+
+PC2 client verification remains pending until it is powered on. Its existing
+client connects to this shared MSI backend; no PC2 client files changed in this
+provider-only release. Upstream silence remains a separate unresolved cause:
+the original diagnostic records `eventsEmitted: true`, phase
+`after_message_stream_start`, and a 240,628-byte request; it does not establish
+why the connection stopped receiving events.
+
+[Installed deployment evidence](benchmarks/runtime-v3/recovery-tools-deployment-20261102.json).
