@@ -32,15 +32,32 @@ application and the core health check; inspect its backup before manual recovery
 It preserves Project routing, authentication and tool permissions. Declared tool
 annotations are retained explicitly; missing flags use conservative MCP defaults.
 Shell and file-edit tools keep their existing write/destructive classifications.
-The current updater accepts only the pinned MSI 2026-11-01.bootstrap.4 overlay
-listed in bootstrap-preimages.json, advancing it to 2026-11-02.bootstrap.1 with exact Project
-and qualified Skill discovery guidance, scoped work context and acceptance evidence.
-It retains bounded
-execution audit fields. Bootstrap uses the configured Toolbox root, which may
-differ from the MCP state directory.
-It verifies installed modules and existing snapshots before installing the
-conversation bootstrap overlay. Unrecognized local changes stop
-the update; existing shell and audit behavior is preserved.
+The current update source targets the pinned `2026-11-04.health.1` overlay
+for OpenChatX `1.0.0-beta.2`. It accepts **only** two complete, unmodified
+installed preimage sets: `bootstrap-preimages.json` for the original approved
+bootstrap baseline and `upgrade-preimages-20261102.json` for the verified
+`2026-11-02.context.1` overlay. A mixture of those versions, a changed file,
+an unknown package version or a partial installation is refused. The
+snapshot/installed checks and transactional rollback remain mandatory.
+
+A failed/closed historical Operation whose tool-effect evidence still needs
+reconciliation continues to make *dispatch readiness* degraded. It may permit
+a **core maintenance update only** when every recorded Worker has terminated,
+the registry is valid, no update/recovery journal or admission lock is active,
+and all ordinary PM2, job, watchdog, preimage and rollback checks pass.
+The installer neither clears unresolved Operation flags nor replays work.
+A running/stale Worker, damaged state or unknown ownership is never an
+acceptable maintenance starting point. Historical PIDs are evaluated with
+bounded read-only Windows process-creation checks: a process created after
+the original Operation's last update is proven unrelated, and two OS queries
+that both find no matching PID establish its absence. Unknown or conflicting
+process identity fails closed; a PID number alone is never decisive.
+The existing `runtime-readiness.ps1` watcher remains a strict operational-
+readiness check.
+
+Bootstrap uses the configured Toolbox root, which may differ from the MCP
+state directory. Existing execution audits, Project routing, remote tool
+identity and privacy controls are preserved.
 
 The 2026-11-01 bootstrap adds versioned guidance on initialization, Project use,
 and the first response observed after an identity change. Every successful tool

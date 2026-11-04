@@ -58,7 +58,7 @@
     {
       "source": "runtime/lean-runtime/runtime_readiness.mjs",
       "target": "toolboxes/agent-runtime/tools/runtime_readiness.mjs",
-      "sha256": "70F2A3300812C421E95BC9A2C6D96FFDAE1C13728CFDB2FB9E102AF2C50E4F0C"
+      "sha256": "52111A211B5CDC9CD4854CE0E644AEF33B670BEB0941661ED65F5723C62D953D"
     },
     {
       "source": "runtime/lean-runtime/operation_reconciliation.mjs",
@@ -118,7 +118,7 @@
     {
       "source": "runtime/core-maintenance/README.md",
       "target": "headless/core-maintenance/README.md",
-      "sha256": "69E2C0C488BC35D067D357EFB6516DDCB2C76E428882A08E2FD60BD69C3186E4"
+      "sha256": "BC2907CE58A712B47481A3346EA2B859A2761BAE4B4F517A90D628174FD2AC87"
     },
     {
       "source": "runtime/core-maintenance/baseline/audit-format.js",
