@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "runtimePackage": "openchatx-mcp",
   "runtimeVersion": "1.0.0-beta.2",
-  "overlayRevision": "2026-11-02.context.1",
+  "overlayRevision": "2026-11-04.health.1",
   "policy": "verified-local-MSI-overlay-do-not-auto-apply-to-unknown-upstream-versions",
   "files": [
     {
@@ -88,6 +88,12 @@
       "snapshot": "baseline/start-here.js",
       "purpose": "Versioned conversation entry, scoped continuation and additive execution evidence",
       "sha256": "FDA0424B202F68ADF23750CD4228644FBBDDC22F069D045295C2B387748F8988"
+    },
+    {
+      "relativePath": "dist/capabilities/health.js",
+      "snapshot": "baseline/health.js",
+      "sha256": "9E9429426E6631AFC226B5488C24530DA852AC74D96749300662EDF2EA2AA2D7",
+      "purpose": "Aggregate MCP/Toolbox connectivity with fail-closed Agent Runtime operation readiness"
     }
   ],
   "regressionTests": [

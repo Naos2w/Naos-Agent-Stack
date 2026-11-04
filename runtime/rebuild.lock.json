@@ -93,12 +93,12 @@
     {
       "source": "runtime/core-maintenance/manifest.json",
       "target": "headless/core-maintenance/manifest.json",
-      "sha256": "844ACB08DE21F55DF7115E176D3398CD913767E5239762F0A9B2F1E529AFD5FD"
+      "sha256": "3D99941602182EBE91D54BA6548277F457C91B0FF65E671912C6551F848C5A6B"
     },
     {
       "source": "runtime/core-maintenance/verify-core.mjs",
       "target": "headless/core-maintenance/verify-core.mjs",
-      "sha256": "695570E861007C1706E3D876D97357FFDA6C4D8498AFF279BE2C93292DDF7FF0"
+      "sha256": "266245A1448C3C2A0D1206B62E05D48AA8ED8C8672038E9159A8E5A1E1657EB1"
     },
     {
       "source": "runtime/core-maintenance/Test-OpenChatXCorePatch.ps1",
@@ -118,7 +118,7 @@
     {
       "source": "runtime/core-maintenance/README.md",
       "target": "headless/core-maintenance/README.md",
-      "sha256": "2359EB53F699750BE6A5B7EAFE7F19A666C5DA62622E125F8872C7577F62C8E8"
+      "sha256": "69E2C0C488BC35D067D357EFB6516DDCB2C76E428882A08E2FD60BD69C3186E4"
     },
     {
       "source": "runtime/core-maintenance/baseline/audit-format.js",
@@ -279,6 +279,16 @@
       "source": "runtime/core-maintenance/baseline/start-here.js",
       "target": "headless/core-maintenance/baseline/start-here.js",
       "sha256": "FDA0424B202F68ADF23750CD4228644FBBDDC22F069D045295C2B387748F8988"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/health.js",
+      "target": "runtime/dist/capabilities/health.js",
+      "sha256": "9E9429426E6631AFC226B5488C24530DA852AC74D96749300662EDF2EA2AA2D7"
+    },
+    {
+      "source": "runtime/core-maintenance/baseline/health.js",
+      "target": "headless/core-maintenance/baseline/health.js",
+      "sha256": "9E9429426E6631AFC226B5488C24530DA852AC74D96749300662EDF2EA2AA2D7"
     }
   ]
 }

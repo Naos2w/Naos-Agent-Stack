@@ -1,11 +1,18 @@
 # Pinned OpenChatX compiled overlay
 
 These files preserve the existing MSI `openchatx-mcp@1.0.0-beta.2` overlay.
-The manifest binds fourteen compiled modules and their snapshots by SHA256.
+The manifest binds fifteen compiled modules and their snapshots by SHA256.
 They are not an upstream TypeScript source build or a signed upstream release.
 Never apply them to a different package version or an unrecognized base bundle.
 
 `verify-core.mjs` only verifies; it never repairs or restarts a service.
+The capability-health overlay separates live MCP/Tunnel availability from the
+Agent Runtime Operation readiness state. It reports an aggregate degraded status
+when an original Operation still needs reconciliation, even while OpenChatX and
+the tunnel are connected. The read-only readiness helper is used with bounded
+fixed diagnostic codes; absent/unreadable helpers fail closed. It does **not**
+clear Operations, reissue prompts, or auto-restart services. This revision must
+be applied only with the existing guarded updater, not copied over live files.
 The modules provide scoped WSL argument handling, verified audit rotation and
 explicit tool-error diagnostics, complete tool annotations, pre-dispatch remote
 authentication auditing and bounded JSON-RPC response observation. Unknown failure codes remain unknown; no
