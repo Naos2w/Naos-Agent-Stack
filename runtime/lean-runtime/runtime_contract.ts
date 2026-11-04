@@ -91,15 +91,22 @@ export function describeOperationOutcome(input: {
   blockers?: unknown,
   idempotency?: unknown,
   stalePoll?: boolean,
-  reconciliation?: { remoteState?: string, requiresReconciliation?: boolean },
+  reconciliation?: { remoteState?: string, requiresReconciliation?: boolean, reason?: string },
 }) {
   const taskRef = normalizeTaskRef(input.taskRef)
   const blockers = Array.isArray(input.blockers) ? input.blockers : []
   const uncertain = Array.isArray(input.idempotency) && input.idempotency.some(
     (item) => item?.status === "uncertain" || item?.status === "mismatch",
   )
+  // ChatGPT is the existing supervising conversation using OpenChatX tools;
+  // it is not an unattended provider/API switch or a second Letta run.
+  const chatgptHandoff = input.state === "failed" && !input.stalePoll && !uncertain
+    && input.reconciliation?.reason === "PROVIDER_QUOTA_EXHAUSTED"
+    && input.reconciliation?.remoteState === "settled"
+    && input.reconciliation?.requiresReconciliation === false
   const action = input.stalePoll ? "inspect_current_operation"
     : input.state === "running" ? "poll_existing_operation"
+    : chatgptHandoff ? "handoff_to_chatgpt_direct_mcp"
     : !uncertain && input.reconciliation?.remoteState === "settled" &&
       input.reconciliation.requiresReconciliation === false &&
       (input.state === "failed" || input.state === "cancelled") ? "inspect_failure_before_retry"
@@ -110,7 +117,15 @@ export function describeOperationOutcome(input: {
     runtimePolicy: runtimePolicy(),
     execution: { state: input.state, scope: "operation" },
     delivery: { state: "not_evaluated", taskRef, acceptanceVerified: false },
-    next_move: { action, taskRef, automaticRetryAllowed: false },
+    next_move: {
+      action, taskRef, automaticRetryAllowed: false,
+      ...(chatgptHandoff ? {
+        executionPath: "chatgpt_direct_openchatx_mcp",
+        interactiveOnly: true,
+        automaticPromptReplay: false,
+        requiresCurrentTaskInspection: true,
+      } : {}),
+    },
     acceptance: {
       state: "not_evaluated",
       evidenceRequired: ["current_scoped_diff", "affected_check_results", "task_criteria_mapping"],

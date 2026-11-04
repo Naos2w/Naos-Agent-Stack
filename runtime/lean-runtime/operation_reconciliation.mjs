@@ -92,20 +92,51 @@ export function applyRemoteSettlement(operation, summary) {
       || receipt.clientMessageId !== summary.clientMessageId
       || !['cancelled', 'already_idle'].includes(receipt.status)
       || !Number.isFinite(Date.parse(receipt.observedAt))) return summary;
+  // A scoped terminal turn with verified zero tools is stronger than a prior
+  // listener-idle observation, but an old unverified error is not.
+  if (summary.reason === 'PROVIDER_QUOTA_EXHAUSTED' && summary.requiresReconciliation === false)
+    return {...summary, settlement:receipt};
   const {countsKnown,inFlight,uncertainEffects} = inspectEffectEvidence(summary);
   const backendConfirmed=receipt.status==='cancelled';
   return { ...summary, remoteState: backendConfirmed ? 'settled' : 'uncertain',
     requiresReconciliation: !backendConfirmed || !countsKnown || inFlight || uncertainEffects,
     automaticRetryAllowed: false,
-    reason: !backendConfirmed ? 'REMOTE_BACKEND_IDLE_UNVERIFIED' : !countsKnown ? 'EXECUTION_EVIDENCE_INCOMPLETE' : inFlight ? 'EXTERNAL_TOOL_IN_FLIGHT'
+    reason: !backendConfirmed ? (summary.reason === 'PROVIDER_QUOTA_EXHAUSTED_UNVERIFIED'
+      ? summary.reason : 'REMOTE_BACKEND_IDLE_UNVERIFIED') : !countsKnown ? 'EXECUTION_EVIDENCE_INCOMPLETE' : inFlight ? 'EXTERNAL_TOOL_IN_FLIGHT'
       : uncertainEffects ? 'SIDE_EFFECT_UNCERTAIN' : 'REMOTE_SETTLED_EFFECTS_NOT_ROLLED_BACK',
     settlement: receipt };
+}
+
+// Only a structured, terminal Letta provider error identifies quota exhaustion.
+// Do not classify generic network errors, timeouts, provider denials or user text.
+export function isCodexUsageLimitError(value) {
+  if (typeof value !== 'string' || value.length > 8192 ||
+      !value.startsWith('LETTA_TURN_FAILED: {')) return false;
+  try {
+    const body = JSON.parse(value.slice('LETTA_TURN_FAILED: '.length));
+    const failure = body?.error?.error;
+    return failure?.type === 'local_backend_error'
+      && failure.message === 'Codex error: The usage limit has been reached'
+      && (failure.detail === undefined || failure.detail === failure.message)
+      && /^local-run-\d+$/.test(body?.error?.run_id ?? '');
+  } catch { return false; }
+}
+
+// Only the Worker-observed terminal turn and explicit zero external requests
+// can settle a quota failure. Old logs without this proof must stay unresolved.
+function quotaTurnSettled(operation, error, terminal, timeout, recovery, events, idempotency) {
+  return operation.state === 'failed' && isCodexUsageLimitError(error)
+    && !timeout && !recovery && events.length === 0 && idempotency.length === 0
+    && terminal?.client_message_id === `openchatx-${operation.id}`
+    && terminal?.external_execution_schema === 1
+    && terminal?.external_requests === 0 && terminal?.external_completed === 0
+    && Array.isArray(terminal.idempotency) && terminal.idempotency.length === 0;
 }
 
 // Summarize existing execution evidence. This does not contact Letta, retry a
 // tool, declare side effects absent, or authorize removal of replay records.
 export function summarizeReconciliation(operation, result = {}, stderr = '') {
-  let timeout = null, recovery = null;
+  let timeout = null, recovery = null, terminal = null;
   const events=[];
   for (const line of String(stderr).split(/\r?\n/)) {
     if (!line.startsWith('{')) continue;
@@ -113,6 +144,7 @@ export function summarizeReconciliation(operation, result = {}, stderr = '') {
       const entry = JSON.parse(line);
       if (entry.kind === 'LETTA_TURN_TIMEOUT_DIAGNOSTIC' || entry.kind === 'LETTA_TURN_INTERRUPTION_DIAGNOSTIC') timeout = entry;
       if (entry.kind === 'LETTA_TIMEOUT_RECOVERY') recovery = entry;
+      if (entry.kind === 'LETTA_TURN_TERMINAL_FAILURE') terminal = entry;
       if (entry.kind === 'EXTERNAL_TOOL_EXECUTION') {
         // 256 calls x start/complete/delivery failure. Overflow is invalid.
         if(events.length<769) events.push(entry);
@@ -139,24 +171,27 @@ export function summarizeReconciliation(operation, result = {}, stderr = '') {
   const completed = operation.state === 'completed' && result.ok === true;
   const settled = recovery?.status === 'cancelled'
     && error === 'LETTA_TURN_TIMEOUT_REMOTE_SETTLED';
+  const quotaError = isCodexUsageLimitError(error);
+  const quotaSettled = quotaTurnSettled(operation,error,terminal,timeout,recovery,events,idempotency);
   const externalInFlight = timeout && Number.isInteger(timeout.external_requests)
     && Number.isInteger(externalCompleted) && timeout.external_requests !== externalCompleted;
-  const requiresReconciliation = Boolean(evidenceInvalid || sideEffectUncertain || externalInFlight || (!completed && !settled));
+  const requiresReconciliation = Boolean(evidenceInvalid || sideEffectUncertain || externalInFlight || (!completed && !settled && !quotaSettled));
   return applyRemoteSettlement(operation, {
     schema: 1,
     source: 'recorded_execution_evidence',
-    remoteState: completed ? 'completed' : settled ? 'settled' : 'uncertain',
+    remoteState: completed ? 'completed' : (settled || quotaSettled) ? 'settled' : 'uncertain',
     requiresReconciliation,
     automaticRetryAllowed: false,
     reason: evidenceInvalid ? 'EXECUTION_EVIDENCE_INCOMPLETE' : externalInFlight ? 'EXTERNAL_TOOL_IN_FLIGHT' : sideEffectUncertain ? 'SIDE_EFFECT_UNCERTAIN'
       : completed ? 'COMPLETED_RESULT' : settled ? 'REMOTE_SETTLED_EFFECTS_NOT_ROLLED_BACK'
+        : quotaSettled ? 'PROVIDER_QUOTA_EXHAUSTED' : quotaError ? 'PROVIDER_QUOTA_EXHAUSTED_UNVERIFIED'
         : recovery?.reason ?? (error || 'EXECUTION_EVIDENCE_INCOMPLETE'),
     clientMessageId: recovery?.clientMessageId ?? timeout?.client_message_id ?? `openchatx-${operation.id}`,
     conversationId: recovery?.conversationId ?? operation.sessionId ?? null,
     runId: recovery?.runId ?? result.run_id ?? null,
-    externalRequests: rejectedBeforeExecution ? 0 : Number.isInteger(timeout?.external_requests) ? timeout.external_requests : null,
+    externalRequests: rejectedBeforeExecution ? 0 : quotaSettled ? 0 : Number.isInteger(timeout?.external_requests) ? timeout.external_requests : null,
     rejectedBeforeExecution: Boolean(rejectedBeforeExecution),
-    externalCompleted,
+    externalCompleted: quotaSettled ? 0 : externalCompleted,
     externalCompletedAtTimeout: Number.isInteger(timeout?.external_completed) ? timeout.external_completed : null,
     externalExecution,
     idempotency,

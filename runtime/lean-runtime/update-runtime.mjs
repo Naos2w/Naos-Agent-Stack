@@ -16,6 +16,7 @@ import { patchContextWorker, patchContextRuntime, patchContextGuidance } from '.
 import { patchToolEvidenceWorker, patchEvidenceGuidance } from './tool-evidence-patch.mjs';
 import { patchTurnReconnectWorker } from './turn-reconnect-patch.mjs';
 import { patchColdRecovery } from './cold-recovery-patch.mjs';
+import { patchQuotaWorker } from './quota-handoff-patch.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const targets = [
@@ -153,7 +154,7 @@ function patchRuntimeBase(original) {
     '      stalePoll: !sessionUpdate.current,\n      reconciliation: operation.reconciliation,');
 }
 
-export function patchWorker(original) { return patchColdRecovery(original, 'letta_worker.ts'); }
+export function patchWorker(original) { return patchQuotaWorker(patchColdRecovery(original, 'letta_worker.ts')); }
 export function patchRuntime(original) { return patchColdRecovery(original, 'agent_runtime.ts'); }
 
 export function patchDispatchReconciliation(text) {

@@ -28,3 +28,26 @@ within the scope below. All other global instructions still apply.
 - Report the real merge/deployment outcome and any remaining blocker. Do not
   ask again solely because the global instruction prohibits automatic release
   when this scoped authorization already applies.
+
+## MSI multi-account GitHub operations
+
+This is the `Naos2w/Naos-Agent-Stack` repository. `git commit` uses the
+personal `includeIf` Git configuration, but `gh` selects its own globally
+active GitHub account. A successful Git push does **not** prove that a
+subsequent `gh` command has the same identity.
+
+For repository-specific GitHub CLI work, use
+`runtime/Invoke-Naos2wGh.ps1 -GhArgs @('pr','view','9')` (with the
+actual GitHub arguments) rather than relying on whichever account was last
+activated with `gh auth switch`. The wrapper checks this repository's
+origin, obtains only the stored Naos2w credential for this one invocation,
+verifies the authenticated `Naos2w` login and restores pre-existing
+process token variables. It must never print or persist the token. Work
+repositories retain their own identity and workflows. When using the
+connected GitHub app instead of the CLI, select the authenticated Naos2w
+account for this repository.
+
+An identity mismatch must be reported rather than ignored. Existing
+required CI, review, access-denial and release checks remain binding;
+changing identity is not an authorization to retry an operation previously
+denied by the platform.

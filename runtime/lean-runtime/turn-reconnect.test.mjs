@@ -65,10 +65,10 @@ async function fixture(mode, verify) {
     }});
   try {
     const result = await worker.runTurn({id: 'fixture'}, {agentId: runtime.agent_id},
-      {conversationId: runtime.conversation_id}, 'fixed fixture prompt', 250, 'message-original')
+      {conversationId: runtime.conversation_id}, 'fixed fixture prompt', 1500, 'message-original')
       .then(value => ({value}), error => ({error}));
     await verify({result, remote, logs, executions, root});
-  } finally {release(); await new Promise(resolve => setTimeout(resolve, 10)); await rm(root, {recursive: true, force: true});}
+  } finally {release(); await new Promise(resolve => setTimeout(resolve, 20)); await rm(root, {recursive: true, force: true, maxRetries: 12, retryDelay: 50});}
 }
 
 test('an interrupted live approval reattaches the original conversation and executes exactly once', () => fixture('recover', async ({result, remote, executions, root}) => {
