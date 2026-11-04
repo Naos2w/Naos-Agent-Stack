@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { isCodexUsageLimitError, summarizeReconciliation, assertNoUnresolvedToolEffects } from './operation_reconciliation.mjs';
 import { describeOperationOutcome } from './runtime_contract.ts';
 import { patchQuotaWorker } from './quota-handoff-patch.mjs';
@@ -112,5 +113,8 @@ test('installed worker patch is strict, idempotent and matches reviewed source s
   const prior=source.replace(/      process\.stderr\.write\(JSON\.stringify\(\{\n        kind: "LETTA_TURN_TERMINAL_FAILURE",[\s\S]*?      \}\) \+ "\\n"\)\n/,'');
   assert.notEqual(prior,source);
   assert.equal(patchQuotaWorker(prior),source);
+  assert.equal(createHash('sha256').update(prior).digest('hex'),'a5d471f5af422fe8c8f42cdc90487d68e407cc64ce2d88b9434272b6bb6e6766');
+  assert.equal(patchWorker(prior),source);
+  assert.throws(()=>patchWorker('unreviewed worker source'),/SOURCE_CHANGED|anchor missing/);
   assert.throws(()=>patchQuotaWorker('source changed unexpectedly'),/anchor missing/);
 });
