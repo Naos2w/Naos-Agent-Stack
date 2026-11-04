@@ -1241,6 +1241,14 @@ async function runTurn(
     }
     const finished = outcome.message
     if (typeof finished.error === "string" && finished.error) {
+      process.stderr.write(JSON.stringify({
+        kind: "LETTA_TURN_TERMINAL_FAILURE",
+        client_message_id: clientMessageId,
+        external_execution_schema: 1,
+        external_requests: externalRequests,
+        external_completed: externalCalls.length,
+        idempotency: summarizeRunTrace({ external_tool_calls: externalCalls }).validation.idempotency,
+      }) + "\n")
       throw new Error(`LETTA_TURN_FAILED: ${finished.error}`)
     }
 

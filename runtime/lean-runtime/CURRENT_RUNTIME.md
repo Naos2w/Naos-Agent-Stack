@@ -144,6 +144,28 @@ Read-only inspection still enforces existing Project/task/applicable skill
 checks. Public disabled QA tools stay disabled. An audit receipt is neither a
 new task nor merge/deploy authorization.
 
+## Codex quota exhaustion and ChatGPT direct handoff
+
+A Letta `turn_finished` provider quota error is recognized only when the
+structured `local_backend_error` states Codex usage is exhausted. The Worker
+logs a bounded terminal marker with the original operation identity and
+external-tool counts, never tool arguments or provider text. A failed operation
+is marked `PROVIDER_QUOTA_EXHAUSTED` and settled **only** if the marker proves
+zero external requests and completions, with no contradictory evidence. Older
+operations lacking this marker stay `PROVIDER_QUOTA_EXHAUSTED_UNVERIFIED`
+and require inspection; no historical result is retroactively declared safe.
+
+For a verified zero-tool quota failure, `poll` returns
+`next_move.action=handoff_to_chatgpt_direct_mcp`. The supervising ChatGPT
+conversation can inspect the **existing** Project/TODO and continue through
+OpenChatX MCP's original read/write/shell permissions. No original prompt,
+tool call or side effect is automatically replayed. ChatGPT subscription
+access is **not** a programmatic Letta/API provider and cannot transparently
+take over unattended scheduled jobs; such workloads require a separately
+configured, authorized API provider if autonomous fallback is needed.
+Historical uncertain operations and independent approval/CI/release gates
+remain unchanged.
+
 ## Result contract
 
 - Existing `state` and `ok` retain operation lifecycle semantics.
