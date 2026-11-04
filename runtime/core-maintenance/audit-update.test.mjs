@@ -4,7 +4,7 @@ import { mkdtemp, readFile, writeFile, rename, rm, lstat } from 'node:fs/promise
 import { createHash } from 'node:crypto';
 import { join, dirname, resolve, basename } from 'node:path';
 import { tmpdir } from 'node:os';
-import { applyVerifiedFiles, journalName } from './apply-audit-diagnostics.mjs';
+import { applyVerifiedFiles, choosePinnedPreimages, assertNoOperations, journalName } from './apply-audit-diagnostics.mjs';
 import { verifyCore } from './verify-core.mjs';
 const sha = value => createHash('sha256').update(value).digest('hex').toUpperCase();
 async function fixture(work) {
@@ -76,4 +76,32 @@ test('changed preimages and existing journals prevent all replacement', () => fi
   await writeFile(journal, 'preserve-existing-journal');
   await assert.rejects(apply(), /CORE_AUDIT_RECOVERY_REQUIRED/);
   assert.equal(await readFile(journal, 'utf8'), 'preserve-existing-journal');
+}));
+
+test('upgrade accepts one complete pinned installed revision and rejects mixed or unknown bytes', async () => {
+  const bootstrap = JSON.parse(await readFile(new URL('./bootstrap-preimages.json', import.meta.url),'utf8'));
+  const upgraded = JSON.parse(await readFile(new URL('./upgrade-preimages-20261102.json', import.meta.url),'utf8'));
+  const keys = Object.keys(upgraded);
+  const observed = new Map(Object.entries(upgraded));
+  assert.equal(choosePinnedPreimages(keys,[bootstrap,upgraded],observed), upgraded);
+  const changedKey = keys.find(key => Object.hasOwn(bootstrap,key) && bootstrap[key] !== upgraded[key]);
+  assert.ok(changedKey,'upgrade must have distinguishable source bytes');
+  observed.set(changedKey,bootstrap[changedKey]);
+  assert.throws(() => choosePinnedPreimages(keys,[bootstrap,upgraded],observed),/AUDIT_UPDATE_PREIMAGE_MISMATCH/);
+  observed.set(changedKey,'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
+  assert.throws(() => choosePinnedPreimages(keys,[bootstrap,upgraded],observed),/AUDIT_UPDATE_PREIMAGE_MISMATCH/);
+  assert.throws(() => choosePinnedPreimages(keys,[{...upgraded,[changedKey]:undefined}],new Map(Object.entries(upgraded))),/AUDIT_UPDATE_PREIMAGE_MISMATCH/);
+  assert.throws(() => choosePinnedPreimages(['same','same'],[upgraded],observed),/AUDIT_UPDATE_BASE_SCOPE_INVALID/);
+});
+
+test('locked updater does not need to erase historical reconciliation to inspect terminal Operations', () => fixture(async ({ root }) => {
+  const registry = join(root,'operations.json');
+  const original = JSON.stringify({
+    historical:{state:'failed',pid:-1,reconciliation:{requiresReconciliation:true,reason:'EXTERNAL_TOOL_IN_FLIGHT'}},
+  });
+  await writeFile(registry, original);
+  await assertNoOperations(root);
+  assert.equal(await readFile(registry,'utf8'),original);
+  await writeFile(registry,JSON.stringify({working:{state:'running',pid:123}}));
+  await assert.rejects(assertNoOperations(root),/ACTIVE_OR_UNVERIFIED/);
 }));

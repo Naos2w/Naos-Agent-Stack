@@ -57,6 +57,12 @@ export function patchLettaRecovery(source) {
   // turn an unknown side effect into a stale-denial result on provider startup.
   text = replaceOnce(text, '        const approvals = recordedToolResults(record4, owned.map((approval) => approval.toolCallId));',
     '        if (owned.some(approval => approval.toolName?.startsWith("openchatx_") && !record4.results.some(result => result.tool_call_id === approval.toolCallId))) continue;\n        const approvals = recordedToolResults(record4, owned.map((approval) => approval.toolCallId));');
+  // Letta 0.34.1 stores approved external-tool replies as successful even
+  // when the verified external result had status="error". Preserve the source
+  // result status in the durable transcript; do not rewrite historical turns.
+  text = replaceOnce(text,
+    '        content: this.toolResultContentFromUnknown(approval.tool_return),\n        isError: false',
+    '        content: this.toolResultContentFromUnknown(approval.tool_return),\n        isError: approval.status === "error"');
   // Separate replacements also upgrade an already-installed recovery adapter.
   text = replaceOnce(text, '      const result = this.runStream(resolved2.model, context3, options);',
     '      const { configureOpenchatxStreamOptions } = await import("./openchatx-recovery.mjs");\n      const result = this.runStream(resolved2.model, context3, configureOpenchatxStreamOptions(resolved2.model.api, tools, options));');

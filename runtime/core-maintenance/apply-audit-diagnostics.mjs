@@ -6,7 +6,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { setTimeout as delay } from 'node:timers/promises';
 import { acquireRuntimeMaintenance } from '../lean-runtime/runtime_maintenance.mjs';
-import { inspectRuntimeReadiness } from '../lean-runtime/runtime_readiness.mjs';
+import { inspectRuntimeMaintenanceEligibility, inspectTerminalWorkerPid } from '../lean-runtime/runtime_readiness.mjs';
 import { verifyCore } from './verify-core.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -47,29 +47,51 @@ async function digest(path) {
   catch (error) { if (error.code === 'ENOENT') return null; throw error; }
 }
 
+// All installed targets must match the *same* approved revision. Mixing a
+// partially updated state with a different pinset never becomes an upgrade path.
+export function choosePinnedPreimages(keys, pinsets, observed) {
+  if (!Array.isArray(keys) || !keys.length || new Set(keys).size !== keys.length
+      || !Array.isArray(pinsets) || !(observed instanceof Map))
+    throw Error('AUDIT_UPDATE_BASE_SCOPE_INVALID');
+  const selected = pinsets.find(pins => pins && !Array.isArray(pins)
+    && typeof pins === 'object'
+    && keys.every(key => Object.hasOwn(pins,key)
+      && (pins[key] === null || /^[A-F0-9]{64}$/.test(pins[key]))
+      && pins[key] === observed.get(key)));
+  if (!selected) throw Error('AUDIT_UPDATE_PREIMAGE_MISMATCH');
+  return selected;
+}
+
 // Fixed installation scope. Neither a CLI caller nor a journal chooses targets.
-async function preparePlan(runtimeRoot, headlessRoot) {
+export async function preparePlan(runtimeRoot, headlessRoot) {
   const pkg = JSON.parse(await readFile(join(runtimeRoot, 'package.json'), 'utf8'));
   if (pkg.name !== 'openchatx-mcp' || pkg.version !== '1.0.0-beta.2') throw Error('AUDIT_UPDATE_VERSION_MISMATCH');
   const core = join(headlessRoot, 'core-maintenance');
   const manifest = JSON.parse(await readFile(join(here, 'manifest.json'), 'utf8'));
-  const preimages = JSON.parse((await readFile(join(here, 'bootstrap-preimages.json'), 'utf8')).replace(/^\uFEFF/, ''));
+  // Two fixed, version-pinned origins: initial bootstrap and the verified
+  // 2026-11-02 core overlay. Never infer an acceptable "before" hash from
+  // whichever bytes happen to be installed.
+  const preimages = await Promise.all([
+    'bootstrap-preimages.json',
+    'upgrade-preimages-20261102.json',
+  ].map(async name => JSON.parse((await readFile(join(here, name), 'utf8')).replace(/^\uFEFF/, ''))));
   const rows = [];
   for (const entry of manifest.files) {
-    const prior = preimages[entry.relativePath];
-    const snapshotPrior = preimages['snapshot/' + entry.snapshot];
-    if (prior === undefined || snapshotPrior === undefined) throw Error('AUDIT_UPDATE_BASE_SCOPE_INVALID');
-    rows.push([entry.snapshot, join(runtimeRoot, entry.relativePath), prior]);
-    rows.push([entry.snapshot, join(core, entry.snapshot), snapshotPrior]);
+    rows.push({key: entry.relativePath, source: entry.snapshot, target: join(runtimeRoot, entry.relativePath)});
+    rows.push({key: 'snapshot/' + entry.snapshot, source: entry.snapshot, target: join(core, entry.snapshot)});
   }
   for (const name of ['manifest.json', 'verify-core.mjs', 'README.md'])
-    rows.push([name, join(core, name), preimages['metadata/' + name]]);
+    rows.push({key: 'metadata/' + name, source: name, target: join(core, name)});
+  const observed = new Map();
+  for (const item of rows) {
+    await noLinks(join(here, item.source));
+    observed.set(item.key, await digest(item.target));
+  }
+  const pinned = choosePinnedPreimages(rows.map(x => x.key), preimages, observed);
   const plan = [];
-  for (const [source, target, before] of rows) {
-    await noLinks(join(here, source));
+  for (const {key, source, target} of rows) {
     const bytes = await readFile(join(here, source));
-    if (await digest(target) !== before) throw Error('AUDIT_UPDATE_PREIMAGE_MISMATCH: ' + source);
-    plan.push({ target, before, after: sha(bytes), bytes });
+    plan.push({ target, before: pinned[key], after: sha(bytes), bytes });
   }
   return plan;
 }
@@ -141,11 +163,21 @@ async function assertNoActiveJobs(headlessRoot) {
   const active = state.jobs.filter(job => !['completed', 'failed', 'cancelled'].includes(job.status));
   if (active.length) throw Error(`AUDIT_UPDATE_JOBS_ACTIVE: ${active.length}`);
 }
-async function assertNoOperations(toolbox) {
-  const state = JSON.parse(await readFile(join(toolbox, 'operations.json'), 'utf8'));
-  if (!state || Array.isArray(state) || typeof state !== 'object' ||
-      Object.values(state).some(item => !['completed', 'failed', 'cancelled'].includes(item?.state)))
-    throw Error('AUDIT_UPDATE_OPERATIONS_ACTIVE_OR_UNVERIFIED');
+// Called again while holding the exclusive Runtime maintenance lock, both
+// before and after stopping MCP. Historical unresolved records are retained;
+// a live Worker, corrupt registry, or unverifiable PID still blocks updates.
+export async function assertNoOperations(toolbox, { probePid, inspectProcess } = {}) {
+  let state;
+  try { state = JSON.parse(await readFile(join(toolbox, 'operations.json'), 'utf8')); }
+  catch { throw Error('AUDIT_UPDATE_OPERATIONS_UNVERIFIED'); }
+  if (!state || Array.isArray(state) || typeof state !== 'object')
+    throw Error('AUDIT_UPDATE_OPERATIONS_UNVERIFIED');
+  for (const item of Object.values(state)) {
+    if (!item || !['completed', 'failed', 'cancelled'].includes(item.state))
+      throw Error('AUDIT_UPDATE_OPERATIONS_ACTIVE_OR_UNVERIFIED');
+    const check = await inspectTerminalWorkerPid(item, {probePid,inspectProcess});
+    if (!check.safe) throw Error('AUDIT_UPDATE_' + check.reason);
+  }
 }
 async function waitForNoActiveJobs(headlessRoot) {
   const deadline = Date.now() + 120000;
@@ -168,8 +200,11 @@ async function install(runtimeRoot, headlessRoot) {
   const journal = join(core, journalName);
   if (!(await exists(join(headlessRoot, 'health-watch.paused')))) throw Error('AUDIT_UPDATE_WATCHDOG_NOT_PAUSED');
   if (await exists(journal)) throw Error('CORE_AUDIT_RECOVERY_REQUIRED');
-  const ready = await inspectRuntimeReadiness(toolbox);
-  if (!ready.ready || ready.running) throw Error(`AUDIT_UPDATE_RUNTIME_NOT_READY: ${ready.reason}`);
+  const maintenance = await inspectRuntimeMaintenanceEligibility(toolbox);
+  if (!maintenance.allowed) throw Error(`AUDIT_UPDATE_RUNTIME_NOT_QUIESCENT: ${maintenance.reason}`);
+  // A historical unresolved Operation must remain untouched by this installer.
+  if (maintenance.unresolved > 0)
+    process.stdout.write(`AUDIT_HISTORICAL_OPERATIONS_PRESERVED count=${maintenance.unresolved}\n`);
   const plan = await preparePlan(runtimeRoot, headlessRoot);
   const release = await acquireRuntimeMaintenance(toolbox);
   const pm2 = async args => (await run(process.execPath, [join(headlessRoot, 'node_modules/pm2/bin/pm2'), ...args], {

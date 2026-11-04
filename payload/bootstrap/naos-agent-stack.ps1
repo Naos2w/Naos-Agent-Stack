@@ -38,9 +38,17 @@ function AddFile([System.Collections.ArrayList]$a,[string]$source,[string]$key){
 }
 function AddTree([System.Collections.ArrayList]$a,[string]$root,[string]$prefix,[string]$type){
   if(-not(Test-Path -LiteralPath $root)){return}
-  $root=(Resolve-Path -LiteralPath $root).Path.TrimEnd('\')
+  # Derive both the directory prefix and each file path from FileSystemInfo
+  # FullName. Resolve-Path provider strings can differ from FileInfo.FullName
+  # on Windows runners; length-based slicing across representations truncates
+  # path segments and silently excludes required policy documents.
+  $root=(Get-Item -LiteralPath $root -Force -ErrorAction Stop).FullName.TrimEnd('\')
+  $rootPrefix=$root+'\'
   foreach($f in (Get-ChildItem -LiteralPath $root -Recurse -File)){
-    $rel=$f.FullName.Substring($root.Length).TrimStart('\').Replace('\','/')
+    if(-not $f.FullName.StartsWith($rootPrefix,[StringComparison]::OrdinalIgnoreCase)){
+      Fail 'Bundle source not under selected root'
+    }
+    $rel=$f.FullName.Substring($rootPrefix.Length).Replace('\','/')
     if($type -ne 'runtime' -and $rel -match '(?i)(^|/)node_modules(/|$)'){continue}
     if($rel -match '(?i)(^|/)(\.env(?:\.[^/]*)?|\.git|\.ssh|\.aws|\.letta|\.ops|\.services|\.external-tool-ledger|tunnel-profiles|backups|logs|secrets|credentials)(/|$)|(^|/)(state|operations|letta-service|projects|mcp-servers|subagents)\.json$|(\.pem|\.p12|\.pfx|\.key|\.log|\.db|\.sqlite|\.zst)$'){continue}
     # Runtime dependencies can contain registry credentials too; never ship local npm/pip config.

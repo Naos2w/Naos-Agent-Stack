@@ -10,6 +10,7 @@ const expectedFiles = new Map([
   ["dist/mcp/server-factory.js", "server-factory.js"],
   ["dist/mcp/tool-registration-boundary.js", "tool-registration-boundary.js"],
   ["dist/tools/start-here/start-here.js", "start-here.js"],
+  ["dist/capabilities/health.js", "health.js"],
   ["dist/config.js", "config.js"],
   ["dist/projects/project-executor.js", "project-executor.js"],
   ["dist/server/audit/audit-log.js", "audit-log.js"],
