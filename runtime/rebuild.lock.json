@@ -43,7 +43,7 @@
     {
       "source": "payload/bootstrap/naos-agent-stack.ps1",
       "target": "naos-agent-stack.ps1",
-      "sha256": "3AD3705CDDFC07B7804B2198B101303DF6929B3B107A47450E6C61F1D7F26AD4"
+      "sha256": "FDED971B539264AE34EAC80744DB8895A927504D67F20042401AF9CB859AB6AD"
     },
     {
       "source": "runtime/lean-runtime/runtime_contract.ts",
