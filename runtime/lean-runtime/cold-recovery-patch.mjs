@@ -10,6 +10,7 @@ const baseline = {
 // No unrecognized source SHA is eligible for a replacement.
 const priorInstalled = {
   'letta_worker.ts': 'a5d471f5af422fe8c8f42cdc90487d68e407cc64ce2d88b9434272b6bb6e6766',
+  'agent_runtime.ts': '4f67c1ffbe2e3ceb67b01ede7aa5f15e70b0dbcf7aa667140f71252717614eec',
 };
 const observedWorkflow = {
   'letta_worker.ts': '834aa12f99824e70baf327cfe260f59ea48c38416ed7bc062e134beac042f932',

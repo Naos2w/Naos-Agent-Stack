@@ -61,7 +61,9 @@ function inspectEffectEvidence(summary) {
   const countsKnown = summary.externalExecution?.integrity !== 'invalid' && [summary.externalRequests, summary.externalCompleted]
     .every(value => Number.isSafeInteger(value) && value >= 0);
   const inFlight = countsKnown && summary.externalRequests !== summary.externalCompleted;
-  const uncertainEffects = summary.externalExecution?.uncertain > 0 || !Array.isArray(summary.idempotency)
+  const deliveryUnconfirmed = (summary.externalExecution?.deliveryFailures ?? 0) > 0 &&
+    !['settled','completed'].includes(summary.remoteState);
+  const uncertainEffects = deliveryUnconfirmed || summary.externalExecution?.uncertain > 0 || !Array.isArray(summary.idempotency)
     || summary.idempotency.some(item => !['executed', 'replayed'].includes(item.status));
   return {countsKnown,inFlight,uncertainEffects};
 }
@@ -96,8 +98,10 @@ export function applyRemoteSettlement(operation, summary) {
   // listener-idle observation, but an old unverified error is not.
   if (summary.reason === 'PROVIDER_QUOTA_EXHAUSTED' && summary.requiresReconciliation === false)
     return {...summary, settlement:receipt};
-  const {countsKnown,inFlight,uncertainEffects} = inspectEffectEvidence(summary);
   const backendConfirmed=receipt.status==='cancelled';
+  const {countsKnown,inFlight,uncertainEffects} = inspectEffectEvidence({
+    ...summary, remoteState: backendConfirmed ? 'settled' : summary.remoteState,
+  });
   return { ...summary, remoteState: backendConfirmed ? 'settled' : 'uncertain',
     requiresReconciliation: !backendConfirmed || !countsKnown || inFlight || uncertainEffects,
     automaticRetryAllowed: false,
@@ -196,6 +200,100 @@ export function summarizeReconciliation(operation, result = {}, stderr = '') {
     externalExecution,
     idempotency,
   });
+}
+
+
+// Combine the original Worker and its same-operation recovery attempts.
+// Retained logs are immutable evidence; a later failed recovery must not hide
+// original tool effects or turn a provider quota rejection into "idle" success.
+// This only interprets supplied, identity-checked attempt records. It does not
+// read remote state, execute tools, erase evidence or grant replay permission.
+export function summarizeAttemptHistory(operation, attempts, {evidenceComplete = true} = {}) {
+  if (!Array.isArray(attempts) || attempts.length < 2 || attempts.length > 17)
+    throw Error('ATTEMPT_HISTORY_INVALID');
+  const summaries = attempts.map(attempt => summarizeReconciliation(
+    {...operation, remoteSettlement: undefined},
+    attempt?.result && typeof attempt.result === 'object' ? attempt.result : {},
+    typeof attempt?.stderr === 'string' ? attempt.stderr : '',
+  ));
+  const first = summaries[0], latest = summaries[summaries.length - 1];
+  const proven = summaries.filter(entry =>
+    entry.externalExecution?.integrity === 'verified' &&
+    Number.isSafeInteger(entry.externalRequests) && entry.externalRequests > 0);
+  const observed = proven.length
+    ? proven.reduce((best, current) =>
+        current.externalExecution.started > best.externalExecution.started ? current : best)
+    : summaries.find(entry => Number.isSafeInteger(entry.externalRequests)) ?? latest;
+  const incomplete = evidenceComplete !== true ||
+    summaries.some(entry => entry.externalExecution?.integrity === 'invalid');
+  const effectUncertain = summaries.some(entry =>
+    entry.externalExecution?.pending > 0 || entry.externalExecution?.uncertain > 0 ||
+    entry.idempotency.some(item => !['executed','replayed'].includes(item.status)));
+  const deliveryFailures = summaries.reduce((count, entry) =>
+    count + (entry.externalExecution?.deliveryFailures ?? 0), 0);
+  const provenZeroQuota = first.reason === 'PROVIDER_QUOTA_EXHAUSTED' &&
+    first.requiresReconciliation === false &&
+    summaries.slice(1).every(entry => entry.externalRequests === 0);
+  // Keep the original root cause separate from the latest recovery error.
+  const originalReason = first.reason === 'PROVIDER_QUOTA_EXHAUSTED_UNVERIFIED'
+    ? first.reason
+    : first.externalExecution?.deliveryFailures > 0
+      ? 'RESULT_DELIVERY_UNCONFIRMED'
+      : first.reason === 'EXTERNAL_TOOL_IN_FLIGHT'
+        ? 'ORIGINAL_TOOL_TIMEOUT'
+        : first.reason === 'LETTA_TURN_TIMEOUT_REMOTE_UNCERTAIN'
+          ? 'ORIGINAL_TURN_TIMEOUT_UNVERIFIED'
+          : 'ORIGINAL_OPERATION_FAILED';
+  const combined = {
+    ...latest,
+    source: 'retained_attempt_history',
+    reason: originalReason,
+    remoteState: provenZeroQuota ? 'settled' : latest.remoteState,
+    requiresReconciliation: !provenZeroQuota,
+    externalRequests: observed.externalRequests,
+    externalCompleted: observed.externalCompleted,
+    externalCompletedAtTimeout: observed.externalCompletedAtTimeout,
+    externalExecution: observed.externalExecution,
+    idempotency: observed.idempotency,
+    originalReason,
+    latestAttemptReason: latest.reason === 'PROVIDER_QUOTA_EXHAUSTED_UNVERIFIED'
+      ? latest.reason : latest.reason === 'PROVIDER_QUOTA_EXHAUSTED'
+        ? latest.reason : 'RECOVERY_ATTEMPT_FAILED',
+    attemptHistory: {
+      schema: 1,
+      count: summaries.length,
+      evidenceComplete: !incomplete,
+      originalToolRequests: first.externalRequests,
+      originalToolCompleted: first.externalCompleted,
+      externalDeliveryFailures: deliveryFailures,
+      // Counts are from the strongest single attempt; do not add replayed
+      // tool calls across different recovery attempts as new executions.
+      toolObservationSource: proven.length ? 'observed_attempt' : 'nonmutating_evidence',
+    },
+    automaticRetryAllowed: false,
+  };
+  const settled = applyRemoteSettlement(operation, combined);
+  const unresolved = incomplete || effectUncertain || deliveryFailures > 0 ||
+    (observed.externalRequests !== null &&
+      observed.externalRequests !== undefined &&
+      observed.externalRequests !== observed.externalCompleted) ||
+    settled.requiresReconciliation;
+  const reason = deliveryFailures > 0 ? 'RESULT_DELIVERY_UNCONFIRMED'
+    : first.reason === 'PROVIDER_QUOTA_EXHAUSTED_UNVERIFIED'
+      ? 'PROVIDER_QUOTA_EXHAUSTED_UNVERIFIED'
+    : incomplete ? 'ATTEMPT_HISTORY_INCOMPLETE'
+    : effectUncertain ? 'SIDE_EFFECT_UNCERTAIN'
+      : first.reason === 'PROVIDER_QUOTA_EXHAUSTED' && !unresolved
+        ? 'PROVIDER_QUOTA_EXHAUSTED'
+        : unresolved ? originalReason : settled.reason;
+  return {
+    ...settled,
+    requiresReconciliation: unresolved,
+    reason,
+    automaticRetryAllowed: false,
+    attemptHistory: combined.attemptHistory,
+    originalReason, latestAttemptReason: combined.latestAttemptReason,
+  };
 }
 
 export function retainUnresolvedOperation(operation, result, stderr) {

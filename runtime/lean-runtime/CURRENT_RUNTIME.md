@@ -48,6 +48,13 @@ retry. Unresolved operations retain their inputs and logs beyond ordinary count
 limits. Letta interruption recovery remains bounded by its protocol; a remote
 idle state is not proof that a side effect did not occur.
 
+Recovery attempts are now summarised from the original Worker and all retained
+same-operation logs, validating bounded paths and execution identity. Missing
+or contradictory records remain unresolved. Original tool calls and failed
+result delivery cannot disappear behind a later recovery error. Historical
+Codex quota failures without terminal zero-tool proof remain unresolved; an
+idle listener is never a substitute for evidence or permission to replay.
+
 For the same actual conversation, `run` refuses `OPERATION_EFFECTS_UNRESOLVED`
 when a retained reconciliation record has incomplete, invalid, in-flight or
 uncertain tool-effect evidence. Reading the result, renaming the session or a

@@ -37,7 +37,7 @@ const { withRuntimeActivity } = await import(maintenanceUrl.href)
 
 const reconciliationUrl = new URL("./operation_reconciliation.mjs", import.meta.url)
 reconciliationUrl.searchParams.set("source_mtime", String((await fs.stat(fileURLToPath(reconciliationUrl))).mtimeMs))
-const { summarizeReconciliation, retainUnresolvedOperation, applyRemoteSettlement, describeReadOnlyBackendConflict, assertNoUnresolvedToolEffects } = await import(reconciliationUrl.href)
+const { summarizeReconciliation, summarizeAttemptHistory, retainUnresolvedOperation, applyRemoteSettlement, describeReadOnlyBackendConflict, assertNoUnresolvedToolEffects } = await import(reconciliationUrl.href)
 
 const execFileAsync = promisify(execFile)
 
@@ -1345,6 +1345,67 @@ async function dispatchOpenCodeRun(args: {
   return operation
 }
 
+// Read immutable earlier Worker attempts for this exact Operation. Recovery
+// appends history entries before redirecting the current stdout/stderr paths.
+// Missing, oversized, mismatched or linked records must remain unresolved.
+async function summarizeRetainedAttempts(
+  operation: RuntimeOperation,
+  result: Record<string, any>,
+  stderr: string,
+) {
+  const history = (operation as any).recoveryHistory
+  if (history === undefined) return summarizeReconciliation(operation, result, stderr)
+  if (!Array.isArray(history) || history.length === 0)
+    return { ...summarizeReconciliation(operation, result, stderr),
+      reason: "ATTEMPT_HISTORY_INCOMPLETE", requiresReconciliation: true,
+      automaticRetryAllowed: false }
+  const attempts: Array<{result: Record<string, any>, stderr: string}> = []
+  let evidenceComplete = history.length <= 16
+  const seen = new Set<string>()
+  const validId = typeof operation.id === "string" && /^op_[a-zA-Z0-9_-]{1,72}$/.test(operation.id)
+  for (const [index, record] of history.slice(0, 16).entries()) {
+    try {
+      if (!validId || !record || typeof record !== "object") throw Error("HISTORY_SCOPE")
+      const relative = typeof record.stdoutPath === "string" && record.stdoutPath.startsWith(OPS_DIR)
+        ? record.stdoutPath.slice(OPS_DIR.length + 1) : ""
+      const match = index === 0 ? null : new RegExp("^" + operation.id +
+        "\\.recover-([a-f0-9]{8})\\.stdout\\.log$").exec(relative)
+      const stem = index === 0 ? operation.id
+        : match ? operation.id + ".recover-" + match[1] : ""
+      if (!stem) throw Error("HISTORY_NAME")
+      const expected = {
+        inputPath: join(OPS_DIR, stem + ".input.json"),
+        stdoutPath: join(OPS_DIR, stem + ".stdout.log"),
+        stderrPath: join(OPS_DIR, stem + ".stderr.log"),
+      }
+      if (seen.has(stem) || Object.entries(expected).some(([name, value]) => record[name] !== value) ||
+          expected.stdoutPath === operation.stdoutPath)
+        throw Error("HISTORY_IDENTITY")
+      seen.add(stem)
+      const safeRead = async (filePath: string) => {
+        const info = await fs.lstat(filePath)
+        if (!info.isFile() || info.isSymbolicLink() || info.size > 1048576)
+          throw Error("HISTORY_FILE_INVALID")
+        return fs.readFile(filePath, "utf8")
+      }
+      const [inputRaw, output, attemptStderr] = await Promise.all([
+        safeRead(expected.inputPath), safeRead(expected.stdoutPath), safeRead(expected.stderrPath),
+      ])
+      const input = JSON.parse(inputRaw)
+      if (input.projectId !== operation.projectId || input.conversationId !== operation.sessionId ||
+          input.clientMessageId !== "openchatx-" + operation.id ||
+          input.action !== (index === 0 ? "run" : "recover"))
+        throw Error("HISTORY_INPUT_UNVERIFIED")
+      attempts.push({result: output.trim() ? parseLettaWorkerOutput(output) : {}, stderr: attemptStderr})
+    } catch {
+      evidenceComplete = false
+      attempts.push({result: {}, stderr: ""})
+    }
+  }
+  attempts.push({result, stderr})
+  return summarizeAttemptHistory(operation, attempts, {evidenceComplete})
+}
+
 async function pollOperation(
   project: ProjectRecord,
   operationId?: string,
@@ -1412,9 +1473,9 @@ async function pollOperation(
     if (operation.state === "running") {
       operationPatch.state = parsed.ok === true ? "completed" : "failed"
     }
-    operationPatch.reconciliation = summarizeReconciliation(
-      { ...operation, ...operationPatch }, parsed, stderr,
-    )
+    operationPatch.reconciliation = (operation as any).recoveryHistory !== undefined
+      ? await summarizeRetainedAttempts({ ...operation, ...operationPatch } as RuntimeOperation, parsed, stderr)
+      : summarizeReconciliation({ ...operation, ...operationPatch }, parsed, stderr)
     if (Object.keys(operationPatch).length > 0) {
       await updateOperation(operation.id, operationPatch)
       operation = (await readOperations())[operation.id] ?? operation
@@ -1586,7 +1647,9 @@ async function reconcileStoppedLettaOperation(project: ProjectRecord, before: Ru
       conversationId: input.conversationId, clientMessageId: input.clientMessageId,
       status: remote.status, runId: remote.runId ?? null, observedAt: now(),
     }
-    current.reconciliation = summarizeReconciliation(current, parsed, stderr)
+    current.reconciliation = (current as any).recoveryHistory !== undefined
+      ? await summarizeRetainedAttempts(current, parsed, stderr)
+      : summarizeReconciliation(current, parsed, stderr)
     current.updatedAt = now()
     await saveOperations(operations)
     return { ok: true, operationId: current.id, state: current.state, alreadyStopped: true,
@@ -1728,8 +1791,11 @@ async function cancelOperation(project: ProjectRecord, operationId: string) {
                 ownerOperationId: proof.ownerOperationId, ownerClientMessageId: proof.clientMessageId,
               }
               const output = await readText(record.stdoutPath)
-              record.reconciliation = summarizeReconciliation(record,
-                output.trim() ? parseLettaWorkerOutput(output) : {}, await readText(record.stderrPath))
+              const attemptError = await readText(record.stderrPath)
+              const attemptResult = output.trim() ? parseLettaWorkerOutput(output) : {}
+              record.reconciliation = (record as any).recoveryHistory !== undefined
+                ? await summarizeRetainedAttempts(record, attemptResult, attemptError)
+                : summarizeReconciliation(record, attemptResult, attemptError)
               record.updatedAt = observedAt
             }
             await saveOperations(latest)
