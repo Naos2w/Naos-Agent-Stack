@@ -21,6 +21,31 @@ test('provider patch upgrades the installed adapter exactly once', {skip:!bundle
   assert.equal(patched.split('configureOpenchatxStreamOptions(resolved2.model.api, tools, options)').length,2);
 });
 
+test('provider persists exact tool error status instead of always recording success', {skip:!bundlePath}, () => {
+  const patched=patchLettaRecovery(source);
+  const start=patched.indexOf('  applyApprovalResults(conversationId, agentId, approvals) {');
+  const end=patched.indexOf('  settleInterruptedToolCallsForConversation(',start);
+  assert.ok(start>=0 && end>start);
+  const snippet=patched.slice(start,end);
+  assert.match(snippet,/isError: approval.status === "error"/);
+  const methods=new Function('isRecord2','return ({'+snippet+'});')(
+    v=>v!==null && typeof v==='object' && !Array.isArray(v));
+  const recorded=[];
+  const backend={...methods,
+    findToolCall:(_,__,id)=>({content:{id,name:'openchatx_shell'}}),
+    findToolResult:()=>null,
+    appendToolResultMessage:record=>recorded.push(record),
+    toolResultContentFromUnknown:result=>[{type:'text',text:result}],
+  };
+  backend.applyApprovalResults('local-conv-50','agent-test',[
+    {type:'tool',tool_call_id:'a',tool_return:'failed fixture',status:'error'},
+    {type:'tool',tool_call_id:'b',tool_return:'success fixture',status:'success'},
+    {type:'tool',tool_call_id:'c',tool_return:'legacy fixture'},
+  ]);
+  assert.deepEqual(recorded.map(x=>x.isError),[true,false,false]);
+  assert.deepEqual(recorded.map(x=>x.toolCall.id),['a','b','c']);
+});
+
 test('real provider filter removes native ApplyPatch after recovery', {skip:!bundlePath}, () => {
   const filters=new Function('TOOL_NAME_MAPPINGS',body('function getServerToolName(', 'function shouldIncludeWorktreeTool(')+
     body('function filterExternalToolsByClientAllowlist(', 'function filterToolRegistryByClientAllowlist(')+

@@ -233,7 +233,7 @@
     {
       "source": "runtime/lean-runtime/letta-recovery-provider-patch.mjs",
       "target": "letta-poc/scripts/letta-recovery-provider-patch.mjs",
-      "sha256": "F494ADFD8167EF289A5C2C8DAF8558A65D8DE15DF3375AFA85F43D094BEB7575"
+      "sha256": "A21C0C58F4EDAA415DC03A7A609E2AAF3B6392C39E69FA28A7E55D0144A080EA"
     },
     {
       "source": "runtime/lean-runtime/source/letta_recovery.mjs",
