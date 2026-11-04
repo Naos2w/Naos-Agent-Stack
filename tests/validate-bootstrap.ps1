@@ -176,7 +176,11 @@ function New-SyntheticFile([string]$relative) {
 }
 function Assert-SyntheticPaths([System.Collections.ArrayList]$entries,[string[]]$allowed,[string[]]$denied){
     $paths=@($entries|ForEach-Object {$_.Key})
-    foreach($key in $allowed){if($paths -notcontains $key){throw ('BOOTSTRAP_EXPORT_MISSING_SAFE_SOURCE: '+$key)}}
+    foreach($key in $allowed){if($paths -notcontains $key){
+        $synthetic=Join-Path $testRoot $key.Replace('/','\')
+        $attrs=if(Test-Path -LiteralPath $synthetic){[string](Get-Item -LiteralPath $synthetic -Force).Attributes}else{'not_present'}
+        throw ('BOOTSTRAP_EXPORT_MISSING_SAFE_SOURCE: '+$key+'; synthetic_attributes='+$attrs+'; exported_count='+$paths.Count+'; exported_keys='+($paths -join ','))
+    }}
     foreach($key in $denied){if($paths -contains $key){throw ('BOOTSTRAP_EXPORT_LEAKED_PRIVATE_SOURCE: '+$key)}}
 }
 try {
