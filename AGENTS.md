@@ -2,11 +2,11 @@
 
 ## Owner-authorized merge and deployment
 
-On 2026-11-02, the owner authorized automatic PR merge and deployment for the
-OpenChatX architecture project, without repeated confirmation after required
-checks pass. This project-specific instruction overrides the blanket prohibition
-on automatic merge and production deployment in the global Codex AGENTS.md only
-within the scope below. All other global instructions still apply.
+On 2026-11-02, the owner authorised automatic PR merge and deployment for the
+OpenChatX architecture project without repeated confirmation after required
+checks pass. On 2026-11-05, the global Codex and Claude user instructions were
+updated to allow owner-approved end-to-end delivery, so no blanket merge or
+deployment prohibition needs overriding. All other global instructions apply.
 
 - Scope: approved architecture work in this Naos-Agent-Stack repository and its
   OpenChatX Runtime, installer and maintenance components on MSI and PC2.
@@ -22,12 +22,13 @@ within the scope below. All other global instructions still apply.
 - Preserve credentials, private data, machine-specific settings, existing
   sessions and unrelated working-tree/index changes. Do not expose sensitive
   information or relax Project permissions to complete a deployment.
-- This authorization does not apply to merges or deployments in other product
-  repositories, including Stock, S-Wallet, HouseLook and openclaw; those retain
-  their own owner authorization and release requirements.
+- Other repositories, including Stock, S-Wallet, HouseLook and openclaw, follow
+  the global owner-approved delivery policy together with their own real CI,
+  review, release and permission requirements. This project-specific rule does
+  not itself authorise unrelated changes in those repositories.
 - Report the real merge/deployment outcome and any remaining blocker. Do not
-  ask again solely because the global instruction prohibits automatic release
-  when this scoped authorization already applies.
+  ask again solely to reconfirm an already approved merge or deployment when
+  the applicable release checks have passed.
 
 ## MSI multi-account GitHub operations
 
