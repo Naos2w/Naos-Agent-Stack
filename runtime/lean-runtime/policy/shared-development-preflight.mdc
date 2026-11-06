@@ -49,3 +49,10 @@ alwaysApply: true
 - Optional `acceptance_checks` on `run` declares up to 8 existing criteria: `{id,kind:"command",command,cwd:"."}` or `{id,kind:"manual"}`. Commands are not automatically executed and do not grant permissions. Use exact known commands, preserve release/manual gates, and execute permitted checks after all edits, including task notes.
 - `validation.declared_checks` matches actual host-recorded shell command/cwd and results. Last matching execution wins; replay/unknown is unverified, uncertainty blocks, and later writes or other shell commands make earlier passing checks stale. Declared verification commands do not invalidate each other. Treat declarations as checks that are expected to be non-mutating; they do not prove commands were read-only.
 - `checks_passed` covers declared commands at the operation-end snapshot only. Manual criteria remain `manual_required`; old-operation polls remain `stale_operation`. External changes after the operation are not monitored. `delivery.acceptanceVerified` stays false and no publishing permission is implied. Keep the original task record and original Operation for recovery.
+## Current release evidence — version 1
+
+- **此節是當次發布的準則，優先於上方歷史拒絕的簡述。** 舊 403、舊 PR/CI 失敗、歷史 TODO 或某個 Letta Operation 的 `Degraded` 都是診斷資料，不是當前新發布被平台拒絕的證明。每次已核准的 Merge/Deploy，都要重新核對具體 Repo、PR／Commit SHA、GitHub 帳號、當次 CI、必要審查與 Publisher 相容性。
+- **健康狀態與發布資格分開看。** `OPERATIONS_REQUIRE_RECONCILIATION` 仍保護舊 Conversation，卻不等於不能維護。以唯讀 `runtime_readiness.mjs <runtime-root> --maintenance` 查本次 `allowed`；`HISTORICAL_RECONCILIATION_PRESERVED` 且 `allowed=true` 可走正常受控發布，不得刪除／重跑原失敗操作，也不能跳過維護鎖與真正相依檢查。
+- **只有本次同一操作真的遭平台拒絕，才能報告「平台阻擋」。** 須指明本次操作、錯誤碼／檢查結果；沒有重新確認時寫「尚未檢查」，不得重述舊標記。真實當次拒絕仍不可改工具、帳號或範圍規避；但已獲授權的不同任務／新的 PR 必須重新判定，而非永久沿用舊結果。
+
+<!-- end current release evidence -->

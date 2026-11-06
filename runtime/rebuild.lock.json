@@ -33,7 +33,7 @@
     {
       "source": "runtime/lean-runtime/policy/shared-development-preflight.mdc",
       "target": "toolboxes/agent-runtime/rules/shared-development-preflight.mdc",
-      "sha256": "C7A5DBA7B15F03EC88C1A245B6597353FE1F11A6309EE409175C6FDCDA0CF2D6"
+      "sha256": "C0D56FDB9AB5831B58411F821E3D8D048FABF34411A037AEA9E692627CD2B9E6"
     },
     {
       "source": "runtime/lean-runtime/policy/agent-runtime-usage.md",

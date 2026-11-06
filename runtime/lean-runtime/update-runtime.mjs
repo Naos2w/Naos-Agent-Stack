@@ -32,6 +32,31 @@ export const POLICY_VERSION = '2026-10-28.3';
 const sha = data => createHash('sha256').update(data).digest('hex');
 const normalize = text => text.replaceAll('\r\n', '\n');
 
+
+// Apply the current source-controlled release decision to both installed
+// guidance surfaces. Historical sections may remain, but cannot silently
+// suppress the current release instructions. Refuse a conflicting replacement.
+export function patchCurrentReleaseGuidance(original, policySource) {
+  const startMarker = '## Current release evidence — version 1';
+  const endMarker = '<!-- end current release evidence -->';
+  const source = normalize(policySource);
+  const start = source.indexOf(startMarker);
+  const end = source.indexOf(endMarker, start + startMarker.length);
+  if (start < 0 || end <= start || source.indexOf(startMarker, start + 1) !== -1)
+    throw Error('CURRENT_RELEASE_GUIDANCE_SOURCE_INVALID');
+  const expected = source.slice(start, end + endMarker.length).trim();
+  const output = normalize(original);
+  const present = output.indexOf(startMarker);
+  if (present !== -1) {
+    const finish = output.indexOf(endMarker, present + startMarker.length);
+    if (finish < 0 || output.indexOf(startMarker, present + 1) !== -1 ||
+        output.slice(present, finish + endMarker.length).trim() !== expected)
+      throw Error('CURRENT_RELEASE_GUIDANCE_CONFLICT');
+    return output;
+  }
+  return output.trimEnd() + '\n\n' + expected + '\n';
+}
+
 function replaceOnce(text, from, to) {
   if (text.split(from).length !== 2) throw Error('Source anchor missing or ambiguous: ' + from.slice(0, 100));
   return text.replace(from, to);
@@ -244,6 +269,9 @@ export async function prepare(root, stage) {
     if (!newRule.includes('## Bounded task context and declared checks — version 1')) newRule += section;
     if (!newSkill.includes('## Bounded task context and declared checks — version 1')) newSkill += section;
   }
+  const sourcePolicy = await readFile(join(here, 'policy/shared-development-preflight.mdc'), 'utf8');
+  newRule = patchCurrentReleaseGuidance(newRule, sourcePolicy);
+  newSkill = patchCurrentReleaseGuidance(newSkill, sourcePolicy);
   const history = await bytesOrNull(join(root, 'docs/history/runtime-before-20261028.md'));
   const contents = new Map([
     ['tools/runtime_maintenance.mjs', await readFile(join(here, 'runtime_maintenance.mjs'), 'utf8')],
