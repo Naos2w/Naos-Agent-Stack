@@ -126,6 +126,18 @@ The local hardening backlog is complete for the current threat model. The remain
 
 Policy `2026-10-28.3`: read the installed `rules/shared-development-preflight.mdc` and current runtime README. Older Phase 2/3/4 descriptions are historical.
 
+For a new, owner-approved release, decide from fresh and exact repo/PR/head-SHA,
+current identity and permission, required CI, review and publisher checks;
+never derive a current platform refusal from a past error, old TODO or an
+unrelated failed Operation. Dispatch readiness (`Degraded`) is not MSI release
+eligibility. Run `node runtime_readiness.mjs <installed-runtime-root> --maintenance`
+for the separate read-only, timestamped maintenance decision; historical
+`requiresReconciliation` may be retained while `allowed=true`. The actual
+publisher rechecks locks and consumers before writing. Do not retry the exact
+previously denied operation by changing tools or accounts, or clear uncertain
+side effects. Call it a platform block only when this action is actually
+refused; otherwise say the check is pending, not blocked.
+
 Normal runs inspect context without creating audit receipts. Pass optional `task_ref` for the existing task; poll the accepted operation, distinguish operation completion from unevaluated delivery, then check actual acceptance and continue the same authorized task. `next_move` is guidance, never retry/deploy permission.
 
 ## Task-based model selection — version 1

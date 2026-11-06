@@ -28,17 +28,17 @@
     {
       "source": "runtime/lean-runtime/CURRENT_RUNTIME.md",
       "target": "toolboxes/agent-runtime/README.md",
-      "sha256": "B312C1F7A41A689FA96927B2A9F832FA0E073FC509AB70720628CB65F6DB0E34"
+      "sha256": "C2A81E31BBB3314ADD0F6FCDBEACA7E6219E0F754C6B1E9A52884BB299E5BCFE"
     },
     {
       "source": "runtime/lean-runtime/policy/shared-development-preflight.mdc",
       "target": "toolboxes/agent-runtime/rules/shared-development-preflight.mdc",
-      "sha256": "643D88301F76D473D2FDE42524045363D1D44C2D55F884D154E8C4D8A39705BC"
+      "sha256": "C7A5DBA7B15F03EC88C1A245B6597353FE1F11A6309EE409175C6FDCDA0CF2D6"
     },
     {
       "source": "runtime/lean-runtime/policy/agent-runtime-usage.md",
       "target": "toolboxes/agent-runtime/skills/agent-runtime-usage/SKILL.md",
-      "sha256": "08F715D67247B0D9B87FA275B55DC02082123FB80529195DEDA5819ACFE43107"
+      "sha256": "D1E5343BAAF7C0A082C82B5337EB51EC8B8C87ABCC72346AB36349E25EC65BB2"
     },
     {
       "source": "payload/bootstrap/naos-agent-stack.ps1",
@@ -58,7 +58,7 @@
     {
       "source": "runtime/lean-runtime/runtime_readiness.mjs",
       "target": "toolboxes/agent-runtime/tools/runtime_readiness.mjs",
-      "sha256": "52111A211B5CDC9CD4854CE0E644AEF33B670BEB0941661ED65F5723C62D953D"
+      "sha256": "A2F2C1FCD7D1F43AA5BCFEA5E319B2FAEB392C82E8BC9FF84501D99FCFF3B0E5"
     },
     {
       "source": "runtime/lean-runtime/operation_reconciliation.mjs",

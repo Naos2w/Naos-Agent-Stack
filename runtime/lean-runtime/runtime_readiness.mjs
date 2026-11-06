@@ -168,7 +168,16 @@ export async function inspectRuntimeMaintenanceEligibility(root, { probePid = pr
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = process.argv[2] ?? dirname(dirname(fileURLToPath(import.meta.url)));
-  const result = await inspectRuntimeReadiness(root);
-  console.log(JSON.stringify(result));
-  process.exitCode = result.ready ? 0 : 2;
+  const maintenanceMode = process.argv[3] === '--maintenance';
+  if (process.argv[3] !== undefined && !maintenanceMode) throw Error('EXPECTED_MAINTENANCE_FLAG');
+  // Health is not release eligibility: historical unresolved Operations can
+  // degrade dispatch readiness without preventing a quiescent maintenance.
+  const result = maintenanceMode
+    ? await inspectRuntimeMaintenanceEligibility(root)
+    : await inspectRuntimeReadiness(root);
+  console.log(JSON.stringify(maintenanceMode
+    ? {...result, observedAt: new Date().toISOString(), inspectionOnly: true,
+      recheckUnderMaintenanceLock: true}
+    : result));
+  process.exitCode = maintenanceMode ? (result.allowed ? 0 : 2) : (result.ready ? 0 : 2);
 }

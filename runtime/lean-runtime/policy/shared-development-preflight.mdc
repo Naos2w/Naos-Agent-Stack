@@ -9,7 +9,8 @@ alwaysApply: true
 - **預設單一 Developer**：確認已有需求與進度 → 讀現有程式／真實錯誤 → 最小正確 Diff → 相關 Test / Build / Lint（UI 才驗畫面）→ 依原授權 Git 操作。簡單任務由 ChatGPT 直接使用 OpenChatX 工具，不強制啟用 Letta／多 Agent／新流程。
 - 日常開發**不強制** Analyzer、QA、獨立 Reviewer、review receipt 或 `development_gate`；`development_receipt`、`qa_review_bundle_plan`、`qa_review_precheck`、`qa_reviewer_directory` 在公開 Toolbox 已停用，不可擅自重新啟用。Letta 一般 run 僅做唯讀開發情境檢查，不自動建立稽核 receipt；既有歷史 receipt 不是 QA 派工、發布許可或日常新待辦。
 - Skills / Codebase Memory 按需使用；索引未連線或 Skill 不適用，不妨礙以現有 Project 的檔案／搜尋進行獲准開發。不要每輪建立第二套任務清單、重構既定架構、重新做完成的功能、重讀整份歷史 QA 設計。
-- 原有 Project read/write/shell、真實平台安全拒絕、GitHub CI、分支保護與部署授權仍然有效。**明確遭拒只限制該受拒操作**，不得換工具、主機、身分、參數或包裝手法重試；也不得擴張成「整個專案安全阻礙」。歷史拒絕的細節僅保留在對應專案與稽核紀錄，不作為其他專案例行開發的阻塞條件；不得重新執行先前受拒的相同操作，也不得偽造任何核准或驗收。
+- 原有 Project read/write/shell、當次真實平台安全拒絕、GitHub CI、分支保護與部署授權仍然有效。**明確遭拒只限制當次受拒操作**，不得更換工具、主機、身分或包裝手法規避該拒絕；不能把舊 403、舊 Operation 的 `Degraded`、歷史 CI 失敗或 TODO 標記擴張成整個專案或下一次已核准發布的永久阻礙。對同一專案的新任務／新 PR／新 SHA，應以本次真實 GitHub 帳號、權限、CI、保護規則與版本相容性重新判斷，不能複製歷史結論。不得偽造核准或驗收。
+- **發布不等於重試失敗的 Operation**：歷史未結案只限制有副作用風險的原 Conversation，不能只憑 `OPERATIONS_REQUIRE_RECONCILIATION` 就拒絕獨立的 Runtime 更新。以唯讀 `runtime_readiness.mjs <runtime-root> --maintenance` 和當次 Publisher 檢查確認；`allowed=true` 且 `HISTORICAL_RECONCILIATION_PRESERVED` 代表可維護、舊證據仍留存。僅在當次相同操作確有明確拒絕回應時，才向使用者說「平台阻擋」，並附當次操作與具體錯誤；沒有做當次檢查只能說「尚未驗證」，不能說「被阻擋」。
 - 任何真實失敗依 `runtime-anti-loop-triage` 保留 error code、限制相同重試並找到根因。對使用者只回報：**完成什麼、證據/Exit Code、仍未完成的具體項目**；不要重複講歷史阻礙或請使用者批准例行除錯。
 
 ## Current runtime contract — 2026-10-28.3

@@ -30,6 +30,33 @@ deployment prohibition needs overriding. All other global instructions apply.
   ask again solely to reconfirm an already approved merge or deployment when
   the applicable release checks have passed.
 
+
+## Release decisions must use current evidence
+
+A previous PR, Operation, permission error, safety denial or CI marker is
+history, **not** the result of the current release check. For each approved
+merge/deploy, identify the exact repository, branch/PR, head SHA and target
+environment and inspect the **current** GitHub identity/permission, required CI,
+review requirements and release/consumer compatibility checks. Never conclude
+"platform blocked" from past conversation, a stale TODO, a former 403 or a
+historical `Degraded` health indicator.
+
+In particular, `OPERATIONS_REQUIRE_RECONCILIATION` does not itself prohibit
+publishing an independent, quiescent MSI Runtime update. Check the separate
+read-only `runtime_readiness.mjs <runtime-root> --maintenance` result and the
+publisher's actual guarded eligibility. Its `allowed=true` with
+`HISTORICAL_RECONCILIATION_PRESERVED` permits the maintenance path while
+preserving those failed Operations and their same-conversation no-replay gates.
+
+Call an action "platform denied" **only after an actual present-tense platform
+refusal of that precise action**. Report the relevant action, result/error and
+which current gate is failing; use "not yet checked" if no current attempt was
+made. Do not evade a real denial by switching tools, identities or scopes.
+A new, separately authorised release after legitimately resolving an earlier
+account/CI issue should receive fresh checks, not an inherited old verdict.
+Continue other approved, independent work while one particular action is
+blocked, and never fabricate approval or validation.
+
 ## MSI multi-account GitHub operations
 
 This is the `Naos2w/Naos-Agent-Stack` repository. `git commit` uses the
@@ -48,7 +75,9 @@ repositories retain their own identity and workflows. When using the
 connected GitHub app instead of the CLI, select the authenticated Naos2w
 account for this repository.
 
-An identity mismatch must be reported rather than ignored. Existing
-required CI, review, access-denial and release checks remain binding;
-changing identity is not an authorization to retry an operation previously
-denied by the platform.
+An identity mismatch must be reported rather than ignored. A previously
+denied action must not be retried through another tool or account to evade
+that denial. After a legitimate account correction, a **new authorised**
+release must be checked on its own current merits; do not treat old 403s as
+permanent repository-wide restrictions. Required CI, reviews and release
+checks remain binding.
