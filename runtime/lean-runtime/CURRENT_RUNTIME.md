@@ -42,6 +42,19 @@ from Runtime readiness. Maintenance, pending recovery, stale workers, invalid
 registries and unresolved operations must not be reported as healthy. A normal
 brief admission mutex is informational; no observer deletes locks or repairs state.
 
+**Current release eligibility is a separate check from historical health.**
+Use `node runtime_readiness.mjs <installed-runtime-root> --maintenance` to
+obtain a timestamped, read-only `allowed` decision before MSI maintenance.
+`Degraded` plus `OPERATIONS_REQUIRE_RECONCILIATION` is not automatically a
+publication denial: `allowed=true` / `HISTORICAL_RECONCILIATION_PRESERVED`
+allows the guarded publisher to proceed while keeping original failure
+records untouched. This observation is not a release approval: the publisher
+must still recheck the maintenance lock, current source hashes, consumers,
+required CI and current permissions. Never cite an earlier 403, old PR/CI
+marker or failed Operation as evidence the **current** publish was refused.
+Only an actual refusal of this specific operation warrants "platform denied";
+otherwise state which fresh check has not yet been performed.
+
 Polling records `reconciliation` evidence for the same operation. It reports
 remote settlement separately from external tool results and never authorizes a
 retry. Unresolved operations retain their inputs and logs beyond ordinary count

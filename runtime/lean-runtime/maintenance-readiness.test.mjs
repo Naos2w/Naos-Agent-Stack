@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { inspectRuntimeReadiness, inspectRuntimeMaintenanceEligibility, inspectTerminalWorkerPid } from './runtime_readiness.mjs';
 import { acquireRuntimeMaintenance, acquireRuntimeMutex } from './runtime_maintenance.mjs';
@@ -29,6 +31,31 @@ test('failed history still degrades dispatch but permits quiescent, guarded main
   assert.deepEqual(maintenance, {schema:1,allowed:true,reason:'HISTORICAL_RECONCILIATION_PRESERVED',unresolved:1});
   await assertNoOperations(root);
   assert.equal(await readFile(join(root, 'operations.json'), 'utf8'), before);
+}));
+
+test('CLI distinguishes historical health degradation from live publication eligibility', () => fixture(async root => {
+  const registry = {old: {state:'failed',pid:-1,
+    reconciliation:{requiresReconciliation:true,reason:'EXTERNAL_TOOL_IN_FLIGHT'}}};
+  await writeOps(root,registry);
+  const path = fileURLToPath(new URL('./runtime_readiness.mjs',import.meta.url));
+  const run = args => spawnSync(process.execPath,[path,root,...args],{
+    encoding:'utf8',timeout:8000,maxBuffer:4096});
+  const health = run([]);
+  assert.equal(health.status,2);
+  assert.equal(JSON.parse(health.stdout).reason,'OPERATIONS_REQUIRE_RECONCILIATION');
+  const release = run(['--maintenance']);
+  assert.equal(release.status,0,release.stderr);
+  const output = JSON.parse(release.stdout);
+  assert.equal(output.allowed,true);
+  assert.equal(output.reason,'HISTORICAL_RECONCILIATION_PRESERVED');
+  assert.equal(output.unresolved,1);
+  assert.equal(output.inspectionOnly,true);
+  assert.equal(output.recheckUnderMaintenanceLock,true);
+  assert.ok(Number.isFinite(Date.parse(output.observedAt)));
+  await writeOps(root,{...registry,running:{state:'running',pid:process.pid}});
+  const busy = run(['--maintenance']);
+  assert.equal(busy.status,2);
+  assert.equal(JSON.parse(busy.stdout).allowed,false);
 }));
 
 test('reused Windows PID is accepted only with verified newer process generation', () => fixture(async root => {
