@@ -68,6 +68,11 @@ test('write-enabled runs inspect context once without creating audit records', a
   assert.deepEqual(result.evidence, { project: 'checked' });
   assert.equal(result.id, undefined);
   assert.match(result.prompt, /Operation completion does not mean delivery acceptance/);
+  assert.match(result.prompt, /use Ponytail Full by default/);
+  assert.match(result.prompt, /smallest complete correct change/);
+  assert.match(result.prompt, /Never skip security, data integrity, error handling/);
+  assert.match(result.prompt, /Explicit user and stricter project instructions take precedence/);
+  assert.match(result.prompt, /Ponytail is a development style, not an additional release approval/);
   assert.match(result.prompt, /tasks\/todo.md#current/);
   assert.equal(project.permissions.shell, false);
 });
