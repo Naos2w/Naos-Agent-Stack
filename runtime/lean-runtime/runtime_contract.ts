@@ -319,6 +319,13 @@ export async function prepareWorkerRunContext(
       "Operation completion does not mean delivery acceptance. " +
       "Report the concrete remaining action and evidence in the existing task record. " +
       "No routine QA receipt or independent reviewer is required. " +
+      "For coding, debugging, refactoring and code review, use Ponytail Full by default: " +
+      "deliver the smallest complete correct change, inspect affected callers and tests, " +
+      "reuse project patterns before adding abstractions or dependencies, and validate proportionately. " +
+      "Do not add unrequested features, speculative wrappers or extra review gates. " +
+      "Never skip security, data integrity, error handling, accessibility, actual UI verification, " +
+      "required CI or release protections. Explicit user and stricter project instructions take precedence. " +
+      "Ponytail is a development style, not an additional release approval. " +
       "Project permissions, current safety denials, CI and release approvals remain in force. " +
       "Historical notes do not create new authorization or permanent blockers." +
       " Before editing, inspect the current scoped Git status/diff if shell is granted and preserve unrelated edits; if Git is unavailable, compare the relevant source and report the limitation. Read only task-relevant source and immediate dependencies. Separate verified facts from assumptions." +

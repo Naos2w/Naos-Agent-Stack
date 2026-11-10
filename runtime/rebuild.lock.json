@@ -48,7 +48,7 @@
     {
       "source": "runtime/lean-runtime/runtime_contract.ts",
       "target": "toolboxes/agent-runtime/tools/runtime_contract.ts",
-      "sha256": "BB6525FA60B5C125E7938732C55CB7FDF5B94D002833EAB42D3902100298EB4F"
+      "sha256": "82037EB62D659BAADC145E0EE6D29575386BC923D7A66E1DBFF2A7A34C9FEB6C"
     },
     {
       "source": "runtime/lean-runtime/runtime_maintenance.mjs",
