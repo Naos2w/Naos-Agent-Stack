@@ -370,3 +370,22 @@ Use those only to investigate a specifically dated event.
 - Optional `acceptance_checks` on `run` declares up to 8 existing criteria: `{id,kind:"command",command,cwd:"."}` or `{id,kind:"manual"}`. Commands are not automatically executed and do not grant permissions. Use exact known commands, preserve release/manual gates, and execute permitted checks after all edits, including task notes.
 - `validation.declared_checks` matches actual host-recorded shell command/cwd and results. Last matching execution wins; replay/unknown is unverified, uncertainty blocks, and later writes or other shell commands make earlier passing checks stale. Declared verification commands do not invalidate each other. Treat declarations as checks that are expected to be non-mutating; they do not prove commands were read-only.
 - `checks_passed` covers declared commands at the operation-end snapshot only. Manual criteria remain `manual_required`; old-operation polls remain `stale_operation`. External changes after the operation are not monitored. `delivery.acceptanceVerified` stays false and no publishing permission is implied. Keep the original task record and original Operation for recovery.
+
+## Per-Operation Skill provenance (opt-in)
+
+For a new Letta agent_runtime.run, pass skill_ids as exact installed
+<toolbox>.<skill> identifiers (up to four) when a task requires those Skills.
+The existing runtime loads each installed SKILL.md and computes its SHA-256,
+fails closed for missing, linked, oversized or invalid sources, and includes
+the bounded guidance with the Worker input. Only the IDs, hashes and recorded
+stages are stored as skillProvenance in the existing operations.json.
+run, poll and status expose the allowlisted skillUsage summary.
+
+selected=explicit and loaded=true are evidenced by runtime validation.
+worker_input_prepared means the Skill was included in the Worker input;
+worker_result_observed means the Operation returned a completed result. Neither
+proves the model followed those instructions. Verification remains
+not_evaluated until independent task-specific checks are reviewed. A previous
+Operation without the field is not_recorded, never reconstructed from
+unrelated OpenChatX skill-search logs. No new agent, database, QA approval or
+delivery authority is created.

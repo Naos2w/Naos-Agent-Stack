@@ -17,6 +17,7 @@ import { patchToolEvidenceWorker, patchEvidenceGuidance } from './tool-evidence-
 import { patchTurnReconnectWorker } from './turn-reconnect-patch.mjs';
 import { patchColdRecovery } from './cold-recovery-patch.mjs';
 import { patchQuotaWorker } from './quota-handoff-patch.mjs';
+import { patchSkillRuntime } from './skill-provenance-patch.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const targets = [
@@ -282,7 +283,7 @@ export async function prepare(root, stage) {
     ['tools/runtime_contract.ts', await readFile(join(here, 'runtime_contract.ts'), 'utf8')],
     ['tools/model_routing.mjs', await readFile(join(here, 'model_routing.mjs'), 'utf8')],
     ['tools/tool_evidence.mjs', await readFile(join(here, 'tool_evidence.mjs'), 'utf8')],
-    ['tools/letta_worker.ts', patchWorker(worker)], ['tools/agent_runtime.ts', patchRuntime(runtime)],
+    ['tools/letta_worker.ts', patchWorker(worker)], ['tools/agent_runtime.ts', patchSkillRuntime(patchRuntime(runtime))],
     ['tools/agent_capabilities.ts', patchCapabilities(await readFile(join(root, 'tools/agent_capabilities.ts'), 'utf8'), await readFile(join(here, 'source/agent_capabilities.ts'), 'utf8'))],
     ['docs/history/runtime-before-20261028.md', history ?? '# Historical runtime notes — superseded 2026-10-28\n\nFor current behavior read ../../README.md and ../../rules/shared-development-preflight.mdc.\nThese dated notes do not establish current permissions or blockers.\n\n' + readme],
     ['README.md', await readFile(join(here, 'CURRENT_RUNTIME.md'), 'utf8')],
