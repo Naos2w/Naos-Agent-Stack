@@ -28,7 +28,7 @@
     {
       "source": "runtime/lean-runtime/CURRENT_RUNTIME.md",
       "target": "toolboxes/agent-runtime/README.md",
-      "sha256": "C2A81E31BBB3314ADD0F6FCDBEACA7E6219E0F754C6B1E9A52884BB299E5BCFE"
+      "sha256": "C295443C7F4A9216CE39E4877A3849B75A7CDB1F84C5E1398C9A34AB1A93FC25"
     },
     {
       "source": "runtime/lean-runtime/policy/shared-development-preflight.mdc",
@@ -48,7 +48,7 @@
     {
       "source": "runtime/lean-runtime/runtime_contract.ts",
       "target": "toolboxes/agent-runtime/tools/runtime_contract.ts",
-      "sha256": "82037EB62D659BAADC145E0EE6D29575386BC923D7A66E1DBFF2A7A34C9FEB6C"
+      "sha256": "4912E39EE96F9F1094596B348A648866EC82D2F64F34E72A06AB1E21B2B13CCF"
     },
     {
       "source": "runtime/lean-runtime/runtime_maintenance.mjs",
