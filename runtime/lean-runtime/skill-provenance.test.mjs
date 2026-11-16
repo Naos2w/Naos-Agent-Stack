@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, symlink, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, symlink, rm, readFile } from 'node:fs/promises';
+import { patchColdRecovery } from './cold-recovery-patch.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -29,6 +30,25 @@ test('select, hash, load and prepare exact installed Skill without claiming veri
   assert.equal(publicSkillUsage(item.records,'completed').skills[0].verification,'not_evaluated');
   assert.doesNotMatch(JSON.stringify(item.records), /Verify actual failures/);
 });
+test('CRLF Skill frontmatter retains the original SHA-256 and reaches Worker input', async t => {
+  const {installed,parent} = await fixture(t);
+  const bytes = Buffer.from('---\r\nname: systematic-debugging\r\n---\r\n# Windows Skill body\r\n');
+  await writeFile(join(parent,'SKILL.md'),bytes);
+  const usage = await prepareSkillDelivery(installed,['superpowers.systematic-debugging']);
+  assert.equal(usage.records[0].sha256,createHash('sha256').update(bytes).digest('hex'));
+  assert.match(usage.promptSuffix,/Windows Skill body/);
+  assert.equal(publicSkillUsage(usage.records,'completed').skills[0].verification,'not_evaluated');
+});
+
+test('guarded upgrade preserves the approved Skill-enabled Runtime and rejects foreign sources', async () => {
+  const source = await readFile(new URL('./source/agent_runtime.ts', import.meta.url), 'utf8');
+  const expected = 'aa7716c162bbab017a31b76b830aa1ef2039c0810b36b1686716db05414f7c9c';
+  assert.equal(createHash('sha256').update(source).digest('hex'), expected);
+  assert.match(source, /prepareSkillDelivery/);
+  assert.equal(patchColdRecovery(source, 'agent_runtime.ts'), source);
+  assert.throws(() => patchColdRecovery('unreviewed standalone source', 'agent_runtime.ts'), /COLD_RECOVERY_SOURCE_CHANGED/);
+});
+
 test('legacy operations distinguish missing evidence from no requested skills', async () => {
   assert.equal(publicSkillUsage(undefined,'completed').state,'not_recorded');
   assert.equal(publicSkillUsage([],'completed').state,'none_selected');

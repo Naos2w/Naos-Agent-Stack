@@ -18,7 +18,7 @@
     {
       "source": "runtime/lean-runtime/source/agent_runtime.ts",
       "target": "toolboxes/agent-runtime/tools/agent_runtime.ts",
-      "sha256": "4C08B2F033C3045F75C5B5E314FA72790A36C7D891989FFE772DE4BA346B7472"
+      "sha256": "AA7716C162BBAB017A31B76B830AA1EF2039C0810B36B1686716DB05414F7C9C"
     },
     {
       "source": "runtime/lean-runtime/source/letta_worker.ts",
@@ -48,7 +48,7 @@
     {
       "source": "runtime/lean-runtime/runtime_contract.ts",
       "target": "toolboxes/agent-runtime/tools/runtime_contract.ts",
-      "sha256": "4912E39EE96F9F1094596B348A648866EC82D2F64F34E72A06AB1E21B2B13CCF"
+      "sha256": "E0682F7CDC576555915005E3A9FDA30478EF36C87D76AB4295E614EE211BB708"
     },
     {
       "source": "runtime/lean-runtime/runtime_maintenance.mjs",

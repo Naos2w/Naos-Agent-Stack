@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { stripTypeScriptTypes } from 'node:module';
 import { publicModelSelection, planModelSelection } from './model_routing.mjs';
 import { describeModelConfiguration, publicModelConfiguration, publicTokenUsage,
-  assertLettaModelSelection, describeOperationOutcome } from './runtime_contract.ts';
+  assertLettaModelSelection, describeOperationOutcome, publicSkillUsage } from './runtime_contract.ts';
 const when = '2026-10-30T01:00:00.000Z';
 const agent = { model: 'openai-codex/gpt-6.1-sol',
   model_settings: { reasoning: { reasoning_effort: 'high' }, api_key: 'private-key' },
@@ -85,7 +85,7 @@ for (const stale of [false, true]) test(`actual facade poll preserves model and 
     isCurrentSessionOperation: s => s.lastOperationId === operation.id,
     DEFAULT_LETTA_MODEL: 'letta/agent-config', DEFAULT_MAX_RESULT_CHARS: 6000,
     now: () => when, saveState: async () => {}, publicModelConfiguration, publicTokenUsage, publicModelSelection,
-    clipResultText: text => ({text, truncated: false}), describeOperationOutcome,
+    clipResultText: text => ({text, truncated: false}), describeOperationOutcome, publicSkillUsage,
   };
   const run = new Function(...Object.keys(dependencies), body + '\nreturn pollOperation({id:"fixture"}, "op-fixture");');
   const result = await run(...Object.values(dependencies));
@@ -96,4 +96,5 @@ for (const stale of [false, true]) test(`actual facade poll preserves model and 
   assert.deepEqual(session.modelSelection, stale ? undefined : parsed.modelSelection);
   assert.deepEqual(session.modelConfiguration, stale ? {version: 'newer-sentinel'} : observation);
   assert.equal(result.delivery.acceptanceVerified, false);
+  assert.equal(result.skillUsage.state, 'not_recorded');
 });

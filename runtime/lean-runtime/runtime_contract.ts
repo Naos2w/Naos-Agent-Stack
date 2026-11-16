@@ -386,7 +386,7 @@ export async function prepareSkillDelivery(toolboxRoot, requestedIds = []) {
     total += bytes.length;
     if (total > MAX_TOTAL_BYTES) throw Error('SKILL_TOTAL_SIZE_LIMIT');
     const content = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-    if (!content.startsWith('---\n') || !/^name:\s*.+/m.test(content)) {
+    if (!/^---\r?\n/.test(content) || !/^name:\s*.+/m.test(content)) {
       throw Error('SKILL_DOCUMENT_INVALID: ' + id);
     }
     records.push({
