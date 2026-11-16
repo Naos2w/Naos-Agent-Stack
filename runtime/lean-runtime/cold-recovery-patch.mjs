@@ -12,6 +12,10 @@ const priorInstalled = {
   'letta_worker.ts': 'a5d471f5af422fe8c8f42cdc90487d68e407cc64ce2d88b9434272b6bb6e6766',
   'agent_runtime.ts': '4f67c1ffbe2e3ceb67b01ede7aa5f15e70b0dbcf7aa667140f71252717614eec',
 };
+// Exact reviewed pre-Skill-provenance source; keep upgrade support without accepting arbitrary hashes.
+const priorReviewedSkillRuntime = {
+  'agent_runtime.ts': '4c08b2f033c3045f75c5b5e314fa72790a36c7d891989ffe772de4ba346b7472',
+};
 const observedWorkflow = {
   'letta_worker.ts': '834aa12f99824e70baf327cfe260f59ea48c38416ed7bc062e134beac042f932',
   'agent_runtime.ts': '5051e4653303b4309416388e9b9d71ed71ec188b1c982ec467644d5595dc3d10',
@@ -19,6 +23,6 @@ const observedWorkflow = {
 export function patchColdRecovery(original, name) {
   const source = readFileSync(new URL(`./source/${name}`, import.meta.url), 'utf8').replaceAll('\r\n', '\n');
   const before = original.replaceAll('\r\n', '\n');
-  if (before === source || sha(before) === baseline[name] || sha(before) === observedWorkflow[name] || sha(before) === priorInstalled[name]) return source;
+  if (before === source || sha(before) === baseline[name] || sha(before) === observedWorkflow[name] || sha(before) === priorInstalled[name] || sha(before) === priorReviewedSkillRuntime[name]) return source;
   throw Error(`COLD_RECOVERY_SOURCE_CHANGED: ${name}`);
 }

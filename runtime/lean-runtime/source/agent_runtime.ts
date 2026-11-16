@@ -21,7 +21,7 @@ const {
 } = await import(operationGuardsUrl.href)
 const runtimeContractUrl = new URL("./runtime_contract.ts", import.meta.url)
 runtimeContractUrl.searchParams.set("source_mtime", String((await fs.stat(fileURLToPath(runtimeContractUrl))).mtimeMs))
-const { describeOperationOutcome, normalizeTaskRef, publicModelConfiguration, publicTokenUsage, assertLettaModelSelection, normalizeContextPaths, normalizeAcceptanceChecks } = await import(runtimeContractUrl.href)
+const { describeOperationOutcome, normalizeTaskRef, publicModelConfiguration, publicTokenUsage, assertLettaModelSelection, normalizeContextPaths, normalizeAcceptanceChecks, prepareSkillDelivery, publicSkillUsage } = await import(runtimeContractUrl.href)
 
 const routingUrl = new URL("./model_routing.mjs", import.meta.url)
 routingUrl.searchParams.set("source_mtime", String((await fs.stat(fileURLToPath(routingUrl))).mtimeMs))
@@ -178,6 +178,7 @@ type RuntimeOperation = {
   modelSelection?: Record<string, unknown>
   contextPaths?: string[]
   acceptanceChecks?: ReturnType<typeof normalizeAcceptanceChecks>
+  skillProvenance?: Array<Record<string, unknown>>
   reconciliation?: Record<string, any>
   remoteSettlement?: Record<string, any>
 
@@ -1148,8 +1149,9 @@ async function dispatchLettaRun(args: {
   modelSelection?: Record<string, unknown>
   contextPaths?: string[]
   acceptanceChecks?: ReturnType<typeof normalizeAcceptanceChecks>
+  skillProvenance?: Array<Record<string, unknown>>
 }) {
-  const { project, projectState, session, prompt, config, timeoutMs, taskRef, modelSelection, contextPaths, acceptanceChecks } = args
+  const { project, projectState, session, prompt, config, timeoutMs, taskRef, modelSelection, contextPaths, acceptanceChecks, skillProvenance } = args
   assertNoUnresolvedToolEffects(Object.values(await readOperations()), project.id, session.name, session.sessionId)
   await ensureLettaService(config)
 
@@ -1194,6 +1196,7 @@ async function dispatchLettaRun(args: {
       contextPaths,
       acceptanceChecks,
       taskRef,
+      skillProvenance,
       prompt,
       timeoutMs,
     })
@@ -1223,6 +1226,7 @@ async function dispatchLettaRun(args: {
       acceptanceChecks,
       modelSelection,
       taskRef: taskRef ?? null,
+      skillProvenance,
       state: "running",
       stdoutPath,
       stderrPath,
@@ -1438,6 +1442,7 @@ async function pollOperation(
       projectId: project.id,
       sessionName: operation.sessionName,
       state: "running" as const,
+      skillUsage: publicSkillUsage(operation.skillProvenance, "running"),
       modelSelection: publicModelSelection(operation.modelSelection),
       ...describeOperationOutcome({ state: "running", taskRef: operation.taskRef }),
       sessionId: operation.sessionId ?? null,
@@ -1524,6 +1529,7 @@ async function pollOperation(
       projectId: project.id,
       sessionName: operation.sessionName,
       state: operation.state,
+      skillUsage: publicSkillUsage(operation.skillProvenance, operation.state),
       exitCode: operation.exitCode ?? null,
       sessionId: sessionId ?? null,
       agentId: sessionUpdate.agentId,
@@ -2027,6 +2033,7 @@ export default defineTool({
         command: z.string().min(1).max(2000), cwd: z.string().max(512).optional() }).strict(),
       z.object({ id: z.string().regex(/^[a-z][a-z0-9_-]{0,47}$/), kind: z.literal("manual") }).strict(),
     ])).max(8).optional().describe("run only: explicit existing task checks, not permission to execute or publish. Commands are matched to actual host-recorded shell results; manual criteria stay manual. Omit when no check is known."),
+    skill_ids: z.array(z.string().regex(/^[a-z][a-z0-9-]{0,63}\.[a-z][a-z0-9-]{0,63}$/)).max(4).optional().describe("run only: installed Skill IDs to load, hash and include in this Letta Operation. Not evidence of compliance or acceptance."),
     context_paths: z.array(z.string().min(1).max(512)).max(16).optional().describe("run only: known exact files relevant to this task, relative to the Project root. No directories, globs or traversal. Enables bounded per-file index freshness/coverage checks; not a write allowlist or permission grant. Omit when files are not yet known."),
     engine: z.enum(["letta"]).optional(),
     model: z.string().optional().describe("run only: explicit user-selected openai-codex handle or gpt-* alias; auto/omitted routes by task_complexity. letta/agent-config preserves the current conversation."),
@@ -2058,6 +2065,7 @@ export default defineTool({
     task_ref,
     context_paths,
     acceptance_checks,
+    skill_ids,
     reasoning_effort,
     task_complexity,
     engine,
@@ -2078,6 +2086,7 @@ export default defineTool({
     auto,
   }) {
     return withRuntimeActivity(TOOLBOX_ROOT, async () => {
+    if (action !== "run" && skill_ids !== undefined) throw new Error("SKILL_IDS_RUN_ONLY")
     if (action !== "run" && context_paths !== undefined) throw new Error("CONTEXT_PATHS_RUN_ONLY")
     if (action !== "run" && acceptance_checks !== undefined) throw new Error("ACCEPTANCE_CHECKS_RUN_ONLY")
     const config = await ensureConfig()
@@ -2330,6 +2339,7 @@ export default defineTool({
               : item.state,
           createdAt: item.createdAt,
           updatedAt: item.updatedAt,
+          skillUsage: publicSkillUsage(item.skillProvenance, item.state),
         }))
 
       const sessions = Object.values(projectState.sessions)
@@ -2548,7 +2558,8 @@ export default defineTool({
         await saveState(state)
       }
 
-      const runtimePrompt = prompt.trim()
+      const skillDelivery = await prepareSkillDelivery(TOOLBOX_ROOT, skill_ids)
+      const runtimePrompt = prompt.trim() + skillDelivery.promptSuffix
 
       const chosenModel =
         session.engine === "opencode"
@@ -2567,6 +2578,7 @@ export default defineTool({
               modelSelection,
               contextPaths,
               acceptanceChecks,
+              skillProvenance: skillDelivery.records,
             })
           : await dispatchOpenCodeRun({
               project,
@@ -2604,6 +2616,7 @@ export default defineTool({
         autoCompacted: autoCompaction !== null,
         autoCompaction,
         operationId: operation.id,
+        skillUsage: publicSkillUsage(operation.skillProvenance, operation.state),
         model: chosenModel,
         modelSelection: publicModelSelection(operation.modelSelection),
         contextPaths: operation.contextPaths ?? [],
